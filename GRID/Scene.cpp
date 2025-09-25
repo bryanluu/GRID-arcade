@@ -1,6 +1,8 @@
 #include "Scene.h"
 
-Scene::Scene() : m_name { "_" }
+Scene *Scene::s_currentScene = nullptr;
+
+Scene::Scene() : m_name{"_"}
 {
 }
 

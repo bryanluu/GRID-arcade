@@ -32,8 +32,6 @@
 
 RGBmatrixPanel matrix(A, B, C, D, CLK, LAT, OE, false);
 
-Scene * Scene::s_currentScene = nullptr;
-
 class ExampleScene : public Scene 
 {
   public:

@@ -11,7 +11,7 @@
  {
    public:
      static Scene * s_currentScene; // which scene is running
-     std::string m_name;
+     std::string m_name{};
  
      Scene();
  
