@@ -7,6 +7,11 @@ static uint32_t millis_now(uint32_t start) { return SDL_GetTicks() - start; }
 
 void setup(SDLMatrix32 &m)
 {
+    m.clear();
+}
+
+void loop(SDLMatrix32 &m, uint32_t now)
+{
     // sets alternating black and white pixels
     for (int y = 0; y < 32; y++)
     {
@@ -18,16 +23,12 @@ void setup(SDLMatrix32 &m)
     }
 }
 
-void loop(SDLMatrix32 &m, uint32_t now)
-{
-    // do nothing for now
-}
-
 int main()
 {
     // Desktop build should define GRID_EMULATOR_DESKTOP so SDLMatrix32 is available
     SDLMatrix32 m;
     m.begin();
+    setup(m);
     uint32_t start = SDL_GetTicks();
     bool running = true;
 
@@ -44,6 +45,7 @@ int main()
                     running = false;
             }
         }
+        loop(m, millis_now(start));
         m.show();
     }
     return 0;
