@@ -9,6 +9,7 @@
 // for Adafruit Industries.
 // BSD license, all text above must be included in any redistribution.
 
+#include "Scene.h"
 #include <RGBmatrixPanel.h>
 
 // Most of the signal pins are configurable, but the CLK pin has some
