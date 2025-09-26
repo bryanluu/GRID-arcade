@@ -7,6 +7,15 @@ class SDL_Window;
 class SDL_Renderer;
 class SDL_Texture;
 
+struct LEDcell
+{
+    const int scale;
+    const int margin;
+    const float fill;
+    const int inner;
+    const int radius;
+};
+
 // Declaration only; implementation in src/sdl_matrix32.cpp
 class SDLMatrix32 : public Matrix32
 {
@@ -21,6 +30,9 @@ public:
 
     void setLedMode(bool on) { led_mode_ = on; }
     bool ledMode() const { return led_mode_; }
+    void renderPixelAsLED(int x, int y, LEDcell &cell);
+    void renderAsLEDMatrix();
+    void renderAsScreen();
 
 private:
     SDL_Window *win_{};
