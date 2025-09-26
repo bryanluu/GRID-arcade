@@ -44,6 +44,8 @@ int main()
             {
                 if (e.key.keysym.sym == SDLK_ESCAPE || e.key.keysym.sym == SDLK_q)
                     running = false;
+                else if (e.key.keysym.sym == SDLK_l) 
+                    m.setLedMode(!m.ledMode());
             }
         }
         loop(m, millis_now(start));
