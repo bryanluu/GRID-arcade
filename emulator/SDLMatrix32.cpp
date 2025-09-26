@@ -1,4 +1,4 @@
-#include "SDL_Matrix32.h"
+#include "SDLMatrix32.h"
 #include <SDL.h>
 #include <cstring>
 #include <stdexcept>
