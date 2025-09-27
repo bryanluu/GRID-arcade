@@ -75,7 +75,7 @@ public:
     void println(const char *s) override;
 
     // Enable or query LED rendering mode.
-    void setLedMode(bool on) { led_mode_ = on; }
+    void setLEDMode(bool on) { led_mode_ = on; }
     bool ledMode() const { return led_mode_; }
 
     // Render one matrix pixel as an LED circle into the SDL renderer.

@@ -1,4 +1,4 @@
-#include "GRID_App.h"
+#include "App.h"
 #include "SDLMatrix32.h"
 #include <SDL.h>
 #include <cstdint>
@@ -9,24 +9,7 @@ static constexpr double DT_SEC  = 1.0 / TICK_HZ;
 
 static uint32_t millis_now(uint32_t start) { return SDL_GetTicks() - start; }
 
-void setup(SDLMatrix32 &m)
-{
-	m.fillRect(0,0,32,32, rgb(0,128,0));
-	m.drawRect(0,0,32,32, rgb(255,255,0));
-    m.drawPixel(31, 31, rgb(0, 0, 255));
-	m.setCursor(1,0);
-	m.setTextSize(1);
-	m.setTextColor(rgb(255,255,255));
-	m.println("GRID");
-	m.show();
-}
-
-void loop(SDLMatrix32 &m, uint32_t now)
-{
-    // do nothing for now
-}
-
-void runEmulator(SDLMatrix32& m) {
+void runEmulator(App& app) {
     using u64 = unsigned long long;
 
     // We pace manually; disable vsync so Present doesn't block unpredictably
@@ -37,7 +20,8 @@ void runEmulator(SDLMatrix32& m) {
     u64 now = SDL_GetPerformanceCounter();
     double accumulator = 0.0;
 
-    setup(m); // Arduino-style setup once
+    app.setup(); // Arduino-style setup once
+    SDLMatrix32& matrix = dynamic_cast<SDLMatrix32&>(app.m);
 
     while (running) {
         // 1) Events
@@ -50,7 +34,7 @@ void runEmulator(SDLMatrix32& m) {
                 if (e.key.keysym.sym == SDLK_ESCAPE || e.key.keysym.sym == SDLK_q)
                     running = false;
                 else if (e.key.keysym.sym == SDLK_l) 
-                    m.setLedMode(!m.ledMode());
+                    matrix.setLEDMode(!matrix.ledMode());
             }
         }
 
@@ -68,12 +52,12 @@ void runEmulator(SDLMatrix32& m) {
         int maxSteps = 5;
         while (accumulator >= DT_SEC && maxSteps-- > 0) {
             uint32_t millis_now = (uint32_t)(newNow * 1000.0 / double(freq));
-            loop(m, millis_now);
+            app.loop(millis_now);
             accumulator -= DT_SEC;
         }
 
         // 4) Render
-        m.show();
+        matrix.show();
 
         // 5) Sleep a bit to target cadence (tiny margin to avoid oversleep)
         double frameLeft = DT_SEC - accumulator;
@@ -87,7 +71,7 @@ void runEmulator(SDLMatrix32& m) {
 int main()
 {
     SDLMatrix32 m;   // your concrete Matrix32 implementation
-    m.begin();
-    runEmulator(m);
+    App app{m};
+    runEmulator(app);
     return 0;
 }

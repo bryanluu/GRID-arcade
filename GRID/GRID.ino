@@ -9,9 +9,10 @@
 // for Adafruit Industries.
 // BSD license, all text above must be included in any redistribution.
 
+#include "App.h"
 #include "Scene.h"
-#include <RGBmatrixPanel.h>
 #include "RGBMatrix32.h"
+#include <RGBmatrixPanel.h>
 
 // Most of the signal pins are configurable, but the CLK pin has some
 // special constraints.  On 8-bit AVR boards it must be on PORTB...
@@ -33,6 +34,7 @@
 
 RGBmatrixPanel panel(A, B, C, D, CLK, LAT, OE, false);
 RGBMatrix32 matrix(panel);
+App app(matrix);
 
 class ExampleScene : public Scene 
 {
@@ -124,13 +126,10 @@ void setup()
     Serial.begin(9600);
     randomSeed(analogRead(0));
     pinMode(0, INPUT_PULLUP);
-    matrix.begin();
-    // matrix.setTextWrap(false);
-    matrix.setTextSize(1);
-    exampleScene.start();
+    app.setup();
 }
 
 void loop() 
 {
-   exampleScene.run();
+   app.loop(millis());
 }

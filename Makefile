@@ -11,7 +11,7 @@ BUILD    := build
 CXX      := g++
 CXXSTD   := -std=gnu++17
 WARN     := -Wall -Wextra -Wpedantic
-DEFS     := -DGRID_EMULATOR_DESKTOP
+DEFS     := -DGRID_EMULATION
 
 DEBUG    ?= 0
 ifeq ($(DEBUG),1)
