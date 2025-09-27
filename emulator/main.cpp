@@ -1,6 +1,5 @@
 #include "GRID_App.h"
 #include "SDLMatrix32.h"
-#include "Matrix32Adapter.h"
 #include <SDL.h>
 #include <cstdint>
 
@@ -12,14 +11,13 @@ static uint32_t millis_now(uint32_t start) { return SDL_GetTicks() - start; }
 
 void setup(SDLMatrix32 &m)
 {
-	Matrix32Adapter gfx(m);
-	gfx.fillRect(0,0,32,32, rgb(0,128,0));
-	gfx.drawRect(0,0,32,32, rgb(255,255,0));
-    gfx.drawPixel(31, 31, rgb(0, 0, 255));
-	gfx.setCursor(1,0);
-	gfx.setTextSize(1);
-	gfx.setTextColor(rgb(255,255,255));
-	gfx.println("GRID");
+	m.fillRect(0,0,32,32, rgb(0,128,0));
+	m.drawRect(0,0,32,32, rgb(255,255,0));
+    m.drawPixel(31, 31, rgb(0, 0, 255));
+	m.setCursor(1,0);
+	m.setTextSize(1);
+	m.setTextColor(rgb(255,255,255));
+	m.println("GRID");
 	m.show();
 }
 
