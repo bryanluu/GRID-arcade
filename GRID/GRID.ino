@@ -11,6 +11,7 @@
 
 #include "Scene.h"
 #include <RGBmatrixPanel.h>
+#include "RGBMatrix32.h"
 
 // Most of the signal pins are configurable, but the CLK pin has some
 // special constraints.  On 8-bit AVR boards it must be on PORTB...
@@ -30,7 +31,8 @@
 #define C   A2
 #define D   A3
 
-RGBmatrixPanel matrix(A, B, C, D, CLK, LAT, OE, false);
+RGBmatrixPanel panel(A, B, C, D, CLK, LAT, OE, false);
+RGBMatrix32 matrix(panel);
 
 class ExampleScene : public Scene 
 {
@@ -49,63 +51,62 @@ void ExampleScene::start()
     matrix.begin();
 
     // draw a pixel in solid white
-    matrix.drawPixel(0, 0, matrix.Color333(7, 7, 7));
+    matrix.drawPixel(0, 0, rgb(255, 255, 255));
     delay(500);
 
     // fix the screen with green
-    matrix.fillRect(0, 0, 32, 32, matrix.Color333(0, 7, 0));
+    matrix.fillRect(0, 0, 32, 32, rgb(0, 255, 0));
     delay(500);
 
     // draw a box in yellow
-    matrix.drawRect(0, 0, 32, 32, matrix.Color333(7, 7, 0));
+    matrix.drawRect(0, 0, 32, 32, rgb(255, 255, 0));
     delay(500);
 
     // draw an 'X' in red
-    matrix.drawLine(0, 0, 31, 31, matrix.Color333(7, 0, 0));
-    matrix.drawLine(31, 0, 0, 31, matrix.Color333(7, 0, 0));
+    matrix.drawLine(0, 0, 31, 31, rgb(255, 0, 0));
+    matrix.drawLine(31, 0, 0, 31, rgb(255, 0, 0));
     delay(500);
 
     // draw a blue circle
-    matrix.drawCircle(10, 10, 10, matrix.Color333(0, 0, 7));
+    matrix.drawCircle(10, 10, 10, rgb(0, 0, 255));
     delay(500);
 
     // fill a violet circle
-    matrix.fillCircle(21, 21, 10, matrix.Color333(7, 0, 7));
+    matrix.fillCircle(21, 21, 10, rgb(255, 0, 255));
     delay(500);
 
-    // fill the screen with 'black'
-    matrix.fillScreen(matrix.Color333(0, 0, 0));
+    matrix.clear();
 
     // draw some text!
     matrix.setCursor(1, 0);    // start at top left, with one pixel of spacing
     matrix.setTextSize(1);     // size 1 == 8 pixels high
-    matrix.setTextWrap(false); // Don't wrap at end of line - will do ourselves
+    // matrix.setTextWrap(false); // Don't wrap at end of line - will do ourselves
 
-    matrix.setTextColor(matrix.Color333(7,7,7));
+    matrix.setTextColor(rgb(255,255,255));
     matrix.println(" Ada");
     matrix.println("fruit");
 
     // print each letter with a rainbow color
-    matrix.setTextColor(matrix.Color333(7,0,0));
+    matrix.setTextColor(rgb(255,0,0));
     matrix.print('3');
-    matrix.setTextColor(matrix.Color333(7,4,0));
+    matrix.setTextColor(rgb(255,128,0));
     matrix.print('2');
-    matrix.setTextColor(matrix.Color333(7,7,0));
+    matrix.setTextColor(rgb(255,255,0));
     matrix.print('x');
-    matrix.setTextColor(matrix.Color333(4,7,0));
+    matrix.setTextColor(rgb(128,255,0));
     matrix.print('3');
-    matrix.setTextColor(matrix.Color333(0,7,0));
-    matrix.println('2');
+    matrix.setTextColor(rgb(0,255,0));
+    matrix.println("2");
 
-    matrix.setTextColor(matrix.Color333(0,7,7));
+    matrix.setTextColor(rgb(0,255,255));
     matrix.print('*');
-    matrix.setTextColor(matrix.Color333(0,4,7));
+    matrix.setTextColor(rgb(0,128,255));
     matrix.print('R');
-    matrix.setTextColor(matrix.Color333(0,0,7));
+    matrix.setTextColor(rgb(0,0,255));
     matrix.print('G');
-    matrix.setTextColor(matrix.Color333(4,0,7));
+    matrix.setTextColor(rgb(128,0,255));
     matrix.print('B');
-    matrix.setTextColor(matrix.Color333(7,0,4));
+    matrix.setTextColor(rgb(255,0,128));
     matrix.print('*');
 
     // whew!
@@ -124,7 +125,7 @@ void setup()
     randomSeed(analogRead(0));
     pinMode(0, INPUT_PULLUP);
     matrix.begin();
-    matrix.setTextWrap(false);
+    // matrix.setTextWrap(false);
     matrix.setTextSize(1);
     exampleScene.start();
 }
