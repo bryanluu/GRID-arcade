@@ -2,82 +2,126 @@
 #define SDL_MATRIX32_H
 
 #include "Matrix32.h"
+#include <cstdint>
 
-class SDL_Window;
-class SDL_Renderer;
-class SDL_Texture;
+struct SDL_Window;
+struct SDL_Renderer;
+struct SDL_Texture;
 
+// Parameters that control how each logical LED cell is rendered on screen.
+// - scale:  number of screen pixels per 1 matrix pixel
+// - margin: black bezel around the LED inside the cell (in screen pixels)
+// - fill:   diameter as a fraction of the inner area (0..1)
+// - inner:  derived = scale - 2*margin
+// - radius: derived = int(0.5 * inner * fill)
 struct LEDcell
 {
-    const int scale;
-    const int margin;
-    const float fill;
-    const int inner;
-    const int radius;
+    int scale;
+    int margin;
+    float fill;
+    int inner;
+    int radius;
 };
 
-// Declaration only; implementation in src/sdl_matrix32.cpp
+// SDL-backed implementation of Matrix32 for the desktop emulator.
+// It supports two render modes:
+// 1) Screen mode: fast blit of a 32x32 RGB texture
+// 2) LED mode:    each pixel is drawn as a small colored circle in a black cell
 class SDLMatrix32 : public Matrix32
 {
 public:
+    // Construct an uninitialized instance. Call begin() before use.
     SDLMatrix32();
+    // Destroys SDL resources (texture, renderer, window) and quits SDL.
     ~SDLMatrix32() override;
 
+    // Initialize SDL window, renderer, streaming texture, and compute initial scale.
     void begin() override;
+    // Clear the 32x32 framebuffer to black.
     void clear() override;
+    // Set a single framebuffer pixel (bounds-checked).
     void set(int x, int y, RGB c) override;
+    // Present the framebuffer using the current render mode (screen or LED).
     void show() override;
 
+    // Draw a 5x7 glyph scaled by setTextSize() at (x,y).
     void drawChar(int x, int y, char ch, RGB c) override;
+    // Set one pixel (alias for set()).
     void drawPixel(int x, int y, RGB c) override;
+    // Draw a line using Bresenham.
     void drawLine(int x0, int y0, int x1, int y1, RGB c) override;
+    // Draw an axis-aligned rectangle outline.
     void drawRect(int x, int y, int w, int h, RGB c) override;
+    // Draw a circle outline using the midpoint algorithm.
     void drawCircle(int cx, int cy, int r, RGB c) override;
+    // Fill an axis-aligned rectangle.
     void fillRect(int x, int y, int w, int h, RGB c) override;
+    // Fill a circle using horizontal spans.
     void fillCircle(int cx, int cy, int r, RGB c) override;
-    
-    void advance() override;
-    void setCursor(int x, int y) override;
-    void setTextColor(RGB c) override;
-    void setTextSize(int s) override;
 
+    // Advance the text cursor by one glyph (including 1px spacing).
+    void advance() override;
+    // Set text cursor position in pixels.
+    void setCursor(int x, int y) override;
+    // Set text color for print/drawChar.
+    void setTextColor(RGB c) override;
+    // Set integer text scale >= 1.
+    void setTextSize(int s) override;
+    // Print a single character (handles '\n').
     void print(char ch) override;
+    // Print a C string.
     void print(const char *s) override;
+    // Print a C string followed by newline.
     void println(const char *s) override;
 
+    // Enable or query LED rendering mode.
     void setLedMode(bool on) { led_mode_ = on; }
     bool ledMode() const { return led_mode_; }
-    void renderPixelAsLED(int x, int y, LEDcell &cell);
+
+    // Render one matrix pixel as an LED circle into the SDL renderer.
+    void renderPixelAsLED(int x, int y, const LEDcell &cell);
+    // Render the entire framebuffer as an LED matrix.
     void renderAsLEDMatrix();
+    // Render the entire framebuffer as a blocky 32x32 screen.
     void renderAsScreen();
 
 private:
-    int cx{0};
-    int cy{0};
-    int lineStartX{0};
-    int ts{1}; // scale
-    RGB tc{rgb(255, 255, 255)};
+    // Text state
+    int cx{0};                  // cursor x in pixels
+    int cy{0};                  // cursor y in pixels
+    int lineStartX{0};          // start-of-line x for newline handling
+    int ts{1};                  // text scale
+    RGB tc{rgb(255, 255, 255)}; // text color
+
+    // SDL state
     SDL_Window *win_{};
     SDL_Renderer *ren_{};
     SDL_Texture *tex_{};
-    bool led_mode_{false};
-    int scale_{16};
 
-    // 32x32 RGB buffer (row-major)
+    // Rendering options
+    bool led_mode_{false};
+    int scale_{16}; // screen pixels per logical LED
+
+    // 32x32 RGB framebuffer (row-major)
     struct Pixel
     {
         uint8_t r, g, b;
     };
     Pixel fb_[32 * 32]{};
 
-	// Draw a clamped horizontal span [x0..x1] at row y
-    void span(int x0, int x1, int y, RGB c);
-	void drawHLine(int x, int y, int w, RGB c);
-	void drawVLine(int x, int y, int h, RGB c);
-    void plot8(int cx, int cy, int x, int y, RGB c);
-    void drawPixelScaled(int x, int y, RGB c);
-    void SetRGBA(SDL_Renderer *r, uint8_t r8, uint8_t g8, uint8_t b8, uint8_t a = 255);
-    void drawLEDAsCircle(SDL_Renderer *ren, int cx, int cy, int r);
+    // Low-level framebuffer helpers
+    void span(int x0, int x1, int y, RGB c); // clamped horizontal span
+    void drawHLine(int x, int y, int w, RGB c);
+    void drawVLine(int x, int y, int h, RGB c);
+    void plot8(int cx, int cy, int x, int y, RGB c); // 8-way circle symmetry plot
+    void drawPixelScaled(int x, int y, RGB c);       // draw ts x ts block
+
+    // SDL helpers
+    static inline void SetRGBA(SDL_Renderer *r, uint8_t r8, uint8_t g8, uint8_t b8, uint8_t a = 255);
+    static void drawLEDAsCircle(SDL_Renderer *ren, int cx, int cy, int r);
+
+    // Build LEDcell from current scale and chosen styling.
+    LEDcell makeLEDcell() const;
 };
 
-#endif
+#endif // SDL_MATRIX32_H
