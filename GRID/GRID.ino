@@ -147,6 +147,10 @@ void smokeTest()
     matrix.setTextSize(1);
     matrix.setTextColor(Color333{7, 7, 7});
     matrix.println("GRID");
+    matrix.setCursor(1, 10);
+    matrix.print("<");
+    matrix.advance();
+    matrix.print(">");
 }
 
 void setup()

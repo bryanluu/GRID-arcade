@@ -12,12 +12,14 @@ public:
     explicit RGBMatrix32(RGBmatrixPanel &panel) : m(panel) {}
 
     // Matrix32 interface
+
     void begin() override { m.begin(); }
     void clear() override { m.fillScreen(0); }
     void set(int x, int y, Color333 c) override { m.drawPixel(x, y, convertColor(c)); }
     void show() override { /* hardware panel draws immediately; no-op */ }
-
+    
     // Drawing API (1:1 to Adafruit panel)
+
     void drawPixel(int x, int y, Color333 c) override
     {
         setSafe(x, y, c);
@@ -27,17 +29,17 @@ public:
     void drawCircle(int cx, int cy, int r, Color333 c) override { m.drawCircle(cx, cy, r, convertColor(c)); }
     void fillRect(int x, int y, int w, int h, Color333 c) override { m.fillRect(x, y, w, h, convertColor(c)); }
     void fillCircle(int cx, int cy, int r, Color333 c) override { m.fillCircle(cx, cy, r, convertColor(c)); }
-
+    
     // Text helpers
+
     void setCursor(int x, int y) override { m.setCursor(x, y); }
     void setTextColor(Color333 c) override { m.setTextColor(convertColor(c)); }
     void setTextSize(int s) override { m.setTextSize(s); }
     void print(char ch) override { m.print(ch); }
     void print(const char *s) override { m.print(s); }
     void println(const char *s) override { m.println(s); }
-
-    // If your scenes rely on these, provide trivial impls or route to panel text
-    void advance() override { /* scenes can manage their own cursor advance */ }
+    
+    void advance() override { m.setCursor(m.getCursorX()+5, m.getCursorY()); }
     void drawChar(int x, int y, char ch, Color333 c) override
     {
         int savedX = x, savedY = y;
@@ -46,13 +48,13 @@ public:
         print(ch);
         setCursor(savedX, savedY);
     }
-
+    
     // Converts a Color333 to the type used by the panel
     uint16_t convertColor(Color333 c)
     {
         return m.Color333(c.r, c.g, c.b);
     }
-
+    
 private:
     RGBmatrixPanel &m; // reference to a live panel
 };
