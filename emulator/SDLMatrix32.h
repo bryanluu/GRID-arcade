@@ -35,36 +35,43 @@ public:
     // Destroys SDL resources (texture, renderer, window) and quits SDL.
     ~SDLMatrix32() override;
 
+    // 32x32 RGB framebuffer (row-major)
+    struct Pixel
+    {
+        uint8_t r, g, b; // RGB are each 0..255
+    };
+    Pixel fb_[32 * 32]{};
+
     // Initialize SDL window, renderer, streaming texture, and compute initial scale.
     void begin() override;
     // Clear the 32x32 framebuffer to black.
     void clear() override;
     // Set a single framebuffer pixel (bounds-checked).
-    void set(int x, int y, RGB c) override;
+    void set(int x, int y, Color333 c) override;
     // Present the framebuffer using the current render mode (screen or LED).
     void show() override;
 
     // Draw a 5x7 glyph scaled by setTextSize() at (x,y).
-    void drawChar(int x, int y, char ch, RGB c) override;
+    void drawChar(int x, int y, char ch, Color333 c) override;
     // Set one pixel (alias for set()).
-    void drawPixel(int x, int y, RGB c) override;
+    void drawPixel(int x, int y, Color333 c) override;
     // Draw a line using Bresenham.
-    void drawLine(int x0, int y0, int x1, int y1, RGB c) override;
+    void drawLine(int x0, int y0, int x1, int y1, Color333 c) override;
     // Draw an axis-aligned rectangle outline.
-    void drawRect(int x, int y, int w, int h, RGB c) override;
+    void drawRect(int x, int y, int w, int h, Color333 c) override;
     // Draw a circle outline using the midpoint algorithm.
-    void drawCircle(int cx, int cy, int r, RGB c) override;
+    void drawCircle(int cx, int cy, int r, Color333 c) override;
     // Fill an axis-aligned rectangle.
-    void fillRect(int x, int y, int w, int h, RGB c) override;
+    void fillRect(int x, int y, int w, int h, Color333 c) override;
     // Fill a circle using horizontal spans.
-    void fillCircle(int cx, int cy, int r, RGB c) override;
+    void fillCircle(int cx, int cy, int r, Color333 c) override;
 
     // Advance the text cursor by one glyph (including 1px spacing).
     void advance() override;
     // Set text cursor position in pixels.
     void setCursor(int x, int y) override;
     // Set text color for print/drawChar.
-    void setTextColor(RGB c) override;
+    void setTextColor(Color333 c) override;
     // Set integer text scale >= 1.
     void setTextSize(int s) override;
     // Print a single character (handles '\n').
@@ -85,13 +92,16 @@ public:
     // Render the entire framebuffer as a blocky 32x32 screen.
     void renderAsScreen();
 
+    // Converts Color333 to Pixel
+    Pixel convertColor(Color333 c);
+
 private:
     // Text state
-    int cx{0};                  // cursor x in pixels
-    int cy{0};                  // cursor y in pixels
-    int lineStartX{0};          // start-of-line x for newline handling
-    int ts{1};                  // text scale
-    RGB tc{rgb(255, 255, 255)}; // text color
+    int cx{0};                      // cursor x in pixels
+    int cy{0};                      // cursor y in pixels
+    int lineStartX{0};              // start-of-line x for newline handling
+    int ts{1};                      // text scale
+    Color333 tc{Color333{7, 7, 7}}; // text color
 
     // SDL state
     SDL_Window *win_{};
@@ -102,19 +112,12 @@ private:
     bool led_mode_{false};
     int scale_{16}; // screen pixels per logical LED
 
-    // 32x32 RGB framebuffer (row-major)
-    struct Pixel
-    {
-        uint8_t r, g, b;
-    };
-    Pixel fb_[32 * 32]{};
-
     // Low-level framebuffer helpers
-    void span(int x0, int x1, int y, RGB c); // clamped horizontal span
-    void drawHLine(int x, int y, int w, RGB c);
-    void drawVLine(int x, int y, int h, RGB c);
-    void plot8(int cx, int cy, int x, int y, RGB c); // 8-way circle symmetry plot
-    void drawPixelScaled(int x, int y, RGB c);       // draw ts x ts block
+    void span(int x0, int x1, int y, Color333 c); // clamped horizontal span
+    void drawHLine(int x, int y, int w, Color333 c);
+    void drawVLine(int x, int y, int h, Color333 c);
+    void plot8(int cx, int cy, int x, int y, Color333 c); // 8-way circle symmetry plot
+    void drawPixelScaled(int x, int y, Color333 c);       // draw ts x ts block
 
     // SDL helpers
     static inline void SetRGBA(SDL_Renderer *r, uint8_t r8, uint8_t g8, uint8_t b8, uint8_t a = 255);
@@ -122,6 +125,14 @@ private:
 
     // Build LEDcell from current scale and chosen styling.
     LEDcell makeLEDcell() const;
+
+    // Converts 0..7 -> 0..255 with rounding
+    uint8_t expand3to8(uint8_t v)
+    {
+        // Adding half the divisor before dividing performs round‑to‑nearest: floor((v × 255 + 7/2) / 7)
+        // Since we can’t add 3.5 in integers, we use +3 as a close, deterministic half
+        return (uint8_t)((v * 255 + 3) / 7);
+    }
 };
 
 #endif // SDL_MATRIX32_H

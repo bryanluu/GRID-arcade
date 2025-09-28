@@ -22,6 +22,11 @@ SDLMatrix32::~SDLMatrix32()
     SDL_Quit();
 }
 
+SDLMatrix32::Pixel SDLMatrix32::convertColor(Color333 c)
+{
+    return Pixel{expand3to8(c.r), expand3to8(c.g), expand3to8(c.b)};
+}
+
 // Initialize SDL window, renderer, and streaming texture. Also compute initial scale_.
 void SDLMatrix32::begin()
 {
@@ -50,11 +55,10 @@ void SDLMatrix32::clear()
         p = {0, 0, 0};
 }
 
-// Set one pixel if within bounds
-void SDLMatrix32::set(int x, int y, RGB c)
+// Set one pixel
+void SDLMatrix32::set(int x, int y, Color333 c)
 {
-    if ((unsigned)x < 32u && (unsigned)y < 32u)
-        fb_[y * 32 + x] = {c.r, c.g, c.b};
+    fb_[y * 32 + x] = {c.r, c.g, c.b};
 }
 
 // Present using current render mode
@@ -69,10 +73,8 @@ void SDLMatrix32::show()
 }
 
 // Draw one 5x7 glyph at (x,y), scaled by ts
-void SDLMatrix32::drawChar(int x, int y, char ch, RGB c)
+void SDLMatrix32::drawChar(int x, int y, char ch, Color333 c)
 {
-    if (ch < 32 || ch > 127)
-        return;
     const uint8_t *glyph = FONT5x7[ch - 32];
     for (int col = 0; col < 5; ++col)
     {
@@ -84,10 +86,10 @@ void SDLMatrix32::drawChar(int x, int y, char ch, RGB c)
 }
 
 // Alias for set()
-void SDLMatrix32::drawPixel(int x, int y, RGB c) { set(x, y, c); }
+void SDLMatrix32::drawPixel(int x, int y, Color333 c) { set(x, y, c); }
 
 // Bresenham line
-void SDLMatrix32::drawLine(int x0, int y0, int x1, int y1, RGB c)
+void SDLMatrix32::drawLine(int x0, int y0, int x1, int y1, Color333 c)
 {
     int dx = std::abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
     int dy = -std::abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
@@ -112,7 +114,7 @@ void SDLMatrix32::drawLine(int x0, int y0, int x1, int y1, RGB c)
 }
 
 // Rectangle outline
-void SDLMatrix32::drawRect(int x, int y, int w, int h, RGB c)
+void SDLMatrix32::drawRect(int x, int y, int w, int h, Color333 c)
 {
     if (w <= 0 || h <= 0)
         return;
@@ -123,7 +125,7 @@ void SDLMatrix32::drawRect(int x, int y, int w, int h, RGB c)
 }
 
 // Midpoint circle outline
-void SDLMatrix32::drawCircle(int cx, int cy, int r, RGB c)
+void SDLMatrix32::drawCircle(int cx, int cy, int r, Color333 c)
 {
     if (r < 0)
         return;
@@ -143,7 +145,7 @@ void SDLMatrix32::drawCircle(int cx, int cy, int r, RGB c)
 }
 
 // Filled rectangle
-void SDLMatrix32::fillRect(int x, int y, int w, int h, RGB c)
+void SDLMatrix32::fillRect(int x, int y, int w, int h, Color333 c)
 {
     int x0 = std::max(0, x), y0 = std::max(0, y);
     int x1 = std::min(31, x + w - 1), y1 = std::min(31, y + h - 1);
@@ -153,7 +155,7 @@ void SDLMatrix32::fillRect(int x, int y, int w, int h, RGB c)
 }
 
 // Filled circle via spans
-void SDLMatrix32::fillCircle(int cx, int cy, int r, RGB c)
+void SDLMatrix32::fillCircle(int cx, int cy, int r, Color333 c)
 {
     if (r < 0)
         return;
@@ -187,7 +189,7 @@ void SDLMatrix32::setCursor(int x, int y)
 }
 
 // Set text color
-void SDLMatrix32::setTextColor(RGB c) { tc = c; }
+void SDLMatrix32::setTextColor(Color333 c) { tc = c; }
 
 // Set integer text scale >= 1
 void SDLMatrix32::setTextSize(int s) { ts = std::max(1, s); }
@@ -284,7 +286,7 @@ void SDLMatrix32::renderAsScreen()
 }
 
 // Draw a clamped horizontal span of pixels in the framebuffer
-void SDLMatrix32::span(int x0, int x1, int y, RGB c)
+void SDLMatrix32::span(int x0, int x1, int y, Color333 c)
 {
     if (y < 0 || y >= 32)
         return;
@@ -295,21 +297,21 @@ void SDLMatrix32::span(int x0, int x1, int y, RGB c)
 }
 
 // Draw a horizontal line in the framebuffer
-void SDLMatrix32::drawHLine(int x, int y, int w, RGB c)
+void SDLMatrix32::drawHLine(int x, int y, int w, Color333 c)
 {
     for (int i = 0; i < w; ++i)
         set(x + i, y, c);
 }
 
 // Draw a vertical line in the framebuffer
-void SDLMatrix32::drawVLine(int x, int y, int h, RGB c)
+void SDLMatrix32::drawVLine(int x, int y, int h, Color333 c)
 {
     for (int i = 0; i < h; ++i)
         set(x, y + i, c);
 }
 
 // Plot using 8-way symmetry for circle algorithms
-void SDLMatrix32::plot8(int cx, int cy, int x, int y, RGB c)
+void SDLMatrix32::plot8(int cx, int cy, int x, int y, Color333 c)
 {
     set(cx + x, cy + y, c);
     set(cx - x, cy + y, c);
@@ -322,7 +324,7 @@ void SDLMatrix32::plot8(int cx, int cy, int x, int y, RGB c)
 }
 
 // Draw a ts x ts block at logical (x,y)
-void SDLMatrix32::drawPixelScaled(int x, int y, RGB c)
+void SDLMatrix32::drawPixelScaled(int x, int y, Color333 c)
 {
     for (int dy = 0; dy < ts; ++dy)
         for (int dx = 0; dx < ts; ++dx)

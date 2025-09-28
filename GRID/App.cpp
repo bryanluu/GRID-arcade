@@ -8,12 +8,12 @@ App::App(Matrix32& matrix) : m(matrix)
 
 void App::setup()
 {
-	m.fillRect(0,0,32,32, rgb(0,128,0));
-	m.drawRect(0,0,32,32, rgb(255,255,0));
-    m.drawPixel(31, 31, rgb(0, 0, 255));
+	m.fillRect(0,0,32,32, Color333{0,4,0});
+	m.drawRect(0,0,32,32, Color333{7,7,0});
+    m.drawPixel(31, 31, Color333{0,0,7});
 	m.setCursor(1,0);
 	m.setTextSize(1);
-	m.setTextColor(rgb(255,255,255));
+	m.setTextColor(Color333{7,7,7});
 	m.println("GRID");
 	m.show();
 }

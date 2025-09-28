@@ -3,11 +3,11 @@
 
 #include <cstdint>
 
-struct RGB
+// Stores RGB pixel color as 0..7 each channel
+struct Color333
 {
     uint8_t r, g, b;
 };
-inline constexpr RGB rgb(uint8_t r, uint8_t g, uint8_t b) { return RGB{r, g, b}; }
 
 class Matrix32
 {
@@ -16,10 +16,10 @@ public:
     virtual void clear() = 0;
 
     // Set a pixel (bounds are NOT checked)
-    virtual void set(int x, int y, RGB c) = 0;
+    virtual void set(int x, int y, Color333 c) = 0;
 
     // Safe setter with bounds check
-    inline void setSafe(int x, int y, RGB c)
+    inline void setSafe(int x, int y, Color333 c)
     {
         if (0 <= x && x < 32 && 0 <= y && y < 32)
             set(x, y, c);
@@ -28,18 +28,18 @@ public:
     virtual void show() = 0;
 
     // Drawing API
-    virtual void drawChar(int x, int y, char ch, RGB c) = 0;
-    virtual void drawPixel(int x, int y, RGB c) = 0;
-    virtual void drawLine(int x0, int y0, int x1, int y1, RGB c) = 0;
-    virtual void drawRect(int x, int y, int w, int h, RGB c) = 0;
-    virtual void drawCircle(int cx, int cy, int r, RGB c) = 0;
-    virtual void fillRect(int x, int y, int w, int h, RGB c) = 0;
-    virtual void fillCircle(int cx, int cy, int r, RGB c) = 0;
+    virtual void drawChar(int x, int y, char ch, Color333 c) = 0;
+    virtual void drawPixel(int x, int y, Color333 c) = 0;
+    virtual void drawLine(int x0, int y0, int x1, int y1, Color333 c) = 0;
+    virtual void drawRect(int x, int y, int w, int h, Color333 c) = 0;
+    virtual void drawCircle(int cx, int cy, int r, Color333 c) = 0;
+    virtual void fillRect(int x, int y, int w, int h, Color333 c) = 0;
+    virtual void fillCircle(int cx, int cy, int r, Color333 c) = 0;
 
     // Text helpers
     virtual void advance() = 0;
     virtual void setCursor(int x, int y) = 0;
-    virtual void setTextColor(RGB c) = 0;
+    virtual void setTextColor(Color333 c) = 0;
     virtual void setTextSize(int s) = 0;
     virtual void print(char ch) = 0;
     virtual void print(const char *s) = 0;
