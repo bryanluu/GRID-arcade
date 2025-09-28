@@ -58,7 +58,7 @@ void SDLMatrix32::clear()
 // Set one pixel
 void SDLMatrix32::set(int x, int y, Color333 c)
 {
-    fb_[y * 32 + x] = {c.r, c.g, c.b};
+    fb_[y * 32 + x] = convertColor(c);
 }
 
 // Present using current render mode
