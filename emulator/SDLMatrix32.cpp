@@ -4,8 +4,10 @@
 #include <cstring>
 #include <stdexcept>
 
+using PixelMap = uint8_t;
+using PixelColumn = uint8_t;
 // 5x7 ASCII font declaration (defined elsewhere)
-extern const uint8_t FONT5x7[96][5];
+extern const PixelMap FONT5x7[96][5];
 
 // ctor: create an empty object; call begin() before rendering
 SDLMatrix32::SDLMatrix32() = default;
@@ -22,9 +24,9 @@ SDLMatrix32::~SDLMatrix32()
     SDL_Quit();
 }
 
-SDLMatrix32::Pixel SDLMatrix32::convertColor(Color333 c)
+Color888 SDLMatrix32::convertColor(Color333 c)
 {
-    return Pixel{expand3to8(c.r), expand3to8(c.g), expand3to8(c.b)};
+    return Color888{expand3to8(c.r), expand3to8(c.g), expand3to8(c.b)};
 }
 
 // Initialize SDL window, renderer, and streaming texture. Also compute initial scale_.
@@ -75,10 +77,10 @@ void SDLMatrix32::show()
 // Draw one 5x7 glyph at (x,y), scaled by ts
 void SDLMatrix32::drawChar(int x, int y, char ch, Color333 c)
 {
-    const uint8_t *glyph = FONT5x7[ch - 32];
+    const PixelMap *glyph = FONT5x7[ch - 32];
     for (int col = 0; col < 5; ++col)
     {
-        uint8_t bits = glyph[col];
+        PixelColumn bits = glyph[col];
         for (int row = 0; row < 7; ++row)
             if (bits & (1u << row))
                 drawPixelScaled(x + col, y + row, c);
@@ -252,7 +254,7 @@ void SDLMatrix32::renderPixelAsLED(int x, int y, const LEDcell &cell)
 
     // Color from framebuffer (dim "off" LED for dome look)
     const auto pix = fb_[y * 32 + x];
-    uint8_t r = pix.r, g = pix.g, b = pix.b;
+    Intensity8 r = pix.r, g = pix.g, b = pix.b;
     if ((r | g | b) == 0)
         r = g = b = 12;
     SetRGBA(ren_, r, g, b, 255);
@@ -341,7 +343,7 @@ void SDLMatrix32::drawPixelScaled(int x, int y, Color333 c)
 }
 
 // Set renderer draw color (RGBA)
-inline void SDLMatrix32::SetRGBA(SDL_Renderer *r, uint8_t r8, uint8_t g8, uint8_t b8, uint8_t a)
+inline void SDLMatrix32::SetRGBA(SDL_Renderer *r, Intensity8 r8, Intensity8 g8, Intensity8 b8, Intensity8 a)
 {
     SDL_SetRenderDrawColor(r, r8, g8, b8, a);
 }

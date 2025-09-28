@@ -36,11 +36,7 @@ public:
     ~SDLMatrix32() override;
 
     // 32x32 RGB framebuffer (row-major)
-    struct Pixel
-    {
-        uint8_t r, g, b; // RGB are each 0..255
-    };
-    Pixel fb_[32 * 32]{};
+    Color888 fb_[32 * 32]{};
 
     // Initialize SDL window, renderer, streaming texture, and compute initial scale.
     void begin() override;
@@ -92,8 +88,8 @@ public:
     // Render the entire framebuffer as a blocky 32x32 screen.
     void renderAsScreen();
 
-    // Converts Color333 to Pixel
-    Pixel convertColor(Color333 c);
+    // Converts Color333 to PixelColor
+    Color888 convertColor(Color333 c);
 
 private:
     // Text state
@@ -120,18 +116,18 @@ private:
     void drawPixelScaled(int x, int y, Color333 c);       // draw ts x ts block
 
     // SDL helpers
-    static inline void SetRGBA(SDL_Renderer *r, uint8_t r8, uint8_t g8, uint8_t b8, uint8_t a = 255);
+    static inline void SetRGBA(SDL_Renderer *r, Intensity3 r8, Intensity3 g8, Intensity8 b8, Intensity8 a = 255);
     static void drawLEDAsCircle(SDL_Renderer *ren, int cx, int cy, int r);
 
     // Build LEDcell from current scale and chosen styling.
     LEDcell makeLEDcell() const;
 
     // Converts 0..7 -> 0..255 with rounding
-    uint8_t expand3to8(uint8_t v)
+    Intensity8 expand3to8(Intensity3 v)
     {
         // Adding half the divisor before dividing performs round‑to‑nearest: floor((v × 255 + 7/2) / 7)
         // Since we can’t add 3.5 in integers, we use +3 as a close, deterministic half
-        return (uint8_t)((v * 255 + 3) / 7);
+        return (Intensity8)((v * 255 + 3) / 7);
     }
 };
 

@@ -3,10 +3,17 @@
 
 #include <cstdint>
 
-// Stores RGB pixel color as 0..7 each channel
+using Intensity3 = uint8_t;
+using Intensity8 = uint8_t;
+
+// Stores RGB pixel color
 struct Color333
 {
-    uint8_t r, g, b;
+    Intensity3 r, g, b; // RGB are each 0..7
+};
+struct Color888
+{
+    Intensity8 r, g, b; // RGB are each 0..255
 };
 
 #define BLACK   (Color333{0,0,0})

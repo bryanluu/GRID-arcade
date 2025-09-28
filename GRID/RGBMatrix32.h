@@ -4,6 +4,8 @@
 #include "Matrix32.h"
 #include <RGBmatrixPanel.h>
 
+using PanelColor = uint16_t;
+
 // Adapter that wraps an existing Adafruit RGBmatrixPanel
 class RGBMatrix32 : public Matrix32
 {
@@ -50,7 +52,7 @@ public:
     }
     
     // Converts a Color333 to the type used by the panel
-    uint16_t convertColor(Color333 c)
+    PanelColor convertColor(Color333 c)
     {
         return m.Color333(c.r, c.g, c.b);
     }
