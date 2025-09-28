@@ -1,6 +1,8 @@
 #ifndef APP_H
 #define APP_H
 
+#include "helpers.h"
+
 #ifdef GRID_EMULATION
     #include "SDLMatrix32.h"
 #else

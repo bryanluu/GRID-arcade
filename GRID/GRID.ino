@@ -158,11 +158,11 @@ void setup()
     Serial.begin(9600);
     randomSeed(analogRead(0));
     pinMode(0, INPUT_PULLUP);
-    smokeTest();
-    // app.setup();
+    // smokeTest();
+    app.setup();
 }
 
 void loop()
 {
-    // app.loop(millis());
+    app.loop(millis());
 }
