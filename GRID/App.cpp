@@ -1,6 +1,9 @@
 #include "App.h"
 #include "ExampleScene.h"
 
+App* App::instance = nullptr;  // define the static
+ExampleScene exampleScene = ExampleScene(); // this needs to be a global
+
 App::App(Matrix32& matrix) : matrix(matrix) 
 {
     if (App::instance) return;
@@ -11,7 +14,6 @@ App::App(Matrix32& matrix) : matrix(matrix)
 
 void App::setup()
 {
-    ExampleScene exampleScene = ExampleScene();
     Scene::currentScene = &exampleScene;
     Scene::currentScene->start();
 }

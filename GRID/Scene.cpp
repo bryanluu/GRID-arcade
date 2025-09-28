@@ -1,6 +1,8 @@
 #include "Scene.h"
 
-Scene *Scene::currentScene = nullptr;
+// Define statics
+Scene* Scene::currentScene = nullptr;
+App*   Scene::app = nullptr;
 
 Scene::Scene() : name{"_"} {}
 
