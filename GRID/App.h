@@ -18,7 +18,10 @@ public:
     
     void setup();
     void loop(uint32_t millis_now);
-private:
+
+    private:
+    // Singleton instance of the app
+    static App * instance;
     bool led_mode_{};
 };
 

@@ -1,6 +1,7 @@
 #ifndef SCENE_H
 #define SCENE_H
 
+#include "App.h"
 #include <string>
 
 /**
@@ -10,8 +11,9 @@
  class Scene
  {
    public:
-     static Scene * s_currentScene; // which scene is running
-     std::string m_name{};
+     static Scene * currentScene; // which scene is running
+     static App * app;
+     std::string name{};
  
      Scene();
  
