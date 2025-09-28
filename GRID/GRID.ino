@@ -36,12 +36,12 @@ RGBmatrixPanel panel(A, B, C, D, CLK, LAT, OE, false);
 RGBMatrix32 matrix(panel);
 App app(matrix);
 
-class ExampleScene : public Scene 
+class ExampleScene : public Scene
 {
-  public:
+public:
     ExampleScene() : Scene()
     {
-      m_name = "Example";
+        m_name = "Example";
     }
 
     void start();
@@ -80,35 +80,35 @@ void ExampleScene::start()
     matrix.clear();
 
     // draw some text!
-    matrix.setCursor(1, 0);    // start at top left, with one pixel of spacing
-    matrix.setTextSize(1);     // size 1 == 8 pixels high
+    matrix.setCursor(1, 0); // start at top left, with one pixel of spacing
+    matrix.setTextSize(1);  // size 1 == 8 pixels high
     // matrix.setTextWrap(false); // Don't wrap at end of line - will do ourselves
 
-    matrix.setTextColor(Color333{7,7,7});
+    matrix.setTextColor(Color333{7, 7, 7});
     matrix.println(" Ada");
     matrix.println("fruit");
 
     // print each letter with a rainbow color
-    matrix.setTextColor(Color333{7,0,0});
+    matrix.setTextColor(Color333{7, 0, 0});
     matrix.print('3');
-    matrix.setTextColor(Color333{7,4,0});
+    matrix.setTextColor(Color333{7, 4, 0});
     matrix.print('2');
-    matrix.setTextColor(Color333{7,7,0});
+    matrix.setTextColor(Color333{7, 7, 0});
     matrix.print('x');
-    matrix.setTextColor(Color333{4,7,0});
+    matrix.setTextColor(Color333{4, 7, 0});
     matrix.print('3');
-    matrix.setTextColor(Color333{0,7,0});
+    matrix.setTextColor(Color333{0, 7, 0});
     matrix.println("2");
 
-    matrix.setTextColor(Color333{0,7,7});
+    matrix.setTextColor(Color333{0, 7, 7});
     matrix.print('*');
-    matrix.setTextColor(Color333{0,4,7});
+    matrix.setTextColor(Color333{0, 4, 7});
     matrix.print('R');
-    matrix.setTextColor(Color333{0,0,7});
+    matrix.setTextColor(Color333{0, 0, 7});
     matrix.print('G');
-    matrix.setTextColor(Color333{4,0,7});
+    matrix.setTextColor(Color333{4, 0, 7});
     matrix.print('B');
-    matrix.setTextColor(Color333{7,0,4});
+    matrix.setTextColor(Color333{7, 0, 4});
     matrix.print('*');
 
     // whew!
@@ -116,20 +116,49 @@ void ExampleScene::start()
 
 void ExampleScene::run()
 {
-  // Do nothing -- image doesn't change
+    // Do nothing -- image doesn't change
 }
 
 ExampleScene exampleScene = ExampleScene();
 
-void setup() 
+void smokeTest()
+{
+    matrix.begin();
+
+    // Solid green
+    matrix.fillRect(0, 0, 32, 32, Color333{0, 7, 0});
+    delay(2000);
+
+    // Alternating rows
+    matrix.clear();
+    for (int y = 0; y < 32; ++y)
+    {
+        for (int x = 0; x < 32; ++x)
+        {
+            matrix.drawPixel(x, y, (y & 1) ? Color333{7, 0, 0} : Color333{0, 7, 0});
+            delay(5);
+        }
+    }
+    delay(2000);
+
+    // Text
+    matrix.clear();
+    matrix.setCursor(1, 0);
+    matrix.setTextSize(1);
+    matrix.setTextColor(Color333{7, 7, 7});
+    matrix.println("GRID");
+}
+
+void setup()
 {
     Serial.begin(9600);
     randomSeed(analogRead(0));
     pinMode(0, INPUT_PULLUP);
-    app.setup();
+    smokeTest();
+    // app.setup();
 }
 
-void loop() 
+void loop()
 {
-   app.loop(millis());
+    // app.loop(millis());
 }
