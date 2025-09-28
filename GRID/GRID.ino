@@ -41,7 +41,7 @@ void smokeTest()
     matrix.begin();
 
     // Solid green
-    matrix.fillRect(0, 0, 32, 32, Color333{0, 7, 0});
+    matrix.fillRect(0, 0, 32, 32, GREEN);
     delay(2000);
 
     // Alternating rows
@@ -50,7 +50,7 @@ void smokeTest()
     {
         for (int x = 0; x < 32; ++x)
         {
-            matrix.drawPixel(x, y, (y & 1) ? Color333{7, 0, 0} : Color333{0, 7, 0});
+            matrix.drawPixel(x, y, (y & 1) ? RED : GREEN);
             delay(5);
         }
     }
@@ -60,7 +60,7 @@ void smokeTest()
     matrix.clear();
     matrix.setCursor(1, 0);
     matrix.setTextSize(1);
-    matrix.setTextColor(Color333{7, 7, 7});
+    matrix.setTextColor(WHITE);
     matrix.println("GRID");
     matrix.setCursor(1, 10);
     matrix.print("<");

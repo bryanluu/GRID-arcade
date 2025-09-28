@@ -1,13 +1,8 @@
 #ifndef MATRIX32_H
 #define MATRIX32_H
 
+#include "Colors.h"
 #include <cstdint>
-
-// Stores RGB pixel color as 0..7 each channel
-struct Color333
-{
-    uint8_t r, g, b;
-};
 
 class Matrix32
 {
