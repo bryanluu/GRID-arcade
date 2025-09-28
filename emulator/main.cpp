@@ -21,7 +21,7 @@ void runEmulator(App& app) {
     double accumulator = 0.0;
 
     app.setup(); // Arduino-style setup once
-    SDLMatrix32& matrix = dynamic_cast<SDLMatrix32&>(app.m);
+    SDLMatrix32& matrix = dynamic_cast<SDLMatrix32&>(app.matrix);
 
     while (running) {
         // 1) Events

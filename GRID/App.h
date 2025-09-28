@@ -12,7 +12,7 @@
 class App
 {
 public:
-    Matrix32& m;
+    Matrix32& matrix;
     
     App(Matrix32& matrix);
     
