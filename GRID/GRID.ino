@@ -41,14 +41,14 @@ void smokeTest()
     matrix.begin();
 
     // Solid green
-    matrix.fillRect(0, 0, 32, 32, GREEN);
+    matrix.fillRect(0, 0, MATRIX_WIDTH, MATRIX_HEIGHT, GREEN);
     delay(2000);
 
     // Alternating rows
     matrix.clear();
-    for (int y = 0; y < 32; ++y)
+    for (int y = 0; y < MATRIX_HEIGHT; ++y)
     {
-        for (int x = 0; x < 32; ++x)
+        for (int x = 0; x < MATRIX_WIDTH; ++x)
         {
             matrix.drawPixel(x, y, (y & 1) ? RED : GREEN);
             delay(5);

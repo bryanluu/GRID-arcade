@@ -40,14 +40,14 @@ void SDLMatrix32::begin()
     ren_ = SDL_CreateRenderer(win_, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (!ren_)
         throw std::runtime_error(SDL_GetError());
-    tex_ = SDL_CreateTexture(ren_, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, 32, 32);
+    tex_ = SDL_CreateTexture(ren_, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, MATRIX_WIDTH, MATRIX_HEIGHT);
     if (!tex_)
         throw std::runtime_error(SDL_GetError());
     clear();
     int w{0};
     int h{0};
     SDL_GetWindowSize(win_, &w, &h);
-    scale_ = std::max(1, std::min(w, h) / 32);
+    scale_ = std::max(1, std::min(w, h) / MATRIX_WIDTH);
 }
 
 // Zero the framebuffer to black
@@ -60,7 +60,7 @@ void SDLMatrix32::clear()
 // Set one pixel
 void SDLMatrix32::set(int x, int y, Color333 c)
 {
-    fb_[y * 32 + x] = convertColor(c);
+    fb_[y * MATRIX_HEIGHT + x] = convertColor(c);
 }
 
 // Present using current render mode
@@ -77,7 +77,7 @@ void SDLMatrix32::show()
 // Draw one 5x7 glyph at (x,y), scaled by ts
 void SDLMatrix32::drawChar(int x, int y, char ch, Color333 c)
 {
-    const PixelMap *glyph = FONT5x7[ch - 32];
+    const PixelMap *glyph = FONT5x7[ch - ASCII_START];
     for (int col = 0; col < 5; ++col)
     {
         PixelColumn bits = glyph[col];
@@ -157,7 +157,7 @@ void SDLMatrix32::drawCircle(int cx, int cy, int r, Color333 c)
 void SDLMatrix32::fillRect(int x, int y, int w, int h, Color333 c)
 {
     int x0 = std::max(0, x), y0 = std::max(0, y);
-    int x1 = std::min(31, x + w - 1), y1 = std::min(31, y + h - 1);
+    int x1 = std::min(MATRIX_WIDTH - 1, x + w - 1), y1 = std::min(MATRIX_HEIGHT - 1, y + h - 1);
     for (int yy = y0; yy <= y1; ++yy)
         for (int xx = x0; xx <= x1; ++xx)
             set(xx, yy, c);
@@ -214,7 +214,7 @@ void SDLMatrix32::print(char ch)
         cy += ts * 8;
         return;
     }
-    if (ch < 32)
+    if (ch < ASCII_START)
     {
         advance();
         return;
@@ -253,7 +253,7 @@ void SDLMatrix32::renderPixelAsLED(int x, int y, const LEDcell &cell)
     const int cy_led = sy + cell.margin + cell.inner / 2;
 
     // Color from framebuffer (dim "off" LED for dome look)
-    const auto pix = fb_[y * 32 + x];
+    const auto pix = fb_[y * MATRIX_HEIGHT + x];
     Intensity8 r = pix.r, g = pix.g, b = pix.b;
     if ((r | g | b) == 0)
         r = g = b = 12;
@@ -269,8 +269,8 @@ void SDLMatrix32::renderAsLEDMatrix()
     SDL_RenderClear(ren_);
     SetRGBA(ren_, 0, 0, 0, 255);
     const LEDcell cell = makeLEDcell();
-    for (int y = 0; y < 32; ++y)
-        for (int x = 0; x < 32; ++x)
+    for (int y = 0; y < MATRIX_HEIGHT; ++y)
+        for (int x = 0; x < MATRIX_WIDTH; ++x)
             renderPixelAsLED(x, y, cell);
     SDL_RenderPresent(ren_);
 }
@@ -283,7 +283,7 @@ void SDLMatrix32::renderAsScreen()
     if (SDL_LockTexture(tex_, nullptr, &pixels, &pitch) == 0)
     {
         auto *dst = static_cast<uint8_t *>(pixels);
-        const int width = 32, height = 32, bpp = 3;
+        const int width = MATRIX_WIDTH, height = MATRIX_HEIGHT, bpp = 3;
         for (int y = 0; y < height; ++y)
         {
             const uint8_t *src_row = reinterpret_cast<const uint8_t *>(&fb_[y * width]);
@@ -299,10 +299,10 @@ void SDLMatrix32::renderAsScreen()
 // Draw a clamped horizontal span of pixels in the framebuffer
 void SDLMatrix32::span(int x0, int x1, int y, Color333 c)
 {
-    if (y < 0 || y >= 32)
+    if (y < 0 || y >= MATRIX_HEIGHT)
         return;
     x0 = std::max(0, x0);
-    x1 = std::min(31, x1);
+    x1 = std::min(MATRIX_WIDTH - 1, x1);
     for (int x = x0; x <= x1; ++x)
         set(x, y, c);
 }

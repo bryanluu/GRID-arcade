@@ -11,16 +11,16 @@ void ExampleScene::start()
     delay(500);
 
     // fix the screen with green
-    m.fillRect(0, 0, 32, 32, GREEN);
+    m.fillRect(0, 0, MATRIX_WIDTH, MATRIX_HEIGHT, GREEN);
     delay(500);
 
     // draw a box in yellow
-    m.drawRect(0, 0, 32, 32, YELLOW);
+    m.drawRect(0, 0, MATRIX_WIDTH, MATRIX_HEIGHT, YELLOW);
     delay(500);
 
     // draw an 'X' in red
-    m.drawLine(0, 0, 31, 31, RED);
-    m.drawLine(31, 0, 0, 31, RED);
+    m.drawLine(0, 0, MATRIX_WIDTH - 1, MATRIX_HEIGHT - 1, RED);
+    m.drawLine(MATRIX_WIDTH - 1, 0, 0, MATRIX_HEIGHT - 1, RED);
     delay(500);
 
     // draw a blue circle

@@ -8,6 +8,8 @@ struct SDL_Window;
 struct SDL_Renderer;
 struct SDL_Texture;
 
+#define ASCII_START 32
+
 // Parameters that control how each logical LED cell is rendered on screen.
 // - scale:  number of screen pixels per 1 matrix pixel
 // - margin: black bezel around the LED inside the cell (in screen pixels)
@@ -36,7 +38,7 @@ public:
     ~SDLMatrix32() override;
 
     // 32x32 RGB framebuffer (row-major)
-    Color888 fb_[32 * 32]{};
+    Color888 fb_[MATRIX_WIDTH * MATRIX_HEIGHT]{};
 
     // Initialize SDL window, renderer, streaming texture, and compute initial scale.
     void begin() override;

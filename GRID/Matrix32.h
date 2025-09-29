@@ -4,6 +4,10 @@
 #include "Colors.h"
 #include <cstdint>
 
+#define MATRIX_SIZE     32
+#define MATRIX_WIDTH    32
+#define MATRIX_HEIGHT   32
+
 class Matrix32
 {
 public:
@@ -16,7 +20,7 @@ public:
     // Safe setter with bounds check
     inline void setSafe(int x, int y, Color333 c)
     {
-        if (0 <= x && x < 32 && 0 <= y && y < 32)
+        if (0 <= x && x < MATRIX_WIDTH && 0 <= y && y < MATRIX_HEIGHT)
             set(x, y, c);
     }
 
