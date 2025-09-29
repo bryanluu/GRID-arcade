@@ -90,7 +90,7 @@ void SDLMatrix32::drawChar(int x, int y, char ch, Color333 c)
 
 // Alias for set()
 void SDLMatrix32::drawPixel(int x, int y, Color333 c) { 
-    set(x, y, c);
+    setSafe(x, y, c);
     show();
 }
 

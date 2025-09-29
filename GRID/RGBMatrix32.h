@@ -24,7 +24,7 @@ public:
 
     void drawPixel(int x, int y, Color333 c) override
     {
-        setSafe(x, y, c);
+        set(x, y, c);
     }
     void drawLine(int x0, int y0, int x1, int y1, Color333 c) override { m.drawLine(x0, y0, x1, y1, convertColor(c)); }
     void drawRect(int x, int y, int w, int h, Color333 c) override { m.drawRect(x, y, w, h, convertColor(c)); }
