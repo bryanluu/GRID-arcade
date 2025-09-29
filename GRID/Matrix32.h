@@ -8,6 +8,8 @@
 #define MATRIX_WIDTH    32
 #define MATRIX_HEIGHT   32
 
+using MatrixPosition = uint8_t;
+
 class Matrix32
 {
 public:
