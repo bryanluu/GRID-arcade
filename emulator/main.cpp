@@ -1,6 +1,7 @@
 #include "App.h"
 #include "SDLMatrix32.h"
 #include <SDL.h>
+#include <algorithm>
 #include <cstdint>
 
 // match GRID hardware
