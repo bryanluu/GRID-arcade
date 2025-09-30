@@ -11,5 +11,9 @@
 // Mimic the Arduino's delay function
 inline void delay(uint32_t ms) { SDL_Delay(ms); }
 
+#else
+
+#include <Arduino.h>
+
 #endif // GRID_EMULATION
 #endif // HELPERS_H
