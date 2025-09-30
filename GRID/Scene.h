@@ -1,33 +1,19 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include "App.h"
-#include <string>
+#include "Matrix32.h"
 
 /**
- * @brief Describes a scene of the game
- * 
+ * @brief Describes a scene of the game with explicit lifecycle
+ *
  */
- class Scene
- {
-   public:
-     static Scene * currentScene; // which scene is running
-     static App * app;
-     std::string name{};
- 
-     Scene();
- 
-     /**
-      * @brief Any initializing actions go here
-      * 
-      */
-     virtual void start();
- 
-     /**
-      * @brief Core code during scene goes here
-      * 
-      */
-     virtual void run();
- };
+struct Scene
+{
+  virtual ~Scene() = default;
+  // Called once when the scene is switched to
+  virtual void setup(Matrix32& gfx) = 0;
+  // dt is in milliseconds
+  virtual void loop(Matrix32& gfx, uint32_t dt) = 0;
+};
 
 #endif
