@@ -2,7 +2,7 @@
 #include "Colors.h"
 #include "helpers.h" // for delay()
 
-void ExampleScene::setup(Matrix32& gfx)
+void ExampleScene::setup(Matrix32 &gfx)
 {
     // draw a pixel in solid white
     gfx.drawPixel(0, 0, WHITE);
@@ -66,7 +66,7 @@ void ExampleScene::setup(Matrix32& gfx)
     // whew!
 }
 
-void ExampleScene::loop(Matrix32& gfx, uint32_t dt)
+void ExampleScene::loop(Matrix32 &gfx, uint32_t dt)
 {
     // Do nothing -- image doesn't change
 }

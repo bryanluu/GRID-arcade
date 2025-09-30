@@ -11,9 +11,9 @@ struct Scene
 {
   virtual ~Scene() = default;
   // Called once when the scene is switched to
-  virtual void setup(Matrix32& gfx) = 0;
+  virtual void setup(Matrix32 &gfx) = 0;
   // dt is in milliseconds
-  virtual void loop(Matrix32& gfx, uint32_t dt) = 0;
+  virtual void loop(Matrix32 &gfx, uint32_t dt) = 0;
 };
 
 #endif
