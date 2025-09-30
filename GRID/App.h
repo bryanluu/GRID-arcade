@@ -28,7 +28,11 @@ public:
     void setScene(Args &&...args)
     {
         current = std::unique_ptr<Scene>(std::make_unique<SceneT>(std::forward<Args>(args)...));
+        
+        // Immediate only during setup (works on SDLMatrix32, no-op on Arduino)
+        gfx.setImmediate(true);
         current->setup(gfx);
+        gfx.setImmediate(false);
     }
 
     // Call the current scene's loop(gfx, dt).

@@ -26,7 +26,11 @@ public:
             set(x, y, c);
     }
 
+    // Immediate mode control: if true, show() is called after each draw operation.
+    // Does nothing on Arduino
+    virtual void setImmediate(bool on) { immediate = on; }
     virtual void show() = 0;
+
 
     // Drawing API
     virtual void drawChar(int x, int y, char ch, Color333 c) = 0;
@@ -47,6 +51,8 @@ public:
     virtual void println(const char *s) = 0;
 
     virtual ~Matrix32() = default;
+protected:
+    bool immediate{false}; // if true, show() after each draw operation
 };
 
 #endif // MATRIX32_H
