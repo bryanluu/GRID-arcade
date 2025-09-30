@@ -87,13 +87,11 @@ void SDLMatrix32::drawChar(int x, int y, char ch, Color333 c)
             if (bits & (1u << row))
                 drawPixelScaled(x + col, y + row, c);
     }
-    show();
 }
 
 // Alias for set()
 void SDLMatrix32::drawPixel(int x, int y, Color333 c) { 
     setSafe(x, y, c);
-    show();
 }
 
 // Bresenham line
@@ -119,7 +117,6 @@ void SDLMatrix32::drawLine(int x0, int y0, int x1, int y1, Color333 c)
             y0 += sy;
         }
     }
-    show();
 }
 
 // Rectangle outline
@@ -131,7 +128,6 @@ void SDLMatrix32::drawRect(int x, int y, int w, int h, Color333 c)
     drawHLine(x, y + h - 1, w, c);
     drawVLine(x, y, h, c);
     drawVLine(x + w - 1, y, h, c);
-    show();
 }
 
 // Midpoint circle outline
@@ -152,7 +148,6 @@ void SDLMatrix32::drawCircle(int cx, int cy, int r, Color333 c)
             err += 2 * (y - x) + 1;
         }
     }
-    show();
 }
 
 // Filled rectangle
@@ -163,7 +158,6 @@ void SDLMatrix32::fillRect(int x, int y, int w, int h, Color333 c)
     for (int yy = y0; yy <= y1; ++yy)
         for (int xx = x0; xx <= x1; ++xx)
             set(xx, yy, c);
-    show();
 }
 
 // Filled circle via spans
@@ -187,7 +181,6 @@ void SDLMatrix32::fillCircle(int cx, int cy, int r, Color333 c)
             err += 2 * (y - x) + 1;
         }
     }
-    show();
 }
 
 // Move cursor by 1 glyph (5px + 1px spacing) at current scale

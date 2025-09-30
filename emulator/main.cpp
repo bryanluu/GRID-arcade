@@ -12,7 +12,7 @@ static constexpr double DT_SEC = 1.0 / TICK_HZ;
 
 static millis_t millis_now(millis_t start) { return SDL_GetTicks() - start; }
 
-void runEmulator()
+void run_emulator()
 {
     using u64 = unsigned long long;
     SDLMatrix32 gfx{};
@@ -81,6 +81,6 @@ void runEmulator()
 
 int main()
 {
-    runEmulator();
+    run_emulator();
     return 0;
 }
