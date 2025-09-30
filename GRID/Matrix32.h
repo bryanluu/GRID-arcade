@@ -27,7 +27,6 @@ public:
     }
 
     // Immediate mode control: if true, show() is called after each draw operation.
-    // Does nothing on Arduino
     virtual void setImmediate(bool on) { immediate = on; }
     virtual void show() = 0;
 

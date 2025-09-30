@@ -18,7 +18,7 @@ public:
     void begin() override { m.begin(); }
     void clear() override { m.fillScreen(0); }
     void set(int x, int y, Color333 c) override { m.drawPixel(x, y, convertColor(c)); }
-    void show() override { /* hardware panel draws immediately; no-op */ }
+    void show() override { m.updateDisplay(); m.swapBuffers(true); }
     
     // Drawing API (1:1 to Adafruit panel)
 

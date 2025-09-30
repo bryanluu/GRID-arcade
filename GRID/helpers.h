@@ -4,6 +4,9 @@
 // Math
 #define BOUND(l, x, h) ((x) > (h) ? (h) : ((x) < (l) ? (l) : (x))) // return x bounded between l and h
 
+// Type Aliases
+using millis_t = uint32_t; // convenience alias for time in milliseconds
+
 // Helpers for use by the emulation
 #ifdef GRID_EMULATION
 
@@ -12,7 +15,6 @@
 
 
 using byte = uint8_t; // Mimic the byte alias in Arduino-land
-using millis_t = uint32_t; // convenience alias for time in milliseconds
 
 // Provide a random int between 0..range
 inline int random(int range) { return static_cast<float>(rand()) * range / RAND_MAX; }

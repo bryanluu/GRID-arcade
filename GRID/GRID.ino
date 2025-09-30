@@ -1,4 +1,5 @@
 #include "App.h"
+#include "BoidsScene.h"
 #include "ExampleScene.h"
 #include "RGBMatrix32.h"
 #include <RGBmatrixPanel.h>
@@ -20,6 +21,7 @@
 #define B   A1
 #define C   A2
 #define D   A3
+#define DB  true
 
 void smokeTest(Matrix32 &gfx)
 {
@@ -67,7 +69,7 @@ void setup()
 
     gfx.begin();
     // smokeTest();
-    app.setScene<ExampleScene>();
+    app.setScene<BoidsScene>();
     prev_millis = millis();
 }
 
