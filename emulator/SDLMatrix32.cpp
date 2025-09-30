@@ -48,6 +48,8 @@ void SDLMatrix32::begin()
     int h{0};
     SDL_GetWindowSize(win_, &w, &h);
     scale_ = std::max(1, std::min(w, h) / MATRIX_WIDTH);
+    // Pump once so macOS shows the window promptly
+    SDL_PumpEvents();
 }
 
 // Zero the framebuffer to black

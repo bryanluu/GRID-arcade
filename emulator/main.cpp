@@ -1,16 +1,24 @@
 #include "App.h"
 #include "SDLMatrix32.h"
+#include "ExampleScene.h"
 #include <SDL.h>
+#include <algorithm>
 #include <cstdint>
 
 // match GRID hardware
-static constexpr int    TICK_HZ = 60;
-static constexpr double DT_SEC  = 1.0 / TICK_HZ;
+static constexpr int TICK_HZ = 60;
+static constexpr double DT_SEC = 1.0 / TICK_HZ;
 
-static uint32_t millis_now(uint32_t start) { return SDL_GetTicks() - start; }
+static millis_t millis_now(millis_t start) { return SDL_GetTicks() - start; }
 
-void runEmulator(App& app) {
+void runEmulator()
+{
     using u64 = unsigned long long;
+    SDLMatrix32 gfx{};
+    App app{gfx};
+    gfx.begin();
+
+    app.setScene<ExampleScene>();
 
     // We pace manually; disable vsync so Present doesn't block unpredictably
     SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0");
@@ -19,22 +27,21 @@ void runEmulator(App& app) {
     const u64 freq = SDL_GetPerformanceFrequency();
     u64 now = SDL_GetPerformanceCounter();
     double accumulator = 0.0;
-
-    app.setup(); // Arduino-style setup once
-    SDLMatrix32& matrix = dynamic_cast<SDLMatrix32&>(app.matrix);
-
-    while (running) {
+    millis_t prev_ms = SDL_GetTicks();
+    while (running)
+    {
         // 1) Events
         SDL_Event e;
-        while (SDL_PollEvent(&e)) {
+        while (SDL_PollEvent(&e))
+        {
             if (e.type == SDL_QUIT)
                 running = false;
             if (e.type == SDL_KEYDOWN)
             {
                 if (e.key.keysym.sym == SDLK_ESCAPE || e.key.keysym.sym == SDLK_q)
                     running = false;
-                else if (e.key.keysym.sym == SDLK_l) 
-                    matrix.setLEDMode(!matrix.ledMode());
+                else if (e.key.keysym.sym == SDLK_l)
+                    gfx.setLEDMode(!gfx.ledMode());
             }
         }
 
@@ -50,18 +57,21 @@ void runEmulator(App& app) {
         // 3) Fixed updates at TICK_HZ
         // Optional: cap catch-up iterations to keep UI responsive
         int maxSteps = 5;
-        while (accumulator >= DT_SEC && maxSteps-- > 0) {
-            uint32_t millis_now = (uint32_t)(newNow * 1000.0 / double(freq));
-            app.loop(millis_now);
+        while (accumulator >= DT_SEC && maxSteps-- > 0)
+        {
+            millis_t now_ms = (millis_t)(newNow * 1000.0 / double(freq));
+            app.loopOnce(now_ms - prev_ms);
+            prev_ms = now_ms;
             accumulator -= DT_SEC;
         }
 
         // 4) Render
-        matrix.show();
+        gfx.show();
 
         // 5) Sleep a bit to target cadence (tiny margin to avoid oversleep)
         double frameLeft = DT_SEC - accumulator;
-        if (frameLeft > 0) {
+        if (frameLeft > 0)
+        {
             double sleepSec = std::max(0.0, frameLeft - 0.001);
             SDL_Delay((Uint32)(sleepSec * 1000.0));
         }
@@ -70,8 +80,6 @@ void runEmulator(App& app) {
 
 int main()
 {
-    SDLMatrix32 m;   // your concrete Matrix32 implementation
-    App app{m};
-    runEmulator(app);
+    runEmulator();
     return 0;
 }

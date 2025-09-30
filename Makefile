@@ -6,7 +6,7 @@
 #   make run-debug
 #   make clean
 
-APP   := grid
+APP   := grid-emulation
 BUILD := build
 
 CXX      := g++

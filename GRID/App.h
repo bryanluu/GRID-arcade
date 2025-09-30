@@ -2,27 +2,41 @@
 #define APP_H
 
 #include "helpers.h"
+#include "Scene.h"
+#include <memory>
 
 #ifdef GRID_EMULATION
-    #include "SDLMatrix32.h"
+#include "SDLMatrix32.h"
 #else
-    #include "RGBMatrix32.h"
+#include "RGBMatrix32.h"
 #endif
 
+// App manages the current scene; only holds Matrix32&
 class App
 {
-public:
-    Matrix32& matrix;
-    
-    App(Matrix32& matrix);
-    
-    void setup();
-    void loop(uint32_t millis_now);
+    Matrix32 &gfx;
+    std::unique_ptr<Scene> current;
 
-    private:
-    // Singleton instance of the app
-    static App * instance;
-    bool led_mode_{};
+public:
+    explicit App(Matrix32 &g) : gfx(g) {}
+
+    // Replace the current scene with a newly constructed SceneT.
+    // - Destroys the old scene, creates SceneT(args...), then calls setup(gfx).
+    // - Perfect-forwards args to SceneT's ctor (no unnecessary copies).
+    // - Fails to compile if SceneT is not compatible with Scene or ctor args.
+    template <typename SceneT, typename... Args>
+    void setScene(Args &&...args)
+    {
+        current = std::unique_ptr<Scene>(std::make_unique<SceneT>(std::forward<Args>(args)...));
+        current->setup(gfx);
+    }
+
+    // Call the current scene's loop(gfx, dt).
+    // dt is in milliseconds.
+    void loopOnce(millis_t dt)
+    {
+        current->loop(gfx, dt);
+    }
 };
 
 #endif

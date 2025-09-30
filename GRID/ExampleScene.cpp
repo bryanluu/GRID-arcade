@@ -1,74 +1,72 @@
 #include "ExampleScene.h"
 #include "Colors.h"
+#include "helpers.h" // for delay()
 
-void ExampleScene::start()
+void ExampleScene::setup(Matrix32 &gfx)
 {
-    Matrix32& m = app->matrix;
-    m.begin();
-
     // draw a pixel in solid white
-    m.drawPixel(0, 0, WHITE);
+    gfx.drawPixel(0, 0, WHITE);
     delay(500);
 
     // fix the screen with green
-    m.fillRect(0, 0, MATRIX_WIDTH, MATRIX_HEIGHT, GREEN);
+    gfx.fillRect(0, 0, MATRIX_WIDTH, MATRIX_HEIGHT, GREEN);
     delay(500);
 
     // draw a box in yellow
-    m.drawRect(0, 0, MATRIX_WIDTH, MATRIX_HEIGHT, YELLOW);
+    gfx.drawRect(0, 0, MATRIX_WIDTH, MATRIX_HEIGHT, YELLOW);
     delay(500);
 
     // draw an 'X' in red
-    m.drawLine(0, 0, MATRIX_WIDTH - 1, MATRIX_HEIGHT - 1, RED);
-    m.drawLine(MATRIX_WIDTH - 1, 0, 0, MATRIX_HEIGHT - 1, RED);
+    gfx.drawLine(0, 0, MATRIX_WIDTH - 1, MATRIX_HEIGHT - 1, RED);
+    gfx.drawLine(MATRIX_WIDTH - 1, 0, 0, MATRIX_HEIGHT - 1, RED);
     delay(500);
 
     // draw a blue circle
-    m.drawCircle(10, 10, 10, BLUE);
+    gfx.drawCircle(10, 10, 10, BLUE);
     delay(500);
 
     // fill a violet circle
-    m.fillCircle(21, 21, 10, VIOLET);
+    gfx.fillCircle(21, 21, 10, VIOLET);
     delay(500);
 
-    m.clear();
+    gfx.clear();
 
     // draw some text!
-    m.setCursor(1, 0); // start at top left, with one pixel of spacing
-    m.setTextSize(1);  // size 1 == 8 pixels high
-    // m.setTextWrap(false); // Don't wrap at end of line - will do ourselves
+    gfx.setCursor(1, 0); // start at top left, with one pixel of spacing
+    gfx.setTextSize(1);  // size 1 == 8 pixels high
+    // gfx.setTextWrap(false); // Don't wrap at end of line - will do ourselves
 
-    m.setTextColor(WHITE);
-    m.println(" Ada");
-    m.println("fruit");
+    gfx.setTextColor(WHITE);
+    gfx.println(" Ada");
+    gfx.println("fruit");
 
     // print each letter with a rainbow color
-    m.setTextColor(RED);
-    m.print('3');
-    m.setTextColor(ORANGE);
-    m.print('2');
-    m.setTextColor(YELLOW);
-    m.print('x');
-    m.setTextColor(LIME);
-    m.print('3');
-    m.setTextColor(GREEN);
-    m.println("2");
+    gfx.setTextColor(RED);
+    gfx.print('3');
+    gfx.setTextColor(ORANGE);
+    gfx.print('2');
+    gfx.setTextColor(YELLOW);
+    gfx.print('x');
+    gfx.setTextColor(LIME);
+    gfx.print('3');
+    gfx.setTextColor(GREEN);
+    gfx.println("2");
 
-    m.setTextColor(CYAN);
-    m.print('*');
-    m.setTextColor(AZURE);
-    m.print('R');
-    m.setTextColor(BLUE);
-    m.print('G');
-    m.setTextColor(PURPLE);
-    m.print('B');
-    m.setTextColor(PINK);
-    m.print('*');
+    gfx.setTextColor(CYAN);
+    gfx.print('*');
+    gfx.setTextColor(AZURE);
+    gfx.print('R');
+    gfx.setTextColor(BLUE);
+    gfx.print('G');
+    gfx.setTextColor(PURPLE);
+    gfx.print('B');
+    gfx.setTextColor(PINK);
+    gfx.print('*');
 
     // whew!
 }
 
-void ExampleScene::run()
+void ExampleScene::loop(Matrix32 &gfx, millis_t dt)
 {
     // Do nothing -- image doesn't change
 }

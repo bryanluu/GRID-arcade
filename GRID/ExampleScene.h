@@ -2,17 +2,13 @@
 #define EXAMPLE_SCENE_H
 
 #include "Scene.h"
+#include "helpers.h"
 
-class ExampleScene : public Scene
+class ExampleScene final : public Scene
 {
 public:
-    ExampleScene() : Scene()
-    {
-        name = "Example";
-    }
-
-    void start();
-    void run();
+    void setup(Matrix32 &gfx) override;
+    void loop(Matrix32 &gfx, millis_t dt) override;
 };
 
 #endif

@@ -1,16 +1,5 @@
-// Using the
-// testshapes demo for Adafruit RGBmatrixPanel library.
-// Demonstrates the drawing abilities of the RGBmatrixPanel library.
-// For 32x32 RGB LED matrix:
-// http://www.adafruit.com/products/607
-// 32x32 MATRICES DO NOT WORK WITH ARDUINO UNO or METRO 328.
-
-// Written by Limor Fried/Ladyada & Phil Burgess/PaintYourDragon
-// for Adafruit Industries.
-// BSD license, all text above must be included in any redistribution.
-
 #include "App.h"
-#include "Scene.h"
+#include "ExampleScene.h"
 #include "RGBMatrix32.h"
 #include <RGBmatrixPanel.h>
 
@@ -32,52 +21,59 @@
 #define C   A2
 #define D   A3
 
-RGBmatrixPanel panel(A, B, C, D, CLK, LAT, OE, false);
-RGBMatrix32 matrix(panel);
-App app(matrix);
-
-void smokeTest()
+void smokeTest(Matrix32 &gfx)
 {
-    matrix.begin();
+    gfx.begin();
 
     // Solid green
-    matrix.fillRect(0, 0, MATRIX_WIDTH, MATRIX_HEIGHT, GREEN);
+    gfx.fillRect(0, 0, MATRIX_WIDTH, MATRIX_HEIGHT, GREEN);
     delay(2000);
 
     // Alternating rows
-    matrix.clear();
+    gfx.clear();
     for (int y = 0; y < MATRIX_HEIGHT; ++y)
     {
         for (int x = 0; x < MATRIX_WIDTH; ++x)
         {
-            matrix.drawPixel(x, y, (y & 1) ? RED : GREEN);
+            gfx.drawPixel(x, y, (y & 1) ? RED : GREEN);
             delay(5);
         }
     }
     delay(2000);
 
     // Text
-    matrix.clear();
-    matrix.setCursor(1, 0);
-    matrix.setTextSize(1);
-    matrix.setTextColor(WHITE);
-    matrix.println("GRID");
-    matrix.setCursor(1, 10);
-    matrix.print("<");
-    matrix.advance();
-    matrix.print(">");
+    gfx.clear();
+    gfx.setCursor(1, 0);
+    gfx.setTextSize(1);
+    gfx.setTextColor(WHITE);
+    gfx.println("GRID");
+    gfx.setCursor(1, 10);
+    gfx.print("<");
+    gfx.advance();
+    gfx.print(">");
 }
+
+static RGBmatrixPanel panel(A, B, C, D, CLK, LAT, OE, false);
+static RGBMatrix32 gfx{panel};
+static App app{gfx};
+static unsigned long prev_millis{};
+static unsigned long now_millis{};
 
 void setup()
 {
     Serial.begin(9600);
     randomSeed(analogRead(0));
     pinMode(0, INPUT_PULLUP);
+
+    gfx.begin();
     // smokeTest();
-    app.setup();
+    app.setScene<ExampleScene>();
+    prev_millis = millis();
 }
 
 void loop()
 {
-    app.loop(millis());
+    now_millis = millis();
+    app.loopOnce(now_millis - prev_millis);
+    prev_millis = now_millis;
 }
