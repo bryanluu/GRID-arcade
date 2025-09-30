@@ -34,7 +34,7 @@ void ExampleScene::setup(Matrix32 &gfx)
     // draw some text!
     gfx.setCursor(1, 0); // start at top left, with one pixel of spacing
     gfx.setTextSize(1);  // size 1 == 8 pixels high
-    // m.setTextWrap(false); // Don't wrap at end of line - will do ourselves
+    // gfx.setTextWrap(false); // Don't wrap at end of line - will do ourselves
 
     gfx.setTextColor(WHITE);
     gfx.println(" Ada");
@@ -66,7 +66,7 @@ void ExampleScene::setup(Matrix32 &gfx)
     // whew!
 }
 
-void ExampleScene::loop(Matrix32 &gfx, uint32_t dt)
+void ExampleScene::loop(Matrix32 &gfx, millis_t dt)
 {
     // Do nothing -- image doesn't change
 }

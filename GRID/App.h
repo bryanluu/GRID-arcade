@@ -33,7 +33,7 @@ public:
 
     // Call the current scene's loop(gfx, dt).
     // dt is in milliseconds.
-    void loopOnce(uint32_t dt)
+    void loopOnce(millis_t dt)
     {
         current->loop(gfx, dt);
     }

@@ -9,7 +9,7 @@
 static constexpr int TICK_HZ = 60;
 static constexpr double DT_SEC = 1.0 / TICK_HZ;
 
-static uint32_t millis_now(uint32_t start) { return SDL_GetTicks() - start; }
+static millis_t millis_now(millis_t start) { return SDL_GetTicks() - start; }
 
 void runEmulator()
 {
@@ -27,7 +27,7 @@ void runEmulator()
     const u64 freq = SDL_GetPerformanceFrequency();
     u64 now = SDL_GetPerformanceCounter();
     double accumulator = 0.0;
-    uint32_t prev_ms = SDL_GetTicks();
+    millis_t prev_ms = SDL_GetTicks();
     while (running)
     {
         // 1) Events
@@ -59,7 +59,7 @@ void runEmulator()
         int maxSteps = 5;
         while (accumulator >= DT_SEC && maxSteps-- > 0)
         {
-            uint32_t now_ms = (uint32_t)(newNow * 1000.0 / double(freq));
+            millis_t now_ms = (millis_t)(newNow * 1000.0 / double(freq));
             app.loopOnce(now_ms - prev_ms);
             prev_ms = now_ms;
             accumulator -= DT_SEC;

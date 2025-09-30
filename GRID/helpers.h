@@ -8,8 +8,10 @@
 #include <SDL.h>
 #include <cstdint>
 
+using millis_t = uint32_t;
+
 // Mimic the Arduino's delay function
-inline void delay(uint32_t ms) { SDL_Delay(ms); }
+inline void delay(millis_t ms) { SDL_Delay(ms); }
 
 #else
 
