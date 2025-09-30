@@ -129,7 +129,7 @@ void BoidsScene::updateBoid(Boid* boid, Boid* flock)
 /*
     Draw an individual Boid
 */
-void BoidsScene::drawBoid(Boid* boid)
+void BoidsScene::drawBoid(Matrix32 &gfx, Boid* boid)
 {
     MatrixPosition x = BOUND(0, boid->position.x, MATRIX_WIDTH);
     MatrixPosition y = BOUND(0, boid->position.y, MATRIX_HEIGHT);
@@ -150,10 +150,10 @@ void BoidsScene::drawBoid(Boid* boid)
         color = SLOW_COLOR;
     }
     
-    Scene::app->matrix.drawPixel(x, y, color);
+    gfx.drawPixel(x, y, color);
 }
 
-void BoidsScene::start()
+void BoidsScene::setup(Matrix32 &gfx)
 {
     // position boids
     for (int i = 0; i < N_BOIDS; i++)
@@ -162,16 +162,16 @@ void BoidsScene::start()
     }
 }
 
-void BoidsScene::run()
+void BoidsScene::loop(Matrix32 &gfx, millis_t dt)
 {
     // Clear background
-    Scene::app->matrix.clear();
+    gfx.clear();
 
     // update flock
     for (int i = 0; i < N_BOIDS; i++)
     {
         Boid* boid = &flock[i];
         updateBoid(boid, flock);
-        drawBoid(boid);
+        drawBoid(gfx, boid);
     }
 }

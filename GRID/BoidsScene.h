@@ -34,9 +34,8 @@ struct Boid
   unsigned int neighbors;
 };
 
-class BoidsScene : public Scene
+class BoidsScene final : public Scene
 {
-  private:
     // creates flock
     Boid flock[N_BOIDS];
 
@@ -48,16 +47,11 @@ class BoidsScene : public Scene
     void avoidOthers(Boid* boid);
     void flyWithFlock(Boid* boid, Boid* flock);
     void updateBoid(Boid* boid, Boid* flock);
-    void drawBoid(Boid* boid);
+    void drawBoid(Matrix32 &gfx, Boid* boid);
 
   public:
-    BoidsScene() : Scene()
-    {
-      name = "Boids";
-    }
-
-    void start();
-    void run();
+    void setup(Matrix32 &gfx) override;
+    void loop(Matrix32 &gfx, millis_t dt) override;
 };
 
 #endif

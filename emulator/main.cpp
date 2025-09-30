@@ -1,6 +1,7 @@
 #include "App.h"
-#include "SDLMatrix32.h"
+#include "BoidsScene.h"
 #include "ExampleScene.h"
+#include "SDLMatrix32.h"
 #include <SDL.h>
 #include <algorithm>
 #include <cstdint>
@@ -18,7 +19,7 @@ void runEmulator()
     App app{gfx};
     gfx.begin();
 
-    app.setScene<ExampleScene>();
+    app.setScene<BoidsScene>();
 
     // We pace manually; disable vsync so Present doesn't block unpredictably
     SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0");
