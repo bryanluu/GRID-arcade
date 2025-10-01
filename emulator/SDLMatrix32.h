@@ -44,6 +44,9 @@ public:
     void begin() override;
     // Clear the 32x32 framebuffer to black.
     void clear() override;
+    // Convert (x,y) to framebuffer index.
+    static constexpr int coordToIndex(int x, int y) { return y * MATRIX_WIDTH + x; }
+    Color888 get(int x, int y) const { return fb_[coordToIndex(x, y)]; }
     // Set a single framebuffer pixel (bounds-checked).
     void set(int x, int y, Color333 c) override;
     // Present the framebuffer using the current render mode (screen or LED).
