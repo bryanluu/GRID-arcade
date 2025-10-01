@@ -4,6 +4,7 @@
 #include "helpers.h"
 #include "Scene.h"
 #include <memory>
+#include <utility>
 
 #ifdef GRID_EMULATION
 #include "SDLMatrix32.h"
@@ -27,7 +28,8 @@ public:
     template <typename SceneT, typename... Args>
     void setScene(Args &&...args)
     {
-        current = std::unique_ptr<Scene>(std::make_unique<SceneT>(std::forward<Args>(args)...));
+        static_assert(std::is_base_of<Scene, SceneT>::value, "SceneT must derive from Scene");
+        current.reset(new SceneT(std::forward<Args>(args)...));
         
         // Immediate only during setup (works on SDLMatrix32, no-op on Arduino)
         gfx.setImmediate(true);
