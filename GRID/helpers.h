@@ -1,17 +1,18 @@
 #ifndef HELPERS_H
 #define HELPERS_H
 
+#include <cstdint>
+
 // Math
 #define BOUND(l, x, h) ((x) > (h) ? (h) : ((x) < (l) ? (l) : (x))) // return x bounded between l and h
 
-// Type Aliases
+// Type 
 using millis_t = uint32_t; // convenience alias for time in milliseconds
 
 // Helpers for use by the emulation
 #ifdef GRID_EMULATION
 
 #include <SDL.h>
-#include <cstdint>
 
 
 using byte = uint8_t; // Mimic the byte alias in Arduino-land
