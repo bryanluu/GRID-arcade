@@ -69,7 +69,7 @@ void setup()
 
     gfx.begin();
     // smokeTest();
-    app.setScene<BoidsScene>();
+    app.setScene<ExampleScene>();
     prev_millis = millis();
 }
 
