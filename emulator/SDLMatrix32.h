@@ -2,6 +2,7 @@
 #define SDL_MATRIX32_H
 
 #include "Matrix32.h"
+#include "helpers.h"
 #include <cstdint>
 
 struct SDL_Window;
@@ -39,6 +40,15 @@ public:
 
     // 32x32 RGB framebuffer (row-major)
     Color888 fb_[MATRIX_WIDTH * MATRIX_HEIGHT]{};
+    // Convert (x,y) to framebuffer index.
+    static constexpr int coordToIndex(int x, int y)
+    {
+        if (x < 0 || x >= MATRIX_WIDTH || y < 0 || y >= MATRIX_HEIGHT)
+            throw std::out_of_range("SDLMatrix32 pixel out of bounds");
+            
+        return y * MATRIX_WIDTH + x;
+    }
+    Color888 get(int x, int y) const { return fb_[coordToIndex(x, y)]; }
 
     // Initialize SDL window, renderer, streaming texture, and compute initial scale.
     void begin() override;
