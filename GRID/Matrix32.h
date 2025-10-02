@@ -7,13 +7,8 @@
 #define MATRIX_SIZE     32
 #define MATRIX_WIDTH    32
 #define MATRIX_HEIGHT   32
-#define ASCII_START     32
 
 using MatrixPosition = uint8_t;
-using PixelMap = uint8_t;
-using PixelColumn = uint8_t;
-// 5x7 ASCII font declaration (defined elsewhere)
-extern const PixelMap FONT5x7[96][5];
 
 class Matrix32
 {
