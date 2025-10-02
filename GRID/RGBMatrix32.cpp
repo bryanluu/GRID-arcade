@@ -65,7 +65,6 @@ void RGBMatrix32::show()
     for (int y = 0; y < MATRIX_HEIGHT; ++y)
         for (int x = 0; x < MATRIX_WIDTH; ++x)
             m.drawPixel(x, y, get(x, y));
-    m.updateDisplay(); m.swapBuffers(false);
 }
 
 // Drawing API (1:1 to Adafruit panel)
