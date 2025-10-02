@@ -37,7 +37,8 @@ endif
 
 # Sources
 INCLUDES := -Iemulator -IGRID
-SRCS := $(shell ls emulator/*.cpp) $(shell ls GRID/*.cpp)
+SRCS := $(wildcard emulator/*.cpp) $(wildcard GRID/*.cpp)
+SRCS := $(filter-out GRID/RGBMatrix32.cpp,$(SRCS))
 OBJS := $(addprefix $(BUILD)/,$(SRCS:.cpp=.o))
 BIN  := $(BUILD)/$(APP)
 
