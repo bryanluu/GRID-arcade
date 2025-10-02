@@ -1,6 +1,7 @@
 #include "App.h"
 #include "BoidsScene.h"
 #include "ExampleScene.h"
+#include "helpers.h"
 #include "RGBMatrix32.h"
 #include <RGBmatrixPanel.h>
 
@@ -23,6 +24,8 @@
 #define D   A3
 #define DB  true
 
+using frames_t = uint16_t; // convenience alias for frame counts
+
 // Globals
 
 static RGBmatrixPanel panel(A, B, C, D, CLK, LAT, OE, false);
@@ -30,6 +33,8 @@ static RGBMatrix32 gfx{panel};
 static App app{gfx};
 static unsigned long prev_millis{};
 static unsigned long now_millis{};
+static millis_t fps_last_ms{};
+static uint16_t fps_frames{};
 
 // Basic smoke test to verify the display is working
 
@@ -73,19 +78,32 @@ static void smokeTest(Matrix32 &gfx)
 
 void setup()
 {
-    Serial.begin(9600);
+    Serial.begin(115200);
     randomSeed(analogRead(0));
     pinMode(0, INPUT_PULLUP);
 
     gfx.begin();
-    smokeTest(gfx);
-    // app.setScene<BoidsScene>();
+    // smokeTest(gfx);
+    app.setScene<BoidsScene>();
     prev_millis = millis();
+    fps_last_ms = prev_millis;
 }
 
 void loop()
 {
     now_millis = millis();
-//    app.loopOnce(now_millis - prev_millis);
+    app.loopOnce(now_millis - prev_millis);
     prev_millis = now_millis;
+
+    // FPS counter
+	++fps_frames;
+	millis_t elapsed = now_millis - fps_last_ms;
+	if (elapsed >= 1000) {
+		float fps = (1000.0f * fps_frames) / (float)elapsed;
+		Serial.print("FPS: ");
+		Serial.println(fps, 2); // 2 decimal places
+
+		fps_frames = 0;
+		fps_last_ms = now_millis;
+	}
 }
