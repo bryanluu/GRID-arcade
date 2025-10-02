@@ -23,8 +23,19 @@
 #define D   A3
 #define DB  true
 
-void smokeTest(Matrix32 &gfx)
+// Globals
+
+static RGBmatrixPanel panel(A, B, C, D, CLK, LAT, OE, false);
+static RGBMatrix32 gfx{panel};
+static App app{gfx};
+static unsigned long prev_millis{};
+static unsigned long now_millis{};
+
+// Basic smoke test to verify the display is working
+
+static void smokeTest(Matrix32 &gfx)
 {
+    gfx.setImmediate(true);
     gfx.begin();
 
     // Solid green
@@ -38,7 +49,6 @@ void smokeTest(Matrix32 &gfx)
         for (int x = 0; x < MATRIX_WIDTH; ++x)
         {
             gfx.drawPixel(x, y, (y & 1) ? RED : GREEN);
-            delay(5);
         }
     }
     delay(2000);
@@ -49,17 +59,17 @@ void smokeTest(Matrix32 &gfx)
     gfx.setTextSize(1);
     gfx.setTextColor(WHITE);
     gfx.println("GRID");
+    delay(1000);
     gfx.setCursor(1, 10);
     gfx.print("<");
+    delay(1000);
     gfx.advance();
     gfx.print(">");
-}
+    delay(1000);
 
-static RGBmatrixPanel panel(A, B, C, D, CLK, LAT, OE, false);
-static RGBMatrix32 gfx{panel};
-static App app{gfx};
-static unsigned long prev_millis{};
-static unsigned long now_millis{};
+    gfx.show();
+    gfx.setImmediate(false);
+}
 
 void setup()
 {
@@ -68,14 +78,14 @@ void setup()
     pinMode(0, INPUT_PULLUP);
 
     gfx.begin();
-    // smokeTest();
-    app.setScene<BoidsScene>();
+    smokeTest(gfx);
+    // app.setScene<BoidsScene>();
     prev_millis = millis();
 }
 
 void loop()
 {
     now_millis = millis();
-    app.loopOnce(now_millis - prev_millis);
+//    app.loopOnce(now_millis - prev_millis);
     prev_millis = now_millis;
 }
