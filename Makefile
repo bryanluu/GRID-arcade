@@ -36,8 +36,9 @@ else
 endif
 
 # Sources
-INCLUDES := -Iemulator -IGRID
-SRCS := $(wildcard emulator/*.cpp) $(wildcard GRID/*.cpp)
+INCLUDES := -Iemulation -IGRID
+SRCS := $(wildcard emulation/*.cpp) $(wildcard GRID/*.cpp)
+# Exclude RGBMatrix32.cpp from build (SDLMatrix32 used instead)
 SRCS := $(filter-out GRID/RGBMatrix32.cpp,$(SRCS))
 OBJS := $(addprefix $(BUILD)/,$(SRCS:.cpp=.o))
 BIN  := $(BUILD)/$(APP)
