@@ -27,11 +27,11 @@ void BoidsScene::avoidEdges(Boid* boid)
 {
     if (boid->position.x < MARGIN)
         boid->velocity.x += TURN_FACTOR;
-    if (boid->position.x > MATRIX_WIDTH - MARGIN)
+    if (boid->position.x > MATRIX_WIDTH - 1 - MARGIN)
         boid->velocity.x -= TURN_FACTOR;
     if (boid->position.y < MARGIN)
         boid->velocity.y += TURN_FACTOR;
-    if (boid->position.y > MATRIX_HEIGHT - MARGIN)
+    if (boid->position.y > MATRIX_HEIGHT - 1 - MARGIN)
         boid->velocity.y -= TURN_FACTOR;
 }
 
@@ -58,8 +58,8 @@ void BoidsScene::constrainSpeed(Boid* boid)
  */
 void BoidsScene::constrainPosition(Boid* boid)
 {
-    boid->position.x = BOUND(0, boid->position.x, MATRIX_WIDTH);
-    boid->position.y = BOUND(0, boid->position.y, MATRIX_HEIGHT);
+    boid->position.x = BOUND(0, boid->position.x, MATRIX_WIDTH-1);
+    boid->position.y = BOUND(0, boid->position.y, MATRIX_HEIGHT-1);
 }
 
 /*
@@ -131,12 +131,11 @@ void BoidsScene::updateBoid(Boid* boid, Boid* flock)
 */
 void BoidsScene::drawBoid(Matrix32 &gfx, Boid* boid)
 {
-    // TODO should be MATRIX_WIDTH-1 and MATRIX_HEIGHT-1
-    MatrixPosition x = BOUND(0, boid->position.x, MATRIX_WIDTH);
-    MatrixPosition y = BOUND(0, boid->position.y, MATRIX_HEIGHT);
+    MatrixPosition x = round(boid->position.x);
+    MatrixPosition y = round(boid->position.y);
     Color333 color = DEFAULT_COLOR;
 
-    if ((x == 0) || (x == MATRIX_WIDTH) || (y == 0) || (y == MATRIX_HEIGHT)) // boid is too close to the wall
+    if ((x == 0) || (x == MATRIX_WIDTH-1) || (y == 0) || (y == MATRIX_HEIGHT-1)) // boid is too close to the wall
     {
       color = DANGER_COLOR;
     }
