@@ -4,11 +4,6 @@
 #include <cstring>
 #include <stdexcept>
 
-using PixelMap = uint8_t;
-using PixelColumn = uint8_t;
-// 5x7 ASCII font declaration (defined elsewhere)
-extern const PixelMap FONT5x7[96][5];
-
 // ctor: create an empty object; call begin() before rendering
 SDLMatrix32::SDLMatrix32() = default;
 
@@ -28,6 +23,17 @@ Color888 SDLMatrix32::convertColor(Color333 c)
 {
     return Color888{expand3to8(c.r), expand3to8(c.g), expand3to8(c.b)};
 }
+
+// Convert (x,y) to framebuffer index.
+constexpr int SDLMatrix32::coordToIndex(int x, int y)
+{
+    if (x < 0 || x >= MATRIX_WIDTH || y < 0 || y >= MATRIX_HEIGHT)
+        throw std::out_of_range("SDLMatrix32 pixel out of bounds");
+        
+    return y * MATRIX_WIDTH + x;
+}
+
+Color888 SDLMatrix32::get(int x, int y) const { return fb_[coordToIndex(x, y)]; }
 
 // Initialize SDL window, renderer, and streaming texture. Also compute initial scale_.
 void SDLMatrix32::begin()

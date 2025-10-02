@@ -6,9 +6,30 @@
 
 using PanelColor = uint16_t;
 
+// 5x7 ASCII font declaration (defined elsewhere)
+extern const PixelMap FONT5x7[96][5];
+
 // Adapter that wraps an existing Adafruit RGBmatrixPanel
 class RGBMatrix32 : public Matrix32
 {
+
+    RGBmatrixPanel &m; // reference to a live panel
+
+    // Text state
+    int cx{0};                      // cursor x in pixels
+    int cy{0};                      // cursor y in pixels
+    int lineStartX{0};              // start-of-line x for newline handling
+    int ts{1};                      // text scale
+    Color333 tc{Color333{7, 7, 7}}; // text color
+
+    // Low-level framebuffer helpers
+
+    void span(int x0, int x1, int y, Color333 c);
+    void drawHLine(int x, int y, int w, Color333 c);
+    void drawVLine(int x, int y, int h, Color333 c);
+    void plot8(int cx, int cy, int x, int y, Color333 c);
+    void drawPixelScaled(int x, int y, Color333 c);
+
 public:
     // Panel must outlive this adapter
     explicit RGBMatrix32(RGBmatrixPanel &panel) : m(panel) {}
@@ -29,60 +50,30 @@ public:
 
     // Matrix32 interface
 
-    void begin() override
-    {
-        m.begin();
-    }
-    void clear() override
-    {
-        for (auto &p : fb_)
-            p = 0;
-    }
-    void set(int x, int y, Color333 c) override
-    {
-        fb_[coordToIndex(x, y)] = convertColor(c); // test write to fb_
-    }
-    void show() override
-    {
-        for (int y = 0; y < MATRIX_HEIGHT; ++y)
-            for (int x = 0; x < MATRIX_WIDTH; ++x)
-                m.drawPixel(x, y, get(x, y));
-        m.updateDisplay(); m.swapBuffers(false);
-    }
+    void begin() override;
+    void clear() override;
+    void set(int x, int y, Color333 c) override;
+    void show() override;
     
     // Drawing API (1:1 to Adafruit panel)
 
-    void drawPixel(int x, int y, Color333 c) override
-    {
-        setSafe(x, y, c);
-    }
-    void drawLine(int x0, int y0, int x1, int y1, Color333 c) override { m.drawLine(x0, y0, x1, y1, convertColor(c)); }
-    void drawRect(int x, int y, int w, int h, Color333 c) override { m.drawRect(x, y, w, h, convertColor(c)); }
-    void drawCircle(int cx, int cy, int r, Color333 c) override { m.drawCircle(cx, cy, r, convertColor(c)); }
-    void fillRect(int x, int y, int w, int h, Color333 c) override { m.fillRect(x, y, w, h, convertColor(c)); }
-    void fillCircle(int cx, int cy, int r, Color333 c) override { m.fillCircle(cx, cy, r, convertColor(c)); }
-    
+    void drawPixel(int x, int y, Color333 c) override;
+    void drawLine(int x0, int y0, int x1, int y1, Color333 c) override;
+    void drawRect(int x, int y, int w, int h, Color333 c) override;
+    void drawCircle(int cx, int cy, int r, Color333 c) override;
+    void fillRect(int x, int y, int w, int h, Color333 c) override;
+    void fillCircle(int cx, int cy, int r, Color333 c) override;
+
     // Text helpers
 
-    void setCursor(int x, int y) override { m.setCursor(x, y); }
-    void setTextColor(Color333 c) override { m.setTextColor(convertColor(c)); }
-    void setTextSize(int s) override { m.setTextSize(s); }
-    void print(char ch) override { m.print(ch); }
-    void print(const char *s) override { m.print(s); }
-    void println(const char *s) override { m.println(s); }
-    
-    void advance() override { m.setCursor(m.getCursorX()+5, m.getCursorY()); }
-    void drawChar(int x, int y, char ch, Color333 c) override
-    {
-        int savedX = x, savedY = y;
-        setCursor(x, y);
-        setTextColor(c);
-        print(ch);
-        setCursor(savedX, savedY);
-    }
-    
-private:
-    RGBmatrixPanel &m; // reference to a live panel
+    void advance() override;
+    void setCursor(int x, int y);
+    void setTextColor(Color333 c) override;
+    void setTextSize(int s) override;
+    void drawChar(int x, int y, char ch, Color333 c) override;
+    void print(char ch) override;
+    void print(const char *s) override;
+    void println(const char *s) override;
 };
 
 #endif // RGB_MATRIX_H
