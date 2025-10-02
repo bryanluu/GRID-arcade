@@ -69,6 +69,8 @@ void SDLMatrix32::clear()
 void SDLMatrix32::set(int x, int y, Color333 c)
 {
     fb_[coordToIndex(x, y)] = convertColor(c);
+    if (immediate)
+        show();
 }
 
 // Present using current render mode
@@ -93,13 +95,16 @@ void SDLMatrix32::drawChar(int x, int y, char ch, Color333 c)
             if (bits & (1u << row))
                 drawPixelScaled(x + col, y + row, c);
     }
-    if (immediate) show();
+    if (immediate)
+        show();
 }
 
 // Alias for set()
-void SDLMatrix32::drawPixel(int x, int y, Color333 c) { 
+void SDLMatrix32::drawPixel(int x, int y, Color333 c)
+{
     setSafe(x, y, c);
-    if (immediate) show();
+    if (immediate)
+        show();
 }
 
 // Bresenham line
@@ -110,7 +115,7 @@ void SDLMatrix32::drawLine(int x0, int y0, int x1, int y1, Color333 c)
     int err = dx + dy;
     while (true)
     {
-        set(x0, y0, c);
+        setSafe(x0, y0, c);
         if (x0 == x1 && y0 == y1)
             break;
         int e2 = 2 * err;
@@ -125,7 +130,8 @@ void SDLMatrix32::drawLine(int x0, int y0, int x1, int y1, Color333 c)
             y0 += sy;
         }
     }
-    if (immediate) show();
+    if (immediate)
+        show();
 }
 
 // Rectangle outline
@@ -137,7 +143,8 @@ void SDLMatrix32::drawRect(int x, int y, int w, int h, Color333 c)
     drawHLine(x, y + h - 1, w, c);
     drawVLine(x, y, h, c);
     drawVLine(x + w - 1, y, h, c);
-    if (immediate) show();
+    if (immediate)
+        show();
 }
 
 // Midpoint circle outline
@@ -158,7 +165,8 @@ void SDLMatrix32::drawCircle(int cx, int cy, int r, Color333 c)
             err += 2 * (y - x) + 1;
         }
     }
-    if (immediate) show();
+    if (immediate)
+        show();
 }
 
 // Filled rectangle
@@ -168,8 +176,9 @@ void SDLMatrix32::fillRect(int x, int y, int w, int h, Color333 c)
     int x1 = std::min(MATRIX_WIDTH - 1, x + w - 1), y1 = std::min(MATRIX_HEIGHT - 1, y + h - 1);
     for (int yy = y0; yy <= y1; ++yy)
         for (int xx = x0; xx <= x1; ++xx)
-            set(xx, yy, c);
-    if (immediate) show();
+            setSafe(xx, yy, c);
+    if (immediate)
+        show();
 }
 
 // Filled circle via spans
@@ -193,7 +202,8 @@ void SDLMatrix32::fillCircle(int cx, int cy, int r, Color333 c)
             err += 2 * (y - x) + 1;
         }
     }
-    if (immediate) show();
+    if (immediate)
+        show();
 }
 
 // Move cursor by 1 glyph (5px + 1px spacing) at current scale
@@ -312,34 +322,34 @@ void SDLMatrix32::span(int x0, int x1, int y, Color333 c)
     x0 = std::max(0, x0);
     x1 = std::min(MATRIX_WIDTH - 1, x1);
     for (int x = x0; x <= x1; ++x)
-        set(x, y, c);
+        setSafe(x, y, c);
 }
 
 // Draw a horizontal line in the framebuffer
 void SDLMatrix32::drawHLine(int x, int y, int w, Color333 c)
 {
     for (int i = 0; i < w; ++i)
-        set(x + i, y, c);
+        setSafe(x + i, y, c);
 }
 
 // Draw a vertical line in the framebuffer
 void SDLMatrix32::drawVLine(int x, int y, int h, Color333 c)
 {
     for (int i = 0; i < h; ++i)
-        set(x, y + i, c);
+        setSafe(x, y + i, c);
 }
 
 // Plot using 8-way symmetry for circle algorithms
 void SDLMatrix32::plot8(int cx, int cy, int x, int y, Color333 c)
 {
-    set(cx + x, cy + y, c);
-    set(cx - x, cy + y, c);
-    set(cx + x, cy - y, c);
-    set(cx - x, cy - y, c);
-    set(cx + y, cy + x, c);
-    set(cx - y, cy + x, c);
-    set(cx + y, cy - x, c);
-    set(cx - y, cy - x, c);
+    setSafe(cx + x, cy + y, c);
+    setSafe(cx - x, cy + y, c);
+    setSafe(cx + x, cy - y, c);
+    setSafe(cx - x, cy - y, c);
+    setSafe(cx + y, cy + x, c);
+    setSafe(cx - y, cy + x, c);
+    setSafe(cx + y, cy - x, c);
+    setSafe(cx - y, cy - x, c);
 }
 
 // Draw a ts x ts block at logical (x,y)
@@ -347,7 +357,7 @@ void SDLMatrix32::drawPixelScaled(int x, int y, Color333 c)
 {
     for (int dy = 0; dy < ts; ++dy)
         for (int dx = 0; dx < ts; ++dx)
-            set(x * ts + dx, y * ts + dy, c);
+            setSafe(x * ts + dx, y * ts + dy, c);
 }
 
 // Set renderer draw color (RGBA)

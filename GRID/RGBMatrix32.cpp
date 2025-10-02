@@ -203,7 +203,8 @@ void RGBMatrix32::drawChar(int x, int y, char ch, Color333 c)
             if (bits & (1u << row))
                 drawPixelScaled(x + col, y + row, c);
     }
-    if (immediate) show();
+    if (immediate)
+        show();
 }
 
 // Print a single character (handles newline)
