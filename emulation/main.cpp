@@ -7,7 +7,7 @@
 #include <cstdint>
 
 // match GRID hardware
-static constexpr int TICK_HZ = 60;
+static constexpr double TICK_HZ = 16.6; // from hardware measurement
 static constexpr double DT_SEC = 1.0 / TICK_HZ;
 
 static millis_t millis_now(millis_t start) { return SDL_GetTicks() - start; }
