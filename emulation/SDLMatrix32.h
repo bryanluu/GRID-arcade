@@ -2,13 +2,15 @@
 #define SDL_MATRIX32_H
 
 #include "Matrix32.h"
+#include "helpers.h"
 #include <cstdint>
 
 struct SDL_Window;
 struct SDL_Renderer;
 struct SDL_Texture;
 
-#define ASCII_START 32
+// 5x7 ASCII font declaration (defined elsewhere)
+extern const PixelMap FONT5x7[96][5];
 
 // Parameters that control how each logical LED cell is rendered on screen.
 // - scale:  number of screen pixels per 1 matrix pixel
@@ -39,6 +41,9 @@ public:
 
     // 32x32 RGB framebuffer (row-major)
     Color888 fb_[MATRIX_WIDTH * MATRIX_HEIGHT]{};
+    // Convert (x,y) to framebuffer index.
+    static constexpr int coordToIndex(int x, int y);
+    Color888 get(int x, int y) const;
 
     // Initialize SDL window, renderer, streaming texture, and compute initial scale.
     void begin() override;

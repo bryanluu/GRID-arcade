@@ -7,8 +7,11 @@
 #define MATRIX_SIZE     32
 #define MATRIX_WIDTH    32
 #define MATRIX_HEIGHT   32
+#define ASCII_START     32
 
 using MatrixPosition = uint8_t;
+using PixelMap = uint8_t;
+using PixelColumn = uint8_t;
 
 class Matrix32
 {
