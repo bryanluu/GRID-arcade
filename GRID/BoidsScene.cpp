@@ -131,6 +131,7 @@ void BoidsScene::updateBoid(Boid* boid, Boid* flock)
 */
 void BoidsScene::drawBoid(Matrix32 &gfx, Boid* boid)
 {
+    // TODO should be MATRIX_WIDTH-1 and MATRIX_HEIGHT-1
     MatrixPosition x = BOUND(0, boid->position.x, MATRIX_WIDTH);
     MatrixPosition y = BOUND(0, boid->position.y, MATRIX_HEIGHT);
     Color333 color = DEFAULT_COLOR;
@@ -174,4 +175,7 @@ void BoidsScene::loop(Matrix32 &gfx, millis_t dt)
         updateBoid(boid, flock);
         drawBoid(gfx, boid);
     }
+
+    // show the frame
+    gfx.show();
 }
