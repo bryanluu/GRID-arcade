@@ -1,7 +1,7 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include "Matrix32.h"
+#include "AppContext.h"
 #include "helpers.h"
 
 /**
@@ -12,9 +12,9 @@ struct Scene
 {
   virtual ~Scene() = default;
   // Called once when the scene is switched to
-  virtual void setup(Matrix32 &gfx) = 0;
+  virtual void setup(AppContext &ctx) = 0;
   // dt is in milliseconds
-  virtual void loop(Matrix32 &gfx, millis_t dt) = 0;
+  virtual void loop(AppContext &cfx, millis_t dt) = 0;
 };
 
 #endif

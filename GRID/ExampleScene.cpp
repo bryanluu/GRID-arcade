@@ -1,72 +1,73 @@
 #include "ExampleScene.h"
+#include "Matrix32.h"
 #include "Colors.h"
 #include "helpers.h" // for delay()
 
-void ExampleScene::setup(Matrix32 &gfx)
+void ExampleScene::setup(AppContext &ctx)
 {
     // draw a pixel in solid white
-    gfx.drawPixel(0, 0, WHITE);
+    ctx.gfx.drawPixel(0, 0, WHITE);
     delay(500);
 
     // fix the screen with green
-    gfx.fillRect(0, 0, MATRIX_WIDTH, MATRIX_HEIGHT, GREEN);
+    ctx.gfx.fillRect(0, 0, MATRIX_WIDTH, MATRIX_HEIGHT, GREEN);
     delay(500);
 
     // draw a box in yellow
-    gfx.drawRect(0, 0, MATRIX_WIDTH, MATRIX_HEIGHT, YELLOW);
+    ctx.gfx.drawRect(0, 0, MATRIX_WIDTH, MATRIX_HEIGHT, YELLOW);
     delay(500);
 
     // draw an 'X' in red
-    gfx.drawLine(0, 0, MATRIX_WIDTH - 1, MATRIX_HEIGHT - 1, RED);
-    gfx.drawLine(MATRIX_WIDTH - 1, 0, 0, MATRIX_HEIGHT - 1, RED);
+    ctx.gfx.drawLine(0, 0, MATRIX_WIDTH - 1, MATRIX_HEIGHT - 1, RED);
+    ctx.gfx.drawLine(MATRIX_WIDTH - 1, 0, 0, MATRIX_HEIGHT - 1, RED);
     delay(500);
 
     // draw a blue circle
-    gfx.drawCircle(10, 10, 10, BLUE);
+    ctx.gfx.drawCircle(10, 10, 10, BLUE);
     delay(500);
 
     // fill a violet circle
-    gfx.fillCircle(21, 21, 10, VIOLET);
+    ctx.gfx.fillCircle(21, 21, 10, VIOLET);
     delay(500);
 
-    gfx.clear();
+    ctx.gfx.clear();
 
     // draw some text!
-    gfx.setCursor(1, 0); // start at top left, with one pixel of spacing
-    gfx.setTextSize(1);  // size 1 == 8 pixels high
-    // gfx.setTextWrap(false); // Don't wrap at end of line - will do ourselves
+    ctx.gfx.setCursor(1, 0); // start at top left, with one pixel of spacing
+    ctx.gfx.setTextSize(1);  // size 1 == 8 pixels high
+    // ctx.gfx.setTextWrap(false); // Don't wrap at end of line - will do ourselves
 
-    gfx.setTextColor(WHITE);
-    gfx.println(" Ada");
-    gfx.println("fruit");
+    ctx.gfx.setTextColor(WHITE);
+    ctx.gfx.println(" Ada");
+    ctx.gfx.println("fruit");
 
     // print each letter with a rainbow color
-    gfx.setTextColor(RED);
-    gfx.print('3');
-    gfx.setTextColor(ORANGE);
-    gfx.print('2');
-    gfx.setTextColor(YELLOW);
-    gfx.print('x');
-    gfx.setTextColor(LIME);
-    gfx.print('3');
-    gfx.setTextColor(GREEN);
-    gfx.println("2");
+    ctx.gfx.setTextColor(RED);
+    ctx.gfx.print('3');
+    ctx.gfx.setTextColor(ORANGE);
+    ctx.gfx.print('2');
+    ctx.gfx.setTextColor(YELLOW);
+    ctx.gfx.print('x');
+    ctx.gfx.setTextColor(LIME);
+    ctx.gfx.print('3');
+    ctx.gfx.setTextColor(GREEN);
+    ctx.gfx.println("2");
 
-    gfx.setTextColor(CYAN);
-    gfx.print('*');
-    gfx.setTextColor(AZURE);
-    gfx.print('R');
-    gfx.setTextColor(BLUE);
-    gfx.print('G');
-    gfx.setTextColor(PURPLE);
-    gfx.print('B');
-    gfx.setTextColor(PINK);
-    gfx.print('*');
+    ctx.gfx.setTextColor(CYAN);
+    ctx.gfx.print('*');
+    ctx.gfx.setTextColor(AZURE);
+    ctx.gfx.print('R');
+    ctx.gfx.setTextColor(BLUE);
+    ctx.gfx.print('G');
+    ctx.gfx.setTextColor(PURPLE);
+    ctx.gfx.print('B');
+    ctx.gfx.setTextColor(PINK);
+    ctx.gfx.print('*');
 
     // whew!
 }
 
-void ExampleScene::loop(Matrix32 &gfx, millis_t dt)
+void ExampleScene::loop(AppContext &ctx, millis_t dt)
 {
     // Do nothing -- image doesn't change
 }

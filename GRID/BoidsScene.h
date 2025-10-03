@@ -50,8 +50,8 @@ class BoidsScene final : public Scene
     void drawBoid(Matrix32 &gfx, Boid* boid);
 
   public:
-    void setup(Matrix32 &gfx) override;
-    void loop(Matrix32 &gfx, millis_t dt) override;
+    void setup(AppContext &ctx) override;
+    void loop(AppContext &ctx, millis_t dt) override;
 };
 
 #endif

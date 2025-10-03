@@ -153,7 +153,7 @@ void BoidsScene::drawBoid(Matrix32 &gfx, Boid* boid)
     gfx.drawPixel(x, y, color);
 }
 
-void BoidsScene::setup(Matrix32 &gfx)
+void BoidsScene::setup(AppContext &ctx)
 {
     // position boids
     for (int i = 0; i < N_BOIDS; i++)
@@ -162,19 +162,19 @@ void BoidsScene::setup(Matrix32 &gfx)
     }
 }
 
-void BoidsScene::loop(Matrix32 &gfx, millis_t dt)
+void BoidsScene::loop(AppContext &ctx, millis_t dt)
 {
     // Clear background
-    gfx.clear();
+    ctx.gfx.clear();
 
     // update flock
     for (int i = 0; i < N_BOIDS; i++)
     {
         Boid* boid = &flock[i];
         updateBoid(boid, flock);
-        drawBoid(gfx, boid);
+        drawBoid(ctx.gfx, boid);
     }
 
     // show the frame
-    gfx.show();
+    ctx.gfx.show();
 }
