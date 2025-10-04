@@ -67,7 +67,7 @@ void ExampleScene::setup(AppContext &ctx)
     // whew!
 }
 
-void ExampleScene::loop(AppContext &ctx, millis_t dt)
+void ExampleScene::loop(AppContext &ctx)
 {
     // Do nothing -- image doesn't change
 }

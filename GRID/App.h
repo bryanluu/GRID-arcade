@@ -20,7 +20,7 @@ class App
     std::unique_ptr<Scene> current;
 
 public:
-    explicit App(Matrix32 &gfx) : ctx{gfx} {}
+    explicit App(Matrix32 &gfx, Timing &time) : ctx{gfx, time} {}
 
     // Replace the current scene with a newly constructed SceneT.
     // - Destroys the old scene, creates SceneT(args...), then calls setup(gfx).
@@ -38,11 +38,11 @@ public:
         ctx.gfx.setImmediate(false);
     }
 
-    // Call the current scene's loop(gfx, dt).
+    // Call the current scene's loop(ctx).
     // dt is in milliseconds.
-    void loopOnce(millis_t dt)
+    void loopOnce()
     {
-        current->loop(ctx, dt);
+        current->loop(ctx);
     }
 };
 

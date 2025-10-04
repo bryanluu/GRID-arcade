@@ -1,6 +1,7 @@
 #include "App.h"
 #include "BoidsScene.h"
 #include "ExampleScene.h"
+#include "FixedStepTiming.h"
 #include "SDLMatrix32.h"
 #include <SDL.h>
 #include <algorithm>
@@ -16,10 +17,11 @@ void run_emulator()
 {
     using u64 = unsigned long long;
     SDLMatrix32 gfx{};
-    App app{gfx};
+    FixedStepTiming time{TICK_HZ};
+    App app{gfx, time};
     gfx.begin();
 
-    app.setScene<BoidsScene>();
+    app.setScene<ExampleScene>();
 
     // We pace manually; disable vsync so Present doesn't block unpredictably
     SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0");
@@ -55,27 +57,12 @@ void run_emulator()
         frameSec = std::min(frameSec, 0.25);
         accumulator += frameSec;
 
-        // 3) Fixed updates at TICK_HZ
-        // Optional: cap catch-up iterations to keep UI responsive
-        int maxSteps = 5;
-        while (accumulator >= DT_SEC && maxSteps-- > 0)
-        {
-            millis_t now_ms = (millis_t)(newNow * 1000.0 / double(freq));
-            app.loopOnce(now_ms - prev_ms);
-            prev_ms = now_ms;
-            accumulator -= DT_SEC;
-        }
-
-        // 4) Render
+        int steps = time.pump();
+		for (int i = 0; i < steps; ++i) {
+			app.loopOnce(); // Scene consumes ctx.time
+		}
         gfx.show();
-
-        // 5) Sleep a bit to target cadence (tiny margin to avoid oversleep)
-        double frameLeft = DT_SEC - accumulator;
-        if (frameLeft > 0)
-        {
-            double sleepSec = std::max(0.0, frameLeft - 0.001);
-            SDL_Delay((Uint32)(sleepSec * 1000.0));
-        }
+        time.sleep_to_cadence();
     }
 }
 

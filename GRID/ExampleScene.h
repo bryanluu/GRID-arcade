@@ -9,7 +9,7 @@ class ExampleScene final : public Scene
 {
 public:
     void setup(AppContext &ctx) override;
-    void loop(AppContext &ctx, millis_t dt) override;
+    void loop(AppContext &ctx) override;
 };
 
 #endif

@@ -14,7 +14,7 @@ struct Scene
   // Called once when the scene is switched to
   virtual void setup(AppContext &ctx) = 0;
   // dt is in milliseconds
-  virtual void loop(AppContext &cfx, millis_t dt) = 0;
+  virtual void loop(AppContext &cfx) = 0;
 };
 
 #endif

@@ -16,7 +16,7 @@ void BoidsScene::placeBoid(Boid* boid)
     long choice;
     choice = Helpers::random(1000);
     boid->velocity.x = ((choice % 2) ? 1 : -1) * (0.5 * MIN_SPEED + (MAX_SPEED - MIN_SPEED) * (choice / 1000.0));
-    choice = Helpers::random();
+    choice = Helpers::random(1000);
     boid->velocity.y = ((choice % 2) ? 1 : -1) * (0.5 * MIN_SPEED + (MAX_SPEED - MIN_SPEED) * (choice / 1000.0));
 }
 
@@ -162,7 +162,7 @@ void BoidsScene::setup(AppContext &ctx)
     }
 }
 
-void BoidsScene::loop(AppContext &ctx, millis_t dt)
+void BoidsScene::loop(AppContext &ctx)
 {
     // Clear background
     ctx.gfx.clear();
