@@ -30,7 +30,6 @@ void run_emulator()
     const u64 freq = SDL_GetPerformanceFrequency();
     u64 now = SDL_GetPerformanceCounter();
     double accumulator = 0.0;
-    millis_t prev_ms = SDL_GetTicks();
     while (running)
     {
         // 1) Events
