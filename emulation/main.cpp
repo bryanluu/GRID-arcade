@@ -11,8 +11,6 @@
 static constexpr double TICK_HZ = 60.0;
 static constexpr double DT_SEC = 1.0 / TICK_HZ;
 
-static millis_t millis_now(millis_t start) { return SDL_GetTicks() - start; }
-
 void run_emulator()
 {
     using u64 = unsigned long long;

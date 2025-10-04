@@ -2,7 +2,6 @@
 #define FIXED_STEP_TIMING_H
 
 #include "Timing.h"
-#include "helpers.h"
 #include <SDL.h>
 #include <algorithm>
 
