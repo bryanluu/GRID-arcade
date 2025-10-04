@@ -31,7 +31,10 @@ public:
     {
         static_assert(std::is_base_of<Scene, SceneT>::value, "SceneT must derive from Scene");
         current.reset(new SceneT(std::forward<Args>(args)...));
-        
+        // apply preferred timing
+        auto prefs = current->timingPrefs();
+        ctx.time.setTargetHz(prefs.targetHz);
+        ctx.time.resetSceneClock();
         // immediate only during setup (works on SDLMatrix32, no-op on Arduino)
         ctx.gfx.setImmediate(true);
         current->setup(ctx);
