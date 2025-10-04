@@ -1,34 +1,34 @@
 #include "ExampleScene.h"
 #include "Matrix32.h"
 #include "Colors.h"
-#include "helpers.h" // for delay()
+#include "helpers.h"
 
 void ExampleScene::setup(AppContext &ctx)
 {
     // draw a pixel in solid white
     ctx.gfx.drawPixel(0, 0, WHITE);
-    delay(500);
+    Helpers::sleep(500);
 
     // fix the screen with green
     ctx.gfx.fillRect(0, 0, MATRIX_WIDTH, MATRIX_HEIGHT, GREEN);
-    delay(500);
+    Helpers::sleep(500);
 
     // draw a box in yellow
     ctx.gfx.drawRect(0, 0, MATRIX_WIDTH, MATRIX_HEIGHT, YELLOW);
-    delay(500);
+    Helpers::sleep(500);
 
     // draw an 'X' in red
     ctx.gfx.drawLine(0, 0, MATRIX_WIDTH - 1, MATRIX_HEIGHT - 1, RED);
     ctx.gfx.drawLine(MATRIX_WIDTH - 1, 0, 0, MATRIX_HEIGHT - 1, RED);
-    delay(500);
+    Helpers::sleep(500);
 
     // draw a blue circle
     ctx.gfx.drawCircle(10, 10, 10, BLUE);
-    delay(500);
+    Helpers::sleep(500);
 
     // fill a violet circle
     ctx.gfx.fillCircle(21, 21, 10, VIOLET);
-    delay(500);
+    Helpers::sleep(500);
 
     ctx.gfx.clear();
 

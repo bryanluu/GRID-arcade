@@ -45,7 +45,7 @@ static void smokeTest(Matrix32 &gfx)
 
     // Solid green
     gfx.fillRect(0, 0, MATRIX_WIDTH, MATRIX_HEIGHT, GREEN);
-    delay(2000);
+    Helpers::sleep(2000);
 
     // Alternating rows
     gfx.clear();
@@ -56,7 +56,7 @@ static void smokeTest(Matrix32 &gfx)
             gfx.drawPixel(x, y, (y & 1) ? RED : GREEN);
         }
     }
-    delay(2000);
+    Helpers::sleep(2000);
 
     // Text
     gfx.clear();
@@ -64,13 +64,13 @@ static void smokeTest(Matrix32 &gfx)
     gfx.setTextSize(1);
     gfx.setTextColor(WHITE);
     gfx.println("GRID");
-    delay(1000);
+    Helpers::sleep(1000);
     gfx.setCursor(1, 10);
     gfx.print("<");
-    delay(1000);
+    Helpers::sleep(1000);
     gfx.advance();
     gfx.print(">");
-    delay(1000);
+    Helpers::sleep(1000);
 
     gfx.show();
     gfx.setImmediate(false);

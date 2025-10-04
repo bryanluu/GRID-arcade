@@ -11,12 +11,12 @@
  */
 void BoidsScene::placeBoid(Boid* boid)
 {
-    boid->position.x = random(MATRIX_WIDTH);
-    boid->position.y = random(MATRIX_HEIGHT);
+    boid->position.x = Helpers::random(MATRIX_WIDTH);
+    boid->position.y = Helpers::random(MATRIX_HEIGHT);
     long choice;
-    choice = random(1000);
+    choice = Helpers::random(1000);
     boid->velocity.x = ((choice % 2) ? 1 : -1) * (0.5 * MIN_SPEED + (MAX_SPEED - MIN_SPEED) * (choice / 1000.0));
-    choice = random();
+    choice = Helpers::random();
     boid->velocity.y = ((choice % 2) ? 1 : -1) * (0.5 * MIN_SPEED + (MAX_SPEED - MIN_SPEED) * (choice / 1000.0));
 }
 
