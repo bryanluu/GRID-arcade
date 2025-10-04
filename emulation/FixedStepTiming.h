@@ -8,6 +8,7 @@
 
 class FixedStepTiming final : public Timing
 {
+    const double defaultTargetHz_{ 60.0 };
     double targetHz_;
     double dtSec_;
     double acc_ = 0.0;
@@ -20,7 +21,7 @@ class FixedStepTiming final : public Timing
 
 public:
     explicit FixedStepTiming(double targetHz)
-        : targetHz_(targetHz), dtSec_(1.0 / targetHz)
+        : defaultTargetHz_(targetHz), dtSec_(1.0 / targetHz)
     {
         freq_ = SDL_GetPerformanceFrequency();
         last_ = SDL_GetPerformanceCounter();
@@ -74,6 +75,15 @@ public:
         targetHz_ = BOUND(10.0, hz, 240.0);
         dtSec_ = 1.0 / targetHz_;
         // Optional: smooth retune
+    }
+
+    // When there is a preferred timing, apply it; otherwise use default
+    void applyPreference(SceneTimingPrefs pref) override
+    {
+        if (isnan(pref.targetHz))
+            setTargetHz(defaultTargetHz_);
+        else
+            setTargetHz(pref.targetHz);
     }
 
     void resetSceneClock() override

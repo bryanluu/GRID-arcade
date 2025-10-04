@@ -6,6 +6,14 @@
 // Type
 using millis_t = uint32_t; // convenience alias for time in milliseconds
 
+/**
+ * @brief Preferences for scene timing
+ */
+struct SceneTimingPrefs
+{
+  double targetHz{NAN};
+};
+
 struct Timing
 {
     virtual ~Timing() = default;
@@ -14,6 +22,7 @@ struct Timing
     virtual float fps() const = 0;
     virtual double targetHz() const = 0; // use double for stability & precision
     virtual void setTargetHz(double hz) = 0;
+    virtual void applyPreference(SceneTimingPrefs pref) = 0;
     virtual void resetSceneClock() = 0;
     virtual void delay(millis_t ms) { delay(ms); } // default implementation
 };

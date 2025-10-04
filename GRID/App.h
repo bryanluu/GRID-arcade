@@ -33,7 +33,7 @@ public:
         current.reset(new SceneT(std::forward<Args>(args)...));
         // apply preferred timing
         auto prefs = current->timingPrefs();
-        ctx.time.setTargetHz(prefs.targetHz);
+        ctx.time.applyPreference(prefs);
         ctx.time.resetSceneClock();
         // immediate only during setup (works on SDLMatrix32, no-op on Arduino)
         ctx.gfx.setImmediate(true);

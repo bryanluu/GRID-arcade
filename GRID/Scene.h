@@ -3,14 +3,7 @@
 
 #include "AppContext.h"
 #include "helpers.h"
-
-/**
- * @brief Preferences for scene timing
- */
-struct SceneTimingPrefs
-{
-  double targetHz;
-};
+#include "Timing.h"
 
 /**
  * @brief Describes a scene of the game with explicit lifecycle
@@ -19,8 +12,9 @@ struct SceneTimingPrefs
 struct Scene
 {
   virtual ~Scene() = default;
-  // Return the default FPS
-  virtual SceneTimingPrefs timingPrefs() const { return {60.0}; };
+  // Override to specify a preferred targetHz for the scene
+  // Return NaN to use default (60Hz if not set otherwise)
+  virtual SceneTimingPrefs timingPrefs() const { return {NAN}; };
   // Called once when the scene is switched to
   virtual void setup(AppContext &ctx) = 0;
   // dt is in milliseconds
