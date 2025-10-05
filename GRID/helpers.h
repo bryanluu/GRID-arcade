@@ -28,7 +28,7 @@ using byte = uint8_t; // Mimic the byte alias in Arduino-land
 namespace Helpers
 {
     // Mimic the Arduino's delay function
-    inline void sleep(uint32_t ms) { SDL_Delay(ms); }
+    inline void delay(uint32_t ms) { SDL_Delay(ms); }
 }
 
 #else
@@ -38,7 +38,7 @@ namespace Helpers
 namespace Helpers
 {
     // Mimic the Arduino's delay function
-    inline void sleep(uint32_t ms) { delay(ms); }
+    inline void delay(uint32_t ms) { delay(ms); }
 }
 
 #endif // GRID_EMULATION

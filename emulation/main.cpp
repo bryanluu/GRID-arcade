@@ -9,7 +9,6 @@
 
 // match GRID hardware
 static constexpr double TICK_HZ = 60.0;
-static constexpr double DT_SEC = 1.0 / TICK_HZ;
 
 void run_emulator()
 {

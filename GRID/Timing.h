@@ -16,6 +16,7 @@ struct SceneTimingPrefs
 
 struct Timing
 {
+    static constexpr double millisPerSec = 1000.0;
     virtual ~Timing() = default;
     virtual millis_t nowMs() const = 0;
     virtual float dtMs() const = 0;
@@ -24,7 +25,7 @@ struct Timing
     virtual void setTargetHz(double hz) = 0;
     virtual void applyPreference(SceneTimingPrefs pref) = 0;
     virtual void resetSceneClock() = 0;
-    virtual void delay(millis_t ms) { delay(ms); } // default implementation
+    virtual void sleep(millis_t ms) { Helpers::delay(ms); } // default implementation
 };
 
 #endif // TIMING_H

@@ -5,6 +5,9 @@
 #include <SDL.h>
 #include <algorithm>
 
+/**
+ * @brief A Timing implementation that provides fixed-step timing with cadence control.
+ */
 class FixedStepTiming final : public Timing
 {
     const double defaultTargetHz_{ 60.0 };
@@ -15,7 +18,6 @@ class FixedStepTiming final : public Timing
     uint32_t nowMs_ = 0; // scene clock
     float dtMs_ = 0.0f;
     float fpsEMA_ = 0.0f; // exponential moving average of fps
-    static constexpr double millisPerSec_ = 1000.0;
     static constexpr float k_alpha = 0.2f; // EMA smoothing factor
 
 public:
@@ -42,8 +44,8 @@ public:
         {
             acc_ -= dtSec_;
             ++steps;
-            nowMs_ += static_cast<uint32_t>(dtSec_ * millisPerSec_);
-            dtMs_ = static_cast<float>(dtSec_ * millisPerSec_);
+            nowMs_ += static_cast<uint32_t>(dtSec_ * millisPerSec);
+            dtMs_ = static_cast<float>(dtSec_ * millisPerSec);
         }
         if (steps > 0)
         {
@@ -59,7 +61,7 @@ public:
         if (left > 0.0)
         {
             double sleepSec = std::max(0.0, left - 0.001);
-            SDL_Delay(static_cast<Uint32>(sleepSec * millisPerSec_));
+            sleep(static_cast<Uint32>(sleepSec * millisPerSec));
         }
     }
 
