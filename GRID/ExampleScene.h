@@ -3,7 +3,7 @@
 
 #include "AppContext.h"
 #include "Scene.h"
-#include "helpers.h"
+#include "Helpers.h"
 
 class ExampleScene final : public Scene
 {

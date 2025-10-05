@@ -1,7 +1,7 @@
 #ifndef TIMING_H
 #define TIMING_H
 
-#include "helpers.h"
+#include "Helpers.h"
 
 // Type
 using millis_t = uint32_t; // convenience alias for time in milliseconds
