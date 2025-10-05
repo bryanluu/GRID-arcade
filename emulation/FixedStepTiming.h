@@ -93,6 +93,11 @@ public:
         acc_ = 0.0;
         fpsEMA_ = 0.0f;
     }
+
+    void sleep(millis_t ms) override
+    {
+        SDL_Delay(ms);
+    }
 };
 
 #endif // FIXED_STEP_TIMING_H

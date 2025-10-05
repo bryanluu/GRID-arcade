@@ -25,21 +25,9 @@ namespace Helpers
 
 using byte = uint8_t; // Mimic the byte alias in Arduino-land
 
-namespace Helpers
-{
-    // Mimic the Arduino's delay function
-    inline void delay(uint32_t ms) { SDL_Delay(ms); }
-}
-
 #else
 
 #include <Arduino.h>
-
-namespace Helpers
-{
-    // Mimic the Arduino's delay function
-    inline void delay(uint32_t ms) { delay(ms); }
-}
 
 #endif // GRID_EMULATION
 #endif // HELPERS_H

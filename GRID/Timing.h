@@ -25,7 +25,7 @@ struct Timing
     virtual void setTargetHz(double hz) = 0;
     virtual void applyPreference(SceneTimingPrefs pref) = 0;
     virtual void resetSceneClock() = 0;
-    virtual void sleep(millis_t ms) { Helpers::delay(ms); } // default implementation
+    virtual void sleep(millis_t ms) = 0;
 };
 
 #endif // TIMING_H
