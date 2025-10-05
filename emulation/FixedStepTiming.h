@@ -22,7 +22,7 @@ class FixedStepTiming final : public Timing
 
 public:
     explicit FixedStepTiming(double targetHz)
-        : defaultTargetHz_(targetHz), dtSec_(1.0 / targetHz)
+        : defaultTargetHz_(targetHz), targetHz_(targetHz), dtSec_(1.0 / targetHz)
     {
         freq_ = SDL_GetPerformanceFrequency();
         last_ = SDL_GetPerformanceCounter();
