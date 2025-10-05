@@ -10,53 +10,44 @@
 // match GRID hardware
 static constexpr double TICK_HZ = 60.0;
 
-void run_emulator()
+void pollEvents(bool &running, SDLMatrix32 &gfx)
 {
-    using u64 = unsigned long long;
+    SDL_Event e;
+    while (SDL_PollEvent(&e))
+    {
+        if (e.type == SDL_QUIT)
+            running = false; // Q triggers quit
+        if (e.type == SDL_KEYDOWN)
+        {
+            if (e.key.keysym.sym == SDLK_ESCAPE || e.key.keysym.sym == SDLK_q)
+                running = false; // ESC also triggers quit
+            else if (e.key.keysym.sym == SDLK_l)
+                gfx.setLEDMode(!gfx.ledMode()); // toggle LED mode when L is pressed
+        }
+    }
+}
+
+// Main emulation loop
+void run_emulation()
+{
     SDLMatrix32 gfx{};
+    gfx.begin();
     FixedStepTiming time{TICK_HZ};
     App app{gfx, time};
-    gfx.begin();
 
-    app.setScene<BoidsScene>();
-
-    // We pace manually; disable vsync so Present doesn't block unpredictably
-    SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0");
+    app.setScene<ExampleScene>();
 
     bool running = true;
-    const u64 freq = SDL_GetPerformanceFrequency();
-    u64 now = SDL_GetPerformanceCounter();
-    double accumulator = 0.0;
     while (running)
     {
         // 1) Events
-        SDL_Event e;
-        while (SDL_PollEvent(&e))
-        {
-            if (e.type == SDL_QUIT)
-                running = false;
-            if (e.type == SDL_KEYDOWN)
-            {
-                if (e.key.keysym.sym == SDLK_ESCAPE || e.key.keysym.sym == SDLK_q)
-                    running = false;
-                else if (e.key.keysym.sym == SDLK_l)
-                    gfx.setLEDMode(!gfx.ledMode());
-            }
-        }
-
-        // 2) Time step accumulation
-        u64 newNow = SDL_GetPerformanceCounter();
-        double frameSec = double(newNow - now) / double(freq);
-        now = newNow;
-
-        // Clamp very large pauses (drag window, breakpoint) to avoid spirals
-        frameSec = std::min(frameSec, 0.25);
-        accumulator += frameSec;
-
+        pollEvents(running, gfx);
+        // 2) Timing
         int steps = time.pump();
-		for (int i = 0; i < steps; ++i) {
-			app.loopOnce(); // Scene consumes ctx.time
-		}
+        for (int i = 0; i < steps; ++i)
+        {
+            app.loopOnce(); // Scene consumes ctx.time
+        }
         gfx.show();
         time.sleep_to_cadence();
     }
@@ -64,6 +55,6 @@ void run_emulator()
 
 int main()
 {
-    run_emulator();
+    run_emulation();
     return 0;
 }

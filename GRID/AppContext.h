@@ -6,8 +6,8 @@
 
 struct AppContext
 {
-    Matrix32    &gfx;   // reference to Matrix 32x32 graphics
-    Timing      &time;  // reference to timing interface
+    Matrix32 &gfx; // reference to Matrix 32x32 graphics
+    Timing &time;  // reference to timing interface
 };
 
 #endif // APP_CONTEXT_H
