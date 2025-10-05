@@ -3,7 +3,7 @@
 
 // ArduinoPassiveTiming.h
 #include "Timing.h"
-#include "helpers.h"
+#include "Helpers.h"
 #include <Arduino.h>
 
 /**

@@ -1,7 +1,7 @@
 #include "BoidsScene.h"
 #include "App.h"
 #include "Colors.h"
-#include "helpers.h"
+#include "Helpers.h"
 #include "Matrix32.h"
 #include <cmath>
 

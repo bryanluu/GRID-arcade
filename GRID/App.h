@@ -2,7 +2,7 @@
 #define APP_H
 
 #include "AppContext.h"
-#include "helpers.h"
+#include "Helpers.h"
 #include "Scene.h"
 #include <memory>
 #include <utility>

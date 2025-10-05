@@ -2,7 +2,7 @@
 #define SDL_MATRIX32_H
 
 #include "Matrix32.h"
-#include "helpers.h"
+#include "Helpers.h"
 #include <cstdint>
 
 struct SDL_Window;

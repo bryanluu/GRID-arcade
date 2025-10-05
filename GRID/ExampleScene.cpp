@@ -1,7 +1,7 @@
 #include "ExampleScene.h"
 #include "Matrix32.h"
 #include "Colors.h"
-#include "helpers.h"
+#include "Helpers.h"
 
 void ExampleScene::setup(AppContext &ctx)
 {

@@ -2,7 +2,7 @@
 #define SCENE_H
 
 #include "AppContext.h"
-#include "helpers.h"
+#include "Helpers.h"
 #include "Timing.h"
 
 /**
