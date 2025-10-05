@@ -1,6 +1,7 @@
 #ifndef APP_H
 #define APP_H
 
+#include "AppContext.h"
 #include "helpers.h"
 #include "Scene.h"
 #include <memory>
@@ -15,11 +16,11 @@
 // App manages the current scene; only holds Matrix32&
 class App
 {
-    Matrix32 &gfx;
+    AppContext ctx;
     std::unique_ptr<Scene> current;
 
 public:
-    explicit App(Matrix32 &g) : gfx(g) {}
+    explicit App(Matrix32 &gfx, Timing &time) : ctx{gfx, time} {}
 
     // Replace the current scene with a newly constructed SceneT.
     // - Destroys the old scene, creates SceneT(args...), then calls setup(gfx).
@@ -30,18 +31,21 @@ public:
     {
         static_assert(std::is_base_of<Scene, SceneT>::value, "SceneT must derive from Scene");
         current.reset(new SceneT(std::forward<Args>(args)...));
-        
-        // Immediate only during setup (works on SDLMatrix32, no-op on Arduino)
-        gfx.setImmediate(true);
-        current->setup(gfx);
-        gfx.setImmediate(false);
+        // apply preferred timing
+        auto prefs = current->timingPrefs();
+        ctx.time.applyPreference(prefs);
+        ctx.time.resetSceneClock();
+        // immediate only during setup (works on SDLMatrix32, no-op on Arduino)
+        ctx.gfx.setImmediate(true);
+        current->setup(ctx);
+        ctx.gfx.setImmediate(false);
     }
 
-    // Call the current scene's loop(gfx, dt).
+    // Call the current scene's loop(ctx).
     // dt is in milliseconds.
-    void loopOnce(millis_t dt)
+    void loopOnce()
     {
-        current->loop(gfx, dt);
+        current->loop(ctx);
     }
 };
 

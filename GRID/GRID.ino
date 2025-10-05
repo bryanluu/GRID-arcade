@@ -1,6 +1,7 @@
 #include "App.h"
 #include "BoidsScene.h"
 #include "ExampleScene.h"
+#include "ArduinoPassiveTiming.h"
 #include "RGBMatrix32.h"
 #include <RGBmatrixPanel.h>
 
@@ -23,8 +24,27 @@
 #define D   A3
 #define DB  true
 
-void smokeTest(Matrix32 &gfx)
+// a good target framerate for most scenes
+static constexpr double TICK_HZ = 60.0;
+
+using frames_t = uint16_t; // convenience alias for frame counts
+
+// Globals
+
+static RGBmatrixPanel panel(A, B, C, D, CLK, LAT, OE, false);
+static RGBMatrix32 gfx{panel};
+static ArduinoPassiveTiming time{TICK_HZ};
+static App app{gfx, time};
+static unsigned long prev_millis{};
+static unsigned long now_millis{};
+static millis_t fps_last_ms{};
+static uint16_t fps_frames{};
+
+// Basic smoke test to verify the display is working
+
+static void smokeTest(Matrix32 &gfx)
 {
+    gfx.setImmediate(true);
     gfx.begin();
 
     // Solid green
@@ -38,7 +58,6 @@ void smokeTest(Matrix32 &gfx)
         for (int x = 0; x < MATRIX_WIDTH; ++x)
         {
             gfx.drawPixel(x, y, (y & 1) ? RED : GREEN);
-            delay(5);
         }
     }
     delay(2000);
@@ -49,33 +68,47 @@ void smokeTest(Matrix32 &gfx)
     gfx.setTextSize(1);
     gfx.setTextColor(WHITE);
     gfx.println("GRID");
+    delay(1000);
     gfx.setCursor(1, 10);
     gfx.print("<");
+    delay(1000);
     gfx.advance();
     gfx.print(">");
-}
+    delay(1000);
 
-static RGBmatrixPanel panel(A, B, C, D, CLK, LAT, OE, false);
-static RGBMatrix32 gfx{panel};
-static App app{gfx};
-static unsigned long prev_millis{};
-static unsigned long now_millis{};
+    gfx.show();
+    gfx.setImmediate(false);
+}
 
 void setup()
 {
-    Serial.begin(9600);
+    Serial.begin(115200);
     randomSeed(analogRead(0));
     pinMode(0, INPUT_PULLUP);
 
     gfx.begin();
-    // smokeTest();
+    // smokeTest(gfx);
     app.setScene<BoidsScene>();
     prev_millis = millis();
+    fps_last_ms = prev_millis;
 }
 
 void loop()
 {
     now_millis = millis();
-    app.loopOnce(now_millis - prev_millis);
-    prev_millis = now_millis;
+    if (now_millis - prev_millis >= static_cast<millis_t>(time.dtMs()))
+    {
+        app.loopOnce();
+        prev_millis = now_millis;
+    }
+
+    // Log FPS every second
+	millis_t elapsed = now_millis - fps_last_ms;
+	if (elapsed >= time.millisPerSec) {
+		float fps = time.fps();
+		Serial.print("FPS: ");
+		Serial.println(fps, 2); // 2 decimal places
+
+		fps_last_ms = now_millis;
+	}
 }

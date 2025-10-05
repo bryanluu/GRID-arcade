@@ -50,8 +50,10 @@ class BoidsScene final : public Scene
     void drawBoid(Matrix32 &gfx, Boid* boid);
 
   public:
-    void setup(Matrix32 &gfx) override;
-    void loop(Matrix32 &gfx, millis_t dt) override;
+    // matched measured hardware (~16.6 Hz)
+    SceneTimingPrefs timingPrefs() const override { return {16.6}; }
+    void setup(AppContext &ctx) override;
+    void loop(AppContext &ctx) override;
 };
 
 #endif

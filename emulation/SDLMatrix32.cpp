@@ -43,7 +43,7 @@ void SDLMatrix32::begin()
     win_ = SDL_CreateWindow("GRID-Emulator", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 320, 320, SDL_WINDOW_RESIZABLE);
     if (!win_)
         throw std::runtime_error(SDL_GetError());
-    ren_ = SDL_CreateRenderer(win_, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    ren_ = SDL_CreateRenderer(win_, -1, SDL_RENDERER_ACCELERATED);
     if (!ren_)
         throw std::runtime_error(SDL_GetError());
     tex_ = SDL_CreateTexture(ren_, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, MATRIX_WIDTH, MATRIX_HEIGHT);
