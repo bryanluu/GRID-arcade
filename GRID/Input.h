@@ -3,6 +3,12 @@
 
 #include <cstdint>
 
+struct InputCalibration
+{
+    const float deadzone = 0.08f; // 0..1
+    const float gamma = 1.8f;     // >0, 1=linear
+};
+
 struct InputState
 {
     constexpr static int ADC_MAX = 1023;
@@ -19,7 +25,12 @@ struct InputState
 
 class IInputProvider
 {
+    bool initialized = false;
+    InputCalibration calib;
+
 public:
+    IInputProvider(const InputCalibration &c) : calib(c) {}
+    virtual void setup() = 0;
     virtual ~IInputProvider() = default;
     // Called once per tick; must be non-blocking
     virtual void sample(InputState &out) = 0;
@@ -34,7 +45,7 @@ public:
     {
         InputState raw;
         prov->sample(raw);
-        current = filterAndClamp(raw);
+        current = processInput(raw);
         frameId++;
     }
     const InputState &state() const { return current; }
@@ -44,7 +55,11 @@ private:
     IInputProvider *prov = nullptr;
     InputState current{};
     uint64_t frameId = 0;
-    InputState filterAndClamp(const InputState &s);
+    void normalize(InputState &s);
+    void applyDeadzone(InputState &s);
+    void applyCurve(InputState &s);
+    void recomputeADC(InputState &s);
+    InputState processInput(const InputState &s);
 };
 
 #endif // INPUT_H
