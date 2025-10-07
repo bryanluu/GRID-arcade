@@ -1,4 +1,6 @@
 #include "Input.h"
+#include "Helpers.h"
+#include <cmath>
 #include <algorithm>
 
 // Normalize 0..1023 to -1..+1
@@ -8,11 +10,11 @@ void Input::normalize(InputState &s)
     {
         return (float(adc) / static_cast<float>(InputState::ADC_MAX)) * 2.0f - 1.0f;
     };
-    s.x = std::clamp(toNorm(s.x_adc), -1.0f, 1.0f);
-    s.y = std::clamp(toNorm(s.y_adc), -1.0f, 1.0f);
+    s.x = Helpers::clamp(toNorm(s.x_adc), -1.0f, 1.0f);
+    s.y = Helpers::clamp(toNorm(s.y_adc), -1.0f, 1.0f);
 }
 
-// Apply eadzone to avoid jitter near center
+// Apply deadzone to avoid jitter near center
 void Input::applyDeadzone(InputState &s)
 {
     auto dead = 0.08f;
@@ -40,7 +42,7 @@ void Input::recomputeADC(InputState &s)
 {
     auto toAdc = [](float v)
     {
-        float f = std::clamp((v + 1.0f) * 511.5f, 0.0f, 1023.0f);
+        float f = Helpers::clamp((v + 1.0f) * 511.5f, 0.0f, 1023.0f);
         return static_cast<uint16_t>(std::lround(f));
     };
     s.x_adc = toAdc(s.x);

@@ -73,7 +73,7 @@ public:
 
     void setTargetHz(double hz) override
     {
-        targetHz_ = BOUND(10.0, hz, 240.0);
+        targetHz_ = Helpers::clamp(hz, 10.0, 240.0);
         dtSec_ = 1.0 / targetHz_;
         // Optional: smooth retune
     }
