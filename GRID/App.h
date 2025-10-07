@@ -46,6 +46,7 @@ public:
     void loopOnce()
     {
         current->loop(ctx);
+        ctx.gfx.show();
     }
 };
 

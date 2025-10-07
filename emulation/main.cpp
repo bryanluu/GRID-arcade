@@ -48,7 +48,6 @@ void run_emulation()
         {
             app.loopOnce(); // Scene consumes ctx.time
         }
-        gfx.show();
         time.sleep_to_cadence();
     }
 }
