@@ -49,7 +49,8 @@ void Input::recomputeADC(InputState &s)
     s.y_adc = toAdc(s.y);
 }
 
-// Filters
+// Deadzone: treat small magnitudes as 0 to kill drift.
+// Response curve: v' = sign(v) * |v|^γ for finer low‑end control.
 InputState Input::processInput(const InputState &s)
 {
     InputState o = s;

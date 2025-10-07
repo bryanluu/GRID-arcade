@@ -1,7 +1,8 @@
 #include "App.h"
+#include "ArduinoInputProvider.h"
+#include "ArduinoPassiveTiming.h"
 #include "BoidsScene.h"
 #include "ExampleScene.h"
-#include "ArduinoPassiveTiming.h"
 #include "RGBMatrix32.h"
 #include <RGBmatrixPanel.h>
 
@@ -13,19 +14,23 @@
 // Pin A4 works on the Adafruit Metro M4 (if using the Adafruit RGB
 // Matrix Shield, cut trace between CLK pads and run a wire to A4).
 
-#define CLK  8   // USE THIS ON ADAFRUIT METRO M0, etc.
-//#define CLK A4 // USE THIS ON METRO M4 (not M0)
-//#define CLK 11 // USE THIS ON ARDUINO MEGA
-#define OE   9
+#define CLK 8 // USE THIS ON ADAFRUIT METRO M0, etc.
+// #define CLK A4 // USE THIS ON METRO M4 (not M0)
+// #define CLK 11 // USE THIS ON ARDUINO MEGA
+#define OE 9
 #define LAT 10
-#define A   A0
-#define B   A1
-#define C   A2
-#define D   A3
-#define DB  true
+#define A A0
+#define B A1
+#define C A2
+#define D A3
+#define DB true
 
 // a good target framerate for most scenes
 static constexpr double TICK_HZ = 60.0;
+
+static constexpr uint8_t HORIZONTAL_PIN = A5;
+static constexpr uint8_t VERTICAL_PIN = A4;
+static constexpr uint8_t BUTTON_PIN = 0;
 
 using frames_t = uint16_t; // convenience alias for frame counts
 
@@ -34,10 +39,12 @@ using frames_t = uint16_t; // convenience alias for frame counts
 static RGBmatrixPanel panel(A, B, C, D, CLK, LAT, OE, false);
 static RGBMatrix32 gfx{panel};
 static ArduinoPassiveTiming time{TICK_HZ};
-static App app{gfx, time};
+static ArduinoInputProvider inputProvider{HORIZONTAL_PIN, VERTICAL_PIN, BUTTON_PIN};
+static Input input{};
+static App app{gfx, time, input};
 static unsigned long prev_millis{};
 static unsigned long now_millis{};
-static millis_t fps_last_ms{};
+static millis_t log_last_ms{};
 static uint16_t fps_frames{};
 
 // Basic smoke test to verify the display is working
@@ -83,12 +90,14 @@ void setup()
     Serial.begin(115200);
     randomSeed(analogRead(0));
     pinMode(0, INPUT_PULLUP);
+    inputProvider.setup();
+    input.init(&inputProvider);
 
     gfx.begin();
-    smokeTest(gfx, time); // uncomment to run smoke tests before main app
+    // smokeTest(gfx, time); // uncomment to run smoke tests before main app
     app.setScene<BoidsScene>();
     prev_millis = millis();
-    fps_last_ms = prev_millis;
+    log_last_ms = prev_millis;
 }
 
 void loop()
@@ -100,13 +109,22 @@ void loop()
         prev_millis = now_millis;
     }
 
-    // Log FPS every second
-	millis_t elapsed = now_millis - fps_last_ms;
-	if (elapsed >= time.millisPerSec) {
-		float fps = time.fps();
-		Serial.print("FPS: ");
-		Serial.println(fps, 2); // 2 decimal places
+    // Log every second
+    millis_t elapsed = now_millis - log_last_ms;
+    if (elapsed >= time.millisPerSec)
+    {
+        float fps = time.fps();
+        Serial.print("FPS: ");
+        Serial.println(fps, 2); // 2 decimal places
 
-		fps_last_ms = now_millis;
-	}
+        InputState state = input.state();
+        Serial.print("X: ");
+        Serial.print(state.x, 2);
+        Serial.print(" Y: ");
+        Serial.print(state.y, 2);
+        Serial.print(" Pressed: ");
+        Serial.println(state.pressed);
+
+        log_last_ms = now_millis;
+    }
 }

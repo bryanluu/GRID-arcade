@@ -3,11 +3,13 @@
 
 #include "Matrix32.h"
 #include "Timing.h"
+#include "Input.h"
 
 struct AppContext
 {
     Matrix32 &gfx; // reference to Matrix 32x32 graphics
     Timing &time;  // reference to timing interface
+    Input &input;  // reference to input interface
 };
 
 #endif // APP_CONTEXT_H

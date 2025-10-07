@@ -3,6 +3,9 @@
 
 #include <cstdint>
 
+using AnalogInput_t = uint16_t;
+using DigitalInput_t = bool;
+
 struct InputCalibration
 {
     const float deadzone = 0.08f; // 0..1
@@ -14,9 +17,9 @@ struct InputState
     constexpr static int ADC_MAX = 1023;
 
     // Raw Arduino-like
-    uint16_t x_adc; // 0..1023
-    uint16_t y_adc; // 0..1023
-    bool pressed;
+    AnalogInput_t x_adc; // 0..1023
+    AnalogInput_t y_adc; // 0..1023
+    DigitalInput_t pressed;
 
     // Normalized helpers
     float x; // -1..+1
@@ -25,7 +28,6 @@ struct InputState
 
 class IInputProvider
 {
-    bool initialized = false;
     InputCalibration calib;
 
 public:
