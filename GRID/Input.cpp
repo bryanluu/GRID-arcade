@@ -8,18 +8,26 @@ void Input::normalize(InputState &s)
 {
     auto toNorm = [](uint16_t adc)
     {
-        return (float(adc) / static_cast<float>(InputState::ADC_MAX)) * 2.0f - 1.0f;
+        return ((float(adc) / static_cast<float>(InputState::ADC_MAX)) * 2.0f) - 1.0f;
     };
     s.x = Helpers::clamp(toNorm(s.x_adc), -1.0f, 1.0f);
     s.y = Helpers::clamp(toNorm(s.y_adc), -1.0f, 1.0f);
+
+    // Ensure within unit circle
+    float mag = std::sqrt(s.x * s.x + s.y * s.y);
+    if (mag > prov->calib.deadzone)
+    {
+        s.x /= mag;
+        s.y /= mag;
+    }
 }
 
 // Apply deadzone to avoid jitter near center
 void Input::applyDeadzone(InputState &s)
 {
-    auto dead = 0.08f;
+    auto dead = prov->calib.deadzone;
     auto dz = [&](float v)
-    { return (std::fabs(v) < dead) ? 0.0f : v; };
+    { return (std::fabs(v) <= dead) ? 0.0f : v; };
     s.x = dz(s.x);
     s.y = dz(s.y);
 }
@@ -27,7 +35,7 @@ void Input::applyDeadzone(InputState &s)
 // Apply curve for finer control near center
 void Input::applyCurve(InputState &s)
 {
-    auto gamma = 1.8f;
+    auto gamma = prov->calib.gamma;
     auto curve = [&](float v)
     {
         float a = std::fabs(v);

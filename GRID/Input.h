@@ -28,9 +28,8 @@ struct InputState
 
 class IInputProvider
 {
-    InputCalibration calib;
-
 public:
+    const InputCalibration calib;
     IInputProvider(const InputCalibration &c) : calib(c) {}
     virtual ~IInputProvider() = default;
     // Called once per tick; must be non-blocking

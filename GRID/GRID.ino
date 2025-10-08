@@ -90,7 +90,7 @@ void setup()
     Serial.begin(115200);
     randomSeed(analogRead(0));
     pinMode(0, INPUT_PULLUP);
-    inputProvider.setup();
+    inputProvider.init();
     input.init(&inputProvider);
 
     gfx.begin();
@@ -118,11 +118,15 @@ void loop()
         Serial.println(fps, 2); // 2 decimal places
 
         InputState state = input.state();
-        Serial.print("X: ");
+        Serial.print("Raw ADC X: ");
+        Serial.print(state.x_adc);
+        Serial.print(" Y: ");
+        Serial.print(state.y_adc);
+        Serial.print(", Norm X: ");
         Serial.print(state.x, 2);
         Serial.print(" Y: ");
         Serial.print(state.y, 2);
-        Serial.print(" Pressed: ");
+        Serial.print(", Pressed: ");
         Serial.println(state.pressed);
 
         log_last_ms = now_millis;

@@ -47,8 +47,10 @@ void run_emulation()
             app.loopOnce();             // Scene consumes ctx.time
         }
         // Log inputs
-        printf("X: %5.3f Y: %5.3f Pressed: %d\n",
-               input.state().x, input.state().y, input.state().pressed ? 1 : 0);
+        printf("Raw X: %d Y: %d, Norm X: %5.3f Y: %5.3f, Pressed: %d\n",
+               input.state().x_adc, input.state().y_adc,
+               input.state().x, input.state().y,
+               input.state().pressed ? 1 : 0);
         // Log FPS
         printf("FPS: %5.2f\n", time.fps());
         fflush(stdout);
