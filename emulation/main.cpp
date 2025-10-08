@@ -34,7 +34,6 @@ void run_emulation()
     SDLMatrix32 gfx{};
     gfx.begin();
     FixedStepTiming time{TICK_HZ};
-    Input input{};
     SDLInputProvider inputProvider{};
     SDL_Window *win = gfx.window();
 
@@ -42,6 +41,7 @@ void run_emulation()
     if (!inputProvider.init(win))
         return; // failed to init input provider
 
+    Input input{};
     input.init(&inputProvider);
     App app{gfx, time, input};
 

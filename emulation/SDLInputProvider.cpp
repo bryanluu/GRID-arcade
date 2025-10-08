@@ -36,9 +36,14 @@ void SDLInputProvider::openFirstController()
     {
         if (SDL_IsGameController(i))
         {
-            pad = SDL_GameControllerOpen(i);
-            if (pad)
+            SDL_GameController *p = SDL_GameControllerOpen(i);
+            if (p && SDL_GameControllerGetAttached(p) == SDL_TRUE)
+            {
+                pad = p;
                 break;
+            }
+            if (p)
+                SDL_GameControllerClose(p);
         }
     }
 }
@@ -76,17 +81,22 @@ void SDLInputProvider::pumpEvents()
             else if (e.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
             {
                 windowFocused = false;
+                lmbHeld = rmbHeld = false;
                 vx = vy = 0.f;
             }
             break;
         case SDL_CONTROLLERDEVICEADDED:
             if (!pad)
-                openFirstController(); // auto-open
+                openFirstController();
             break;
         case SDL_CONTROLLERDEVICEREMOVED:
-            if (pad && e.cdevice.which == SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(pad)))
+            if (pad)
             {
-                closeController();
+                SDL_Joystick *js = SDL_GameControllerGetJoystick(pad);
+                if (js && SDL_JoystickInstanceID(js) == e.cdevice.which)
+                {
+                    closeController();
+                }
             }
             break;
         case SDL_KEYDOWN:
@@ -102,6 +112,26 @@ void SDLInputProvider::pumpEvents()
                 }
             }
             break;
+        case SDL_MOUSEBUTTONDOWN:
+            if (e.button.button == SDL_BUTTON_LEFT)
+            {
+                lmbHeld = true;
+            }
+            if (e.button.button == SDL_BUTTON_RIGHT)
+            {
+                rmbHeld = true;
+            }
+            break;
+        case SDL_MOUSEBUTTONUP:
+            if (e.button.button == SDL_BUTTON_LEFT)
+            {
+                lmbHeld = false;
+            }
+            if (e.button.button == SDL_BUTTON_RIGHT)
+            {
+                rmbHeld = false;
+            }
+            break;
         default:
             break;
         }
@@ -110,16 +140,30 @@ void SDLInputProvider::pumpEvents()
 
 void SDLInputProvider::sample(InputState &state)
 {
-    // Button mapping (Space) always available
-    state.pressed = kb[SDL_SCANCODE_SPACE];
+    state.pressed = false;
 
-    // Fallback order: gamepad → mouse → keyboard
-    if (mode == InputMode::Analog)
+    const millis_t now = SDL_GetTicks();
+    const bool padMoving = stickActive(pad);
+    const bool analogEngaged = padMoving || lmbHeld;
+
+    // RMB acts as “button” while in Analog
+    if (mode == InputMode::Analog || analogEngaged)
     {
+        mode = InputMode::Analog;
+        lastAnalogActiveMs = now;
+        state.pressed = rmbHeld; // Right mouse as digital press in Analog
         genAnalog(state);
     }
     else
     {
+        // If previously in Analog, check idle timeout
+        if (mode == InputMode::Analog && (now - lastAnalogActiveMs) > analogIdleTimeoutMs)
+        {
+            mode = InputMode::DPad;
+            vx = vy = 0.f; // reset mouse accumulator on exit
+        }
+        // In D-pad, button is Space (you can also keep RMB if desired)
+        state.pressed = (kb[SDL_SCANCODE_SPACE] != 0);
         genDPad(state);
     }
 }
@@ -176,23 +220,27 @@ void SDLInputProvider::genAnalog(InputState &s)
     // 2) If no gamepad analog, use mouse relative deltas (velocity model)
     if (!haveAnalog && windowFocused)
     {
-        int dx, dy;
-        Uint32 buttons = SDL_GetRelativeMouseState(&dx, &dy);
-        (void)buttons; // button mapped from Space per your spec
+        int dx = 0, dy = 0;
 
-        // Sensitivity/decay: you asked to ignore for now; use gentle defaults
-        // k: px → norm, decay λ at 60 Hz
-        const float kSens = 0.015f;
-        const float decay = 0.12f;
+        // Only accumulate relative motion when LMB is held
+        if (lmbHeld)
+        {
+            SDL_GetRelativeMouseState(&dx, &dy);
+            const float kSens = 0.015f;
+            const float decay = 0.12f;
+            vx += kSens * float(dx);
+            vy += kSens * float(dy);
+            // when LMB is down, you can keep weaker decay or none; keep gentle default:
+            vx *= (1.f - decay);
+            vy *= (1.f - decay);
+        }
+        else
+        {
+            // If LMB not held, decay aggressively toward 0 so we quickly “let go”
+            vx *= 0.5f;
+            vy *= 0.5f;
+        }
 
-        vx += kSens * float(dx);
-        vy += kSens * float(dy);
-
-        // Decay to re-center when mouse stops
-        vx *= (1.f - decay);
-        vy *= (1.f - decay);
-
-        // Clamp to [-1,1]
         nx = Helpers::clamp(vx, -1.f, 1.f);
         ny = Helpers::clamp(vy, -1.f, 1.f);
         haveAnalog = std::fabs(nx) > 0.001f || std::fabs(ny) > 0.001f;
