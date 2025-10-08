@@ -16,7 +16,7 @@ public:
     ArduinoInputProvider(uint8_t x, uint8_t y, uint8_t b, const InputCalibration &c = {})
         : IInputProvider(c), pinX(x), pinY(y), pinBtn(b) {}
 
-    void setup() override
+    bool init()
     {
         if (!initialized)
         {
@@ -25,6 +25,7 @@ public:
             pinMode(pinBtn, INPUT_PULLUP); // Button active low
             initialized = true;
         }
+        return initialized;
     }
 
     void sample(InputState &state) override

@@ -2,6 +2,7 @@
 #include "BoidsScene.h"
 #include "ExampleScene.h"
 #include "FixedStepTiming.h"
+#include "SDLInputProvider.h"
 #include "SDLMatrix32.h"
 #include <SDL.h>
 #include <algorithm>
@@ -33,9 +34,18 @@ void run_emulation()
     SDLMatrix32 gfx{};
     gfx.begin();
     FixedStepTiming time{TICK_HZ};
-    App app{gfx, time};
+    Input input{};
+    SDLInputProvider inputProvider{};
+    SDL_Window *win = gfx.window();
 
-    app.setScene<ExampleScene>();
+    // TODO handle init failure
+    if (!inputProvider.init(win))
+        return; // failed to init input provider
+
+    input.init(&inputProvider);
+    App app{gfx, time, input};
+
+    app.setScene<BoidsScene>();
 
     bool running = true;
     while (running)
@@ -46,8 +56,16 @@ void run_emulation()
         int steps = time.pump();
         for (int i = 0; i < steps; ++i)
         {
-            app.loopOnce(); // Scene consumes ctx.time
+            inputProvider.pumpEvents(); // handle input events
+            app.loopOnce();             // Scene consumes ctx.time
         }
+        // Log inputs
+        printf("X: %5.3f Y: %5.3f Pressed: %d\n",
+               input.state().x, input.state().y, input.state().pressed ? 1 : 0);
+        // Log FPS
+        printf("FPS: %5.2f\n", time.fps());
+        fflush(stdout);
+        // 3) Sleep to cadence
         time.sleep_to_cadence();
     }
 }

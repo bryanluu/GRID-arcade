@@ -47,6 +47,8 @@ public:
 
     // Initialize SDL window, renderer, streaming texture, and compute initial scale.
     void begin() override;
+    // Get the underlying SDL_Window (for input provider).
+    SDL_Window *window() const { return win_; }
     // Clear the 32x32 framebuffer to black.
     void clear() override;
     // Set a single framebuffer pixel (bounds-checked).

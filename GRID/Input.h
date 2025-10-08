@@ -32,7 +32,6 @@ class IInputProvider
 
 public:
     IInputProvider(const InputCalibration &c) : calib(c) {}
-    virtual void setup() = 0;
     virtual ~IInputProvider() = default;
     // Called once per tick; must be non-blocking
     virtual void sample(InputState &out) = 0;
