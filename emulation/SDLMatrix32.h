@@ -47,12 +47,17 @@ public:
 
     // Initialize SDL window, renderer, streaming texture, and compute initial scale.
     void begin() override;
+    // Get the underlying SDL_Window (for input provider).
+    SDL_Window *window() const { return win_; }
     // Clear the 32x32 framebuffer to black.
     void clear() override;
     // Set a single framebuffer pixel (bounds-checked).
     void set(int x, int y, Color333 c) override;
     // Present the framebuffer using the current render mode (screen or LED).
     void show() override;
+
+    // Toggle LED rendering mode.
+    void toggleLEDMode() { led_mode_ = !led_mode_; }
 
     // Draw a 5x7 glyph scaled by setTextSize() at (x,y).
     void drawChar(int x, int y, char ch, Color333 c) override;

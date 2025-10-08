@@ -13,10 +13,10 @@
  */
 class ArduinoPassiveTiming final : public Timing
 {
-    const double defaultTargetHz_{ 60.0 };
+    const double defaultTargetHz_{60.0};
     double targetHz_;
     float dtMs_;
-    uint32_t startMs_;
+    millis_t startMs_;
 
 public:
     explicit ArduinoPassiveTiming(double targetHz)
@@ -25,11 +25,11 @@ public:
           startMs_(millis()) {}
 
     // No cadence control; just reflect Arduino time
-    uint32_t nowMs() const override { return millis() - startMs_; }
+    millis_t nowMs() const override { return millis() - startMs_; }
     float dtMs() const override { return dtMs_; } // nominal
     float fps() const override { return static_cast<float>(targetHz_); }
     double targetHz() const override { return targetHz_; }
-    
+
     // When there is a preferred timing, apply it; otherwise use default
     void applyPreference(SceneTimingPrefs pref) override
     {

@@ -58,8 +58,8 @@ void BoidsScene::constrainSpeed(Boid* boid)
  */
 void BoidsScene::constrainPosition(Boid* boid)
 {
-    boid->position.x = BOUND(0, boid->position.x, MATRIX_WIDTH-1);
-    boid->position.y = BOUND(0, boid->position.y, MATRIX_HEIGHT-1);
+    boid->position.x = Helpers::clamp(boid->position.x, 0.0,  double(MATRIX_WIDTH-1));
+    boid->position.y = Helpers::clamp(boid->position.y, 0.0, double(MATRIX_HEIGHT-1));
 }
 
 /*
