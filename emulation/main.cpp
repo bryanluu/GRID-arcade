@@ -11,23 +11,6 @@
 // match GRID hardware
 static constexpr double TICK_HZ = 60.0;
 
-void pollEvents(bool &running, SDLMatrix32 &gfx)
-{
-    SDL_Event e;
-    while (SDL_PollEvent(&e))
-    {
-        if (e.type == SDL_QUIT)
-            running = false; // Q triggers quit
-        if (e.type == SDL_KEYDOWN)
-        {
-            if (e.key.keysym.sym == SDLK_ESCAPE || e.key.keysym.sym == SDLK_q)
-                running = false; // ESC also triggers quit
-            else if (e.key.keysym.sym == SDLK_l)
-                gfx.setLEDMode(!gfx.ledMode()); // toggle LED mode when L is pressed
-        }
-    }
-}
-
 // Main emulation loop
 void run_emulation()
 {
@@ -57,9 +40,6 @@ void run_emulation()
 
     while (running)
     {
-        // 1) Events
-        // pollEvents(running, gfx);
-        // 2) Timing
         int steps = time.pump();
         for (int i = 0; i < steps; ++i)
         {
@@ -72,7 +52,6 @@ void run_emulation()
         // Log FPS
         printf("FPS: %5.2f\n", time.fps());
         fflush(stdout);
-        // 3) Sleep to cadence
         time.sleep_to_cadence();
     }
 }

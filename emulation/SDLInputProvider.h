@@ -18,8 +18,8 @@ class SDLInputProvider final : public IInputProvider
     // State
 
     bool initialized = false;
-    millis_t lastAnalogActiveMs = 0;          // time of last analog engagement
-    const millis_t analogIdleTimeoutMs = 250; // revert to D-pad after this idle window
+    millis_t lastAnalogActiveMs = 0;                 // time of last analog engagement
+    const static millis_t analogIdleTimeoutMs = 250; // revert to D-pad after this idle window
     bool lmbHeld = false;
     bool rmbHeld = false;
 
@@ -42,15 +42,6 @@ class SDLInputProvider final : public IInputProvider
     // Mouse analog accumulator (velocity model)
     float vx = 0.f, vy = 0.f;
 
-    // Helpers
-    void openFirstController();
-    void closeController();
-    void setMouseRelative(bool enabled);
-
-    // Generators
-    void genDPad(InputState &s);
-    void genAnalog(InputState &s);
-
 public:
     SDLInputProvider(const InputCalibration &c = {}) : IInputProvider(c) {}
     bool init(SDL_Window *win);
@@ -72,6 +63,27 @@ public:
     InputMode getMode() const { return mode; }
 
 private:
+    // Constants
+    static constexpr float EPSILON = 1e-6f;
+
+    // Helpers
+    void openFirstController();
+    void closeController();
+    void setMouseRelative(bool enabled);
+    void normalizeToUnitCircle(float &x, float &y);
+    void useSDLAxis(float &nx, float &ny, bool &haveAnalog);
+    void useMouseDeltas(float &nx, float &ny, bool &haveAnalog);
+
+    // Generators
+    void genDPad(InputState &s);
+    void genAnalog(InputState &s);
+
+    // Event handlers
+    void handleKeyDown(const SDL_KeyboardEvent &key);
+    void handleWindowEvent(const SDL_WindowEvent &we);
+    void handleMouseButtonDown(const SDL_MouseButtonEvent &be);
+    void handleMouseButtonUp(const SDL_MouseButtonEvent &be);
+
     // Utilities
     static inline float toNormFromADC(AnalogInput_t adc)
     {
