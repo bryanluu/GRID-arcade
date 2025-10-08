@@ -5,6 +5,7 @@
 #include "Input.h"
 #include "Helpers.h"
 #include <SDL.h>
+#include <functional>
 
 enum class InputMode
 {
@@ -25,6 +26,10 @@ class SDLInputProvider final : public IInputProvider
     SDL_Window *window = nullptr;
     SDL_GameController *pad = nullptr;
     bool windowFocused = true;
+
+    // Callbacks
+    std::function<void()> quitCb;      // Q or Esc
+    std::function<void()> toggleLEDCb; // L
 
     // Config
 
@@ -52,9 +57,15 @@ public:
     void shutdown();
     ~SDLInputProvider() override { shutdown(); }
 
-    // Call once per frame at 60 Hz
-    void pumpEvents();                       // SDL_PollEvent loop, handle focus/mode/buttons, etc.
-    void sample(InputState &state) override; // fills state based on current mode and devices
+    // Single SDL_PollEvent loop, handle focus/mode/buttons, etc.
+    void pumpEvents();
+
+    // Hooks
+    void onQuit(std::function<void()> cb) { quitCb = std::move(cb); }
+    void onToggleLED(std::function<void()> cb) { toggleLEDCb = std::move(cb); }
+
+    // fills state based on current mode and devices
+    void sample(InputState &state) override;
 
     // Optional: toggle mode externally
     void setMode(InputMode m) { mode = m; }

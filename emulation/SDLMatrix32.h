@@ -56,6 +56,9 @@ public:
     // Present the framebuffer using the current render mode (screen or LED).
     void show() override;
 
+    // Toggle LED rendering mode.
+    void toggleLEDMode() { led_mode_ = !led_mode_; }
+
     // Draw a 5x7 glyph scaled by setTextSize() at (x,y).
     void drawChar(int x, int y, char ch, Color333 c) override;
     // Set one pixel (alias for set()).

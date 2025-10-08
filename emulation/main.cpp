@@ -36,10 +36,18 @@ void run_emulation()
     FixedStepTiming time{TICK_HZ};
     SDLInputProvider inputProvider{};
     SDL_Window *win = gfx.window();
+    bool running = true; // main loop flag
 
     // TODO handle init failure
     if (!inputProvider.init(win))
         return; // failed to init input provider
+
+    // Wire quit (Q/Esc) and LED toggle (L)
+    inputProvider.onQuit([&]
+                         { running = false; });
+    // toggle LED mode when L is pressed
+    inputProvider.onToggleLED([&]
+                              { gfx.toggleLEDMode(); });
 
     Input input{};
     input.init(&inputProvider);
@@ -47,11 +55,10 @@ void run_emulation()
 
     app.setScene<BoidsScene>();
 
-    bool running = true;
     while (running)
     {
         // 1) Events
-        pollEvents(running, gfx);
+        // pollEvents(running, gfx);
         // 2) Timing
         int steps = time.pump();
         for (int i = 0; i < steps; ++i)

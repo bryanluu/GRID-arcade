@@ -70,7 +70,38 @@ void SDLInputProvider::pumpEvents()
     {
         switch (e.type)
         {
+        case SDL_QUIT:
+        {
+            if (quitCb)
+                quitCb();
+            break;
+        }
+        case SDL_KEYDOWN:
+        {
+            const SDL_Keycode k = e.key.keysym.sym;
+            if (k == SDLK_q || k == SDLK_ESCAPE)
+            {
+                if (quitCb)
+                    quitCb();
+            }
+            else if (k == SDLK_l)
+            {
+                if (toggleLEDCb)
+                    toggleLEDCb();
+            }
+            else if (k == SDLK_F1)
+            {
+                mode = (mode == InputMode::DPad) ? InputMode::Analog : InputMode::DPad;
+                if (mode == InputMode::Analog)
+                {
+                    vx = vy = 0.f;
+                    SDL_GetRelativeMouseState(nullptr, nullptr);
+                }
+            }
+            break;
+        }
         case SDL_WINDOWEVENT:
+        {
             if (e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
             {
                 windowFocused = true;
@@ -85,11 +116,15 @@ void SDLInputProvider::pumpEvents()
                 vx = vy = 0.f;
             }
             break;
+        }
         case SDL_CONTROLLERDEVICEADDED:
+        {
             if (!pad)
                 openFirstController();
             break;
+        }
         case SDL_CONTROLLERDEVICEREMOVED:
+        {
             if (pad)
             {
                 SDL_Joystick *js = SDL_GameControllerGetJoystick(pad);
@@ -99,20 +134,9 @@ void SDLInputProvider::pumpEvents()
                 }
             }
             break;
-        case SDL_KEYDOWN:
-            // Example: toggle mode with F1
-            if (e.key.keysym.sym == SDLK_F1)
-            {
-                mode = (mode == InputMode::DPad) ? InputMode::Analog : InputMode::DPad;
-                // Reset accumulators when switching into Analog
-                if (mode == InputMode::Analog)
-                {
-                    vx = vy = 0.f;
-                    SDL_GetRelativeMouseState(nullptr, nullptr);
-                }
-            }
-            break;
+        }
         case SDL_MOUSEBUTTONDOWN:
+        {
             if (e.button.button == SDL_BUTTON_LEFT)
             {
                 lmbHeld = true;
@@ -122,7 +146,9 @@ void SDLInputProvider::pumpEvents()
                 rmbHeld = true;
             }
             break;
+        }
         case SDL_MOUSEBUTTONUP:
+        {
             if (e.button.button == SDL_BUTTON_LEFT)
             {
                 lmbHeld = false;
@@ -132,6 +158,7 @@ void SDLInputProvider::pumpEvents()
                 rmbHeld = false;
             }
             break;
+        }
         default:
             break;
         }
@@ -163,7 +190,7 @@ void SDLInputProvider::sample(InputState &state)
             vx = vy = 0.f; // reset mouse accumulator on exit
         }
         // In D-pad, button is Space (you can also keep RMB if desired)
-        state.pressed = (kb[SDL_SCANCODE_SPACE] != 0);
+        state.pressed = (kb && kb[SDL_SCANCODE_SPACE] != 0);
         genDPad(state);
     }
 }
