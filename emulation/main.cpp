@@ -1,5 +1,6 @@
 #include "App.h"
 #include "BoidsScene.h"
+#include "CalibrationScene.h"
 #include "ExampleScene.h"
 #include "FixedStepTiming.h"
 #include "SDLInputProvider.h"
@@ -36,7 +37,7 @@ void run_emulation()
     input.init(&inputProvider);
     App app{gfx, time, input};
 
-    app.setScene<BoidsScene>();
+    app.setScene<CalibrationScene>();
 
     while (running)
     {

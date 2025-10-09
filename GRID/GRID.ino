@@ -2,6 +2,7 @@
 #include "ArduinoInputProvider.h"
 #include "ArduinoPassiveTiming.h"
 #include "BoidsScene.h"
+#include "CalibrationScene.h"
 #include "ExampleScene.h"
 #include "RGBMatrix32.h"
 #include <RGBmatrixPanel.h>
@@ -48,7 +49,6 @@ static millis_t log_last_ms{};
 static uint16_t fps_frames{};
 
 // Basic smoke test to verify the display is working
-
 static void smokeTest(Matrix32 &gfx, Timing &time)
 {
     gfx.setImmediate(true);
@@ -95,7 +95,7 @@ void setup()
 
     gfx.begin();
     // smokeTest(gfx, time); // uncomment to run smoke tests before main app
-    app.setScene<BoidsScene>();
+    app.setScene<CalibrationScene>();
     prev_millis = millis();
     log_last_ms = prev_millis;
 }
