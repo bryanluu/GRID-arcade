@@ -33,6 +33,9 @@ void Input::applyDeadzone(InputState &s)
 }
 
 // Apply curve for finer control near center
+// v' = sign(v) * |v|^γ
+// Gamma usually between 1.5 and 2.5
+// Higher gamma means more curve, less sensitivity near center
 void Input::applyCurve(InputState &s)
 {
     auto gamma = prov->calib.gamma;
