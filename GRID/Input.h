@@ -7,12 +7,6 @@
 using AnalogInput_t = uint16_t;
 using DigitalInput_t = bool;
 
-struct InputCalibration
-{
-    const float deadzone = 0.08f; // 0..1
-    const float gamma = 1.8f;     // >0, 1=linear
-};
-
 struct InputState
 {
     constexpr static int ADC_MAX = 1023;
@@ -28,6 +22,21 @@ struct InputState
 
     // Vector form of (x,y)
     Vector vec() const { return Vector{x, y}; }
+};
+
+struct InputCalibration
+{
+    const float deadzone = 0.08f; // 0..1
+    const float gamma = 1.8f;     // >0, 1=linear
+    // ADC calibration (if needed)
+    const AnalogInput_t x_adc_low = 0;
+    const AnalogInput_t x_adc_center = InputState::ADC_MAX / 2; // usually 512
+    const AnalogInput_t x_adc_high = InputState::ADC_MAX;
+    const AnalogInput_t y_adc_low = 0;
+    const AnalogInput_t y_adc_center = InputState::ADC_MAX / 2;
+    const AnalogInput_t y_adc_high = InputState::ADC_MAX;
+
+    constexpr InputCalibration() = default;
 };
 
 class IInputProvider
@@ -59,7 +68,7 @@ private:
     IInputProvider *prov = nullptr;
     InputState current{};
     uint64_t frameId = 0;
-    float normalize(AnalogInput_t adc);
+    void normalizeAndCalibrate(InputState &s);
     float applyDeadzone(float v);
     float applyCurve(float v);
     void recomputeADC(InputState &s);

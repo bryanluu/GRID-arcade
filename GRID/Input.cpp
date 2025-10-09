@@ -3,10 +3,31 @@
 #include <cmath>
 #include <algorithm>
 
-// Normalize 0..1023 to -1..+1
-float Input::normalize(AnalogInput_t adc)
+static constexpr float EPSILON = 1e-6f;
+
+// Normalize from calibrated ADC space (0..1023) to -1..+1
+void Input::normalizeAndCalibrate(InputState &s)
 {
-    return ((float(adc) / static_cast<float>(InputState::ADC_MAX)) * 2.0f) - 1.0f;
+    const float x_adc_min = prov->calib.x_adc_low;
+    const float x_adc_center = prov->calib.x_adc_center;
+    const float x_adc_max = prov->calib.x_adc_high;
+    const float y_adc_min = prov->calib.y_adc_low;
+    const float y_adc_center = prov->calib.y_adc_center;
+    const float y_adc_max = prov->calib.y_adc_high;
+
+    auto toNorm = [=](float adc, float adc_min, float adc_center, float adc_max)
+    {
+        // Clamp to calibrated range
+        adc = Helpers::clamp(adc, adc_min, adc_max);
+        // Map to -1..+1 with center at 0
+        if (adc < adc_center)
+            return -((adc_center - adc) / std::max(adc_center - adc_min, EPSILON));
+        else
+            return (adc - adc_center) / std::max(adc_max - adc_center, EPSILON);
+    };
+
+    s.x = toNorm(static_cast<float>(s.x_adc), x_adc_min, x_adc_center, x_adc_max);
+    s.y = toNorm(static_cast<float>(s.y_adc), y_adc_min, y_adc_center, y_adc_max);
 }
 
 // Apply deadzone to avoid jitter near center
@@ -29,24 +50,10 @@ float Input::applyCurve(float v)
     return (v >= 0 ? 1.f : -1.f) * std::pow(a, gamma);
 }
 
-// Recompute ADC in case scenes want integers
-void Input::recomputeADC(InputState &s)
-{
-    auto toAdc = [](float v)
-    {
-        float f = Helpers::clamp((v + 1.0f) * 511.5f, 0.0f, 1023.0f);
-        return static_cast<AnalogInput_t>(std::lround(f));
-    };
-    s.x_adc = toAdc(s.x);
-    s.y_adc = toAdc(s.y);
-}
-
 InputState Input::processInput(const InputState &s)
 {
-    static const float EPSILON = 1e-6f;
     InputState o = s;
-    o.x = normalize(o.x_adc);
-    o.y = normalize(o.y_adc);
+    normalizeAndCalibrate(o);
 
     // Convert polar, apply deadzone and curve radially
     Vector v = o.vec();
@@ -68,7 +75,6 @@ InputState Input::processInput(const InputState &s)
     }
     o.x = Helpers::clamp(o.x, -1.0f, +1.0f);
     o.y = Helpers::clamp(o.y, -1.0f, +1.0f);
-    recomputeADC(o);
 
     return o;
 }
