@@ -1,6 +1,7 @@
 #ifndef INPUT_H
 #define INPUT_H
 
+#include "Vector.h"
 #include <cstdint>
 
 using AnalogInput_t = uint16_t;
@@ -24,6 +25,9 @@ struct InputState
     // Normalized helpers
     float x; // -1..+1
     float y; // -1..+1
+
+    // Vector form of (x,y)
+    Vector vec() const { return Vector{x, y}; }
 };
 
 class IInputProvider
@@ -55,9 +59,9 @@ private:
     IInputProvider *prov = nullptr;
     InputState current{};
     uint64_t frameId = 0;
-    void normalize(InputState &s);
-    void applyDeadzone(InputState &s);
-    void applyCurve(InputState &s);
+    float normalize(AnalogInput_t adc);
+    float applyDeadzone(float v);
+    float applyCurve(float v);
     void recomputeADC(InputState &s);
     InputState processInput(const InputState &s);
 };
