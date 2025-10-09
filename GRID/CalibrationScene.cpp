@@ -3,6 +3,7 @@
 
 constexpr Color333 CalibrationScene::outlineColor;
 constexpr Color333 CalibrationScene::cursorColor;
+constexpr Color333 CalibrationScene::pressedColor;
 
 void CalibrationScene::setup(AppContext &ctx)
 {
@@ -24,5 +25,5 @@ void CalibrationScene::loop(AppContext &ctx)
     InputState state = ctx.input.state();
     int cursorX = round(circleCenter + state.x * circleRadius);
     int cursorY = round(circleCenter + state.y * circleRadius);
-    ctx.gfx.drawPixel(cursorX, cursorY, cursorColor);
+    ctx.gfx.drawPixel(cursorX, cursorY, state.pressed ? pressedColor : cursorColor);
 }
