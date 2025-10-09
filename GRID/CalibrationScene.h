@@ -12,7 +12,7 @@ class CalibrationScene final : public Scene
     static const int circleCenter = 15;
     static const int circleRadius = 15;
     static constexpr Color333 outlineColor = GRAY;
-    static constexpr Color333 cursorColor = WHITE;
+    static constexpr Color333 cursorColor = BLUE;
 
 public:
     void setup(AppContext &ctx) override;

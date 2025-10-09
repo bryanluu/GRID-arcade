@@ -1,6 +1,9 @@
 #include "CalibrationScene.h"
 #include "Colors.h"
 
+constexpr Color333 CalibrationScene::outlineColor;
+constexpr Color333 CalibrationScene::cursorColor;
+
 void CalibrationScene::setup(AppContext &ctx)
 {
     // noop
