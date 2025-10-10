@@ -1,13 +1,26 @@
 #include "CalibrationScene.h"
 #include "Colors.h"
+#include <cstring>
 
 constexpr Color333 CalibrationScene::outlineColor;
 constexpr Color333 CalibrationScene::cursorColor;
 constexpr Color333 CalibrationScene::pressedColor;
+const char CalibrationScene::message[33] = "Press for 2 seconds to calibrate";
+extern const uint8_t FONT_CHAR_WIDTH;
+extern const uint8_t FONT_CHAR_HEIGHT;
 
 void CalibrationScene::setup(AppContext &ctx)
 {
-    // noop
+    int msg_len = strlen(message);
+
+    // scroll text
+    for (int i = MATRIX_WIDTH; i > -msg_len * FONT_CHAR_WIDTH; i--)
+    {
+        ctx.gfx.setCursor(i, 7);
+        ctx.gfx.clear();
+        ctx.gfx.print(message);
+        ctx.gfx.show();
+    }
 }
 
 void CalibrationScene::loop(AppContext &ctx)

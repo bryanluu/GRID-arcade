@@ -2,6 +2,9 @@
 
 using PixelMap = uint8_t;
 
+extern const uint8_t FONT_CHAR_WIDTH = 5;
+extern const uint8_t FONT_CHAR_HEIGHT = 7;
+
 // The 5x7 pixel map for ASCII font (space..'~')
 extern const PixelMap FONT5x7[96][5] = {
     /* ' ' */ {0x00, 0x00, 0x00, 0x00, 0x00},
