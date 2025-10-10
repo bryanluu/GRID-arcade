@@ -3,6 +3,7 @@
 
 #include "Colors.h"
 #include <cstdint>
+#include <vector>
 
 #define MATRIX_SIZE 32
 #define MATRIX_WIDTH 32
@@ -16,6 +17,9 @@
 using MatrixPosition = uint8_t;
 using PixelMap = uint8_t;
 using PixelColumn = uint8_t;
+
+// 5x7 ASCII font declaration (defined elsewhere)
+extern const PixelMap FONT5x7[96][5];
 
 class Matrix32
 {
@@ -54,6 +58,69 @@ public:
     virtual void print(char ch) = 0;
     virtual void print(const char *s) = 0;
     virtual void println(const char *s) = 0;
+
+    // Build 5 columns for a single glyph
+    inline void buildGlyphCols(char ch, PixelMap outCols[FONT_GLYPH_WIDTH])
+    {
+        if (ch < ASCII_START)
+        {
+            for (int i = 0; i < FONT_GLYPH_WIDTH; ++i)
+                outCols[i] = 0;
+            return;
+        }
+        const PixelMap *g = FONT5x7[ch - ASCII_START];
+        for (int i = 0; i < FONT_GLYPH_WIDTH; ++i)
+            outCols[i] = g[i];
+    }
+
+    // Build columns vector for a C-string with 1-column spacing between glyphs
+    inline void buildStringCols(const char *s, std::vector<PixelMap> &cols)
+    {
+        cols.clear();
+        for (const char *p = s; *p; ++p)
+        {
+            if (*p == '\n')
+            { /* single-line banner: ignore */
+                continue;
+            }
+            PixelMap g[FONT_GLYPH_WIDTH];
+            buildGlyphCols(*p, g);
+            for (int i = 0; i < FONT_GLYPH_WIDTH; ++i)
+                cols.push_back(g[i]);
+            cols.push_back(0); // 1 px spacing
+        }
+        if (!cols.empty())
+            cols.pop_back(); // no trailing space
+    }
+
+    // Blit scaled columns at x0,y0 using contiguous runs per column
+    inline void blitCols(int x0, int y0, const PixelMap *cols, int nCols, Color333 c, int ts)
+    {
+        for (int ci = 0; ci < nCols; ++ci)
+        {
+            int x = x0 + ci * ts;
+            if (x >= MATRIX_WIDTH)
+                break;
+            PixelMap bits = cols[ci];
+            int row = 0;
+            while (row < FONT_GLYPH_HEIGHT)
+            {
+                // find next run of 1s
+                while (row < FONT_GLYPH_HEIGHT && !(bits & (1u << row)))
+                    ++row;
+                if (row >= FONT_GLYPH_HEIGHT)
+                    break;
+                int runStart = row;
+                while (row < FONT_GLYPH_HEIGHT && (bits & (1u << row)))
+                    ++row;
+                int runLen = row - runStart;
+
+                // draw ts x (runLen*ts) column block using fillRect once
+                int y = y0 + runStart * ts;
+                fillRect(x, y, ts, runLen * ts, c);
+            }
+        }
+    }
 
     virtual ~Matrix32() = default;
 
