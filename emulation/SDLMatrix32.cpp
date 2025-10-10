@@ -29,7 +29,7 @@ constexpr int SDLMatrix32::coordToIndex(int x, int y)
 {
     if (x < 0 || x >= MATRIX_WIDTH || y < 0 || y >= MATRIX_HEIGHT)
         throw std::out_of_range("SDLMatrix32 pixel out of bounds");
-        
+
     return y * MATRIX_WIDTH + x;
 }
 
@@ -88,10 +88,10 @@ void SDLMatrix32::show()
 void SDLMatrix32::drawChar(int x, int y, char ch, Color333 c)
 {
     const PixelMap *glyph = FONT5x7[ch - ASCII_START];
-    for (int col = 0; col < 5; ++col)
+    for (int col = 0; col < FONT_GLYPH_WIDTH; ++col)
     {
         PixelColumn bits = glyph[col];
-        for (int row = 0; row < 7; ++row)
+        for (int row = 0; row < FONT_GLYPH_HEIGHT; ++row)
             if (bits & (1u << row))
                 drawPixelScaled(x + col, y + row, c);
     }
@@ -207,7 +207,7 @@ void SDLMatrix32::fillCircle(int cx, int cy, int r, Color333 c)
 }
 
 // Move cursor by 1 glyph (5px + 1px spacing) at current scale
-void SDLMatrix32::advance() { cx += ts * 6; }
+void SDLMatrix32::advance() { cx += ts * FONT_CHAR_WIDTH; }
 
 // Set text cursor
 void SDLMatrix32::setCursor(int x, int y)
@@ -229,7 +229,7 @@ void SDLMatrix32::print(char ch)
     if (ch == '\n')
     {
         cx = lineStartX;
-        cy += ts * 8;
+        cy += ts * FONT_CHAR_HEIGHT;
         return;
     }
     if (ch < ASCII_START)

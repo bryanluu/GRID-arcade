@@ -4,10 +4,14 @@
 #include "Colors.h"
 #include <cstdint>
 
-#define MATRIX_SIZE     32
-#define MATRIX_WIDTH    32
-#define MATRIX_HEIGHT   32
-#define ASCII_START     32
+#define MATRIX_SIZE 32
+#define MATRIX_WIDTH 32
+#define MATRIX_HEIGHT 32
+#define ASCII_START 32
+#define FONT_GLYPH_WIDTH 5
+#define FONT_GLYPH_HEIGHT 7
+#define FONT_CHAR_WIDTH 6
+#define FONT_CHAR_HEIGHT 7
 
 using MatrixPosition = uint8_t;
 using PixelMap = uint8_t;
@@ -33,7 +37,6 @@ public:
     virtual void setImmediate(bool on) { immediate = on; }
     virtual void show() = 0;
 
-
     // Drawing API
     virtual void drawChar(int x, int y, char ch, Color333 c) = 0;
     virtual void drawPixel(int x, int y, Color333 c) = 0;
@@ -53,6 +56,7 @@ public:
     virtual void println(const char *s) = 0;
 
     virtual ~Matrix32() = default;
+
 protected:
     bool immediate{false}; // if true, show() after each draw operation
 };

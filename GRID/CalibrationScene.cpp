@@ -6,12 +6,11 @@ constexpr Color333 CalibrationScene::outlineColor;
 constexpr Color333 CalibrationScene::cursorColor;
 constexpr Color333 CalibrationScene::pressedColor;
 const char CalibrationScene::message[33] = "Press for 2 seconds to calibrate";
-extern const uint8_t FONT_CHAR_WIDTH;
-extern const uint8_t FONT_CHAR_HEIGHT;
 
 void CalibrationScene::setup(AppContext &ctx)
 {
     int msg_len = strlen(message);
+    ctx.gfx.setTextSize(1);
 
     // scroll text
     for (int i = MATRIX_WIDTH; i > -msg_len * FONT_CHAR_WIDTH; i--)

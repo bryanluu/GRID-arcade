@@ -11,8 +11,6 @@ struct SDL_Texture;
 
 // 5x7 ASCII font declaration (defined elsewhere)
 extern const PixelMap FONT5x7[96][5];
-extern const uint8_t FONT_CHAR_WIDTH;
-extern const uint8_t FONT_CHAR_HEIGHT;
 
 // Parameters that control how each logical LED cell is rendered on screen.
 // - scale:  number of screen pixels per 1 matrix pixel
