@@ -1,5 +1,6 @@
 #include "CalibrationScene.h"
 #include "Colors.h"
+#include "ScrollTextHelper.h"
 #include <cstring>
 
 constexpr Color333 CalibrationScene::outlineColor;
@@ -9,40 +10,17 @@ const char CalibrationScene::message[33] = "Press for 2 seconds to calibrate";
 
 void CalibrationScene::setup(AppContext &ctx)
 {
-    ctx.gfx.setImmediate(false); // one present per frame
+    ctx.gfx.setImmediate(false);
     ctx.gfx.setTextSize(1);
-    ctx.gfx.setTextColor(WHITE);
 
-    static std::vector<PixelMap> msgCols;
-    ctx.gfx.buildStringCols(message, msgCols);
-    const int ts = 1; // using setTextSize(1)
-    const int totalCols = int(msgCols.size());
-    const int screenCols = MATRIX_WIDTH / ts;
-    const int y = 0;
+    ScrollText banner;
+    banner.prepare(ctx.gfx, message, /*scale=*/1, WHITE);
+    banner.reset(/*startX=*/MATRIX_WIDTH, /*yTop=*/4);
 
-    // Optional: dim background once
-    ctx.gfx.clear();
-    ctx.gfx.show();
-
-    // Scroll from right to left
-    for (int head = MATRIX_WIDTH; head > -totalCols * ts; --head)
+    // Smooth scroll at 1 px per frame
+    while (!banner.step(ctx.gfx, /*dx=*/-1))
     {
-        // Erase only the vacated 1-column strip behind the text
-        // Compute previous and current visible windows
-        // Simpler: redraw only the text region (still cheap with spans)
-        // Clear a minimal band where text is drawn
-        ctx.gfx.fillRect(0, y, MATRIX_WIDTH, FONT_GLYPH_HEIGHT * ts, BLACK);
-
-        // Determine which msg columns are visible
-        int firstCol = std::max(0, (-head + (ts - 1)) / ts);
-        int lastCol = std::min(totalCols, (MATRIX_WIDTH - head + ts - 1) / ts);
-        if (firstCol < lastCol)
-        {
-            // x position where firstCol lands
-            int x0 = head + firstCol * ts;
-            ctx.gfx.blitCols(x0, y, msgCols.data() + firstCol, lastCol - firstCol, WHITE, ts);
-        }
-        ctx.gfx.show();
+        ctx.time.sleep(20);
     }
 }
 
