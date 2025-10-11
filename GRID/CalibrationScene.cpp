@@ -11,11 +11,12 @@ const char CalibrationScene::message[33] = "Press for 2 seconds to calibrate";
 void CalibrationScene::setup(AppContext &ctx)
 {
     ctx.gfx.setImmediate(false);
-    ctx.gfx.setTextSize(1);
+    int ts = 1;
+    ctx.gfx.setTextSize(ts);
 
     ScrollText banner;
-    banner.prepare(ctx.gfx, message, /*scale=*/1, WHITE);
-    banner.reset(/*startX=*/MATRIX_WIDTH, /*yTop=*/4);
+    banner.prepare(ctx.gfx, message, /*scale=*/ts, WHITE);
+    banner.reset(/*startX=*/MATRIX_WIDTH, /*yTop=*/banner.yTopCentered(ts));
 
     // Smooth scroll at 1 px per frame
     while (!banner.step(ctx.gfx, /*dx=*/-1))
