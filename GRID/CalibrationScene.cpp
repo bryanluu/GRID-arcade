@@ -3,10 +3,6 @@
 #include "ScrollTextHelper.h"
 #include <cstring>
 
-constexpr Color333 CalibrationScene::outlineColor;
-constexpr Color333 CalibrationScene::cursorColor;
-constexpr Color333 CalibrationScene::pressedColor;
-
 void CalibrationScene::setup(AppContext &ctx)
 {
     static const char message[35] = "Press for 2 seconds to calibrate  ";
@@ -40,5 +36,8 @@ void CalibrationScene::loop(AppContext &ctx)
     InputState state = ctx.input.state();
     int cursorX = round(circleCenter + state.x * circleRadius);
     int cursorY = round(circleCenter + state.y * circleRadius);
-    ctx.gfx.drawPixel(cursorX, cursorY, state.pressed ? pressedColor : cursorColor);
+    ctx.gfx.drawLine(circleCenter, circleCenter,
+                     cursorX, cursorY,
+                     state.pressed ? Color333{0, 1, 0} : Color333{1, 0, 0});
+    ctx.gfx.drawPixel(cursorX, cursorY, state.pressed ? GREEN : RED);
 }
