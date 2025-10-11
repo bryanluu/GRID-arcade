@@ -9,9 +9,6 @@ struct SDL_Window;
 struct SDL_Renderer;
 struct SDL_Texture;
 
-// 5x7 ASCII font declaration (defined elsewhere)
-extern const PixelMap FONT5x7[96][5];
-
 // Parameters that control how each logical LED cell is rendered on screen.
 // - scale:  number of screen pixels per 1 matrix pixel
 // - margin: black bezel around the LED inside the cell (in screen pixels)

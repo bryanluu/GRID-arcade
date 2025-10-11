@@ -1,24 +1,27 @@
 #include "CalibrationScene.h"
 #include "Colors.h"
+#include "ScrollTextHelper.h"
 #include <cstring>
 
 constexpr Color333 CalibrationScene::outlineColor;
 constexpr Color333 CalibrationScene::cursorColor;
 constexpr Color333 CalibrationScene::pressedColor;
-const char CalibrationScene::message[33] = "Press for 2 seconds to calibrate";
 
 void CalibrationScene::setup(AppContext &ctx)
 {
-    int msg_len = strlen(message);
-    ctx.gfx.setTextSize(1);
+    static const char message[35] = "Press for 2 seconds to calibrate  ";
+    ctx.gfx.setImmediate(false);
+    int ts = 1;
+    ctx.gfx.setTextSize(ts);
 
-    // scroll text
-    for (int i = MATRIX_WIDTH; i > -msg_len * FONT_CHAR_WIDTH; i--)
+    ScrollText banner;
+    banner.prepare(ctx.gfx, message, /*scale=*/ts, WHITE);
+    banner.reset(/*startX=*/MATRIX_WIDTH, /*yTop=*/banner.yTopCentered(ts));
+
+    // Smooth scroll at 1 px per frame
+    while (!banner.step(ctx.gfx, /*dx=*/-1))
     {
-        ctx.gfx.setCursor(i, 7);
-        ctx.gfx.clear();
-        ctx.gfx.print(message);
-        ctx.gfx.show();
+        ctx.time.sleep(20);
     }
 }
 

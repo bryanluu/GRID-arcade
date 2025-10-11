@@ -6,9 +6,6 @@
 
 using PanelColor = uint16_t;
 
-// 5x7 ASCII font declaration (defined elsewhere)
-extern const PixelMap FONT5x7[96][5];
-
 // Adapter that wraps an existing Adafruit RGBmatrixPanel
 class RGBMatrix32 : public Matrix32
 {
@@ -54,7 +51,7 @@ public:
     void clear() override;
     void set(int x, int y, Color333 c) override;
     void show() override;
-    
+
     // Drawing API (1:1 to Adafruit panel)
 
     void drawPixel(int x, int y, Color333 c) override;
