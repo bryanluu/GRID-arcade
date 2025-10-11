@@ -59,9 +59,18 @@ public:
     virtual void print(const char *s) = 0;
     virtual void println(const char *s) = 0;
 
-    // Build 5 columns for a single glyph
+    /**
+     * Build the 5 column bitmasks for a single 5x7 glyph.
+     *
+     * Each byte in outCols uses the low 7 bits to represent a column,
+     * where bit 0 is the top row and bit 6 is the bottom row.
+     *
+     * @param ch        ASCII character (expects ch >= ASCII_START).
+     * @param outCols   Output array of 5 column masks.
+     */
     inline void buildGlyphCols(char ch, PixelMap outCols[FONT_GLYPH_WIDTH])
     {
+        // Non-printables become empty columns
         if (ch < ASCII_START)
         {
             for (int i = 0; i < FONT_GLYPH_WIDTH; ++i)
@@ -73,50 +82,75 @@ public:
             outCols[i] = g[i];
     }
 
-    // Build columns vector for a C-string with 1-column spacing between glyphs
+    /**
+     * Convert a C-string into a flat array of column bitmasks with 1 empty column as spacing.
+     *
+     * Newlines are ignored for single-line banners. The vector ends without a trailing space.
+     *
+     * @param s     Input text.
+     * @param cols  Output vector of column masks (5 per glyph plus 1 spacer between glyphs).
+     */
     inline void buildStringCols(const char *s, std::vector<PixelMap> &cols)
     {
         cols.clear();
         for (const char *p = s; *p; ++p)
         {
             if (*p == '\n')
-            { /* single-line banner: ignore */
-                continue;
-            }
+                continue; // single line use-case
             PixelMap g[FONT_GLYPH_WIDTH];
             buildGlyphCols(*p, g);
             for (int i = 0; i < FONT_GLYPH_WIDTH; ++i)
                 cols.push_back(g[i]);
-            cols.push_back(0); // 1 px spacing
+            cols.push_back(0); // 1-column spacing between glyphs
         }
+        // Remove trailing space if present
         if (!cols.empty())
-            cols.pop_back(); // no trailing space
+            cols.pop_back();
     }
 
-    // Blit scaled columns at x0,y0 using contiguous runs per column
+    /**
+     * Draw precomputed text columns using vertical span batching.
+     *
+     * Strategy: for each column, find contiguous runs of set bits and render each run
+     * as one filled rectangle. This minimizes per-pixel calls.
+     *
+     * @param x0     Top-left X of the text band in pixels.
+     * @param y0     Top-left Y of the text band in pixels.
+     * @param cols   Pointer to column masks.
+     * @param nCols  Number of columns to draw from cols.
+     * @param c      Foreground color.
+     * @param ts     Integer scale factor (>= 1).
+     */
     inline void blitCols(int x0, int y0, const PixelMap *cols, int nCols, Color333 c, int ts)
     {
         for (int ci = 0; ci < nCols; ++ci)
         {
-            int x = x0 + ci * ts;
+            const int x = x0 + ci * ts;
+            // Skip columns fully off to the right; break when first fully off-right
             if (x >= MATRIX_WIDTH)
                 break;
+            // Skip columns fully off to the left
+            if (x + ts <= 0)
+                continue;
+
             PixelMap bits = cols[ci];
             int row = 0;
             while (row < FONT_GLYPH_HEIGHT)
             {
-                // find next run of 1s
+                // Find start of next lit run
                 while (row < FONT_GLYPH_HEIGHT && !(bits & (1u << row)))
                     ++row;
                 if (row >= FONT_GLYPH_HEIGHT)
                     break;
-                int runStart = row;
+
+                const int runStart = row;
+                // Extend to end of run
                 while (row < FONT_GLYPH_HEIGHT && (bits & (1u << row)))
                     ++row;
-                int runLen = row - runStart;
+                const int runLen = row - runStart;
 
-                // draw ts x (runLen*ts) column block using fillRect once
-                int y = y0 + runStart * ts;
+                // Draw the scaled vertical run as one rectangle
+                const int y = y0 + runStart * ts;
                 fillRect(x, y, ts, runLen * ts, c);
             }
         }
