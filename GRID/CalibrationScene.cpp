@@ -6,10 +6,10 @@
 constexpr Color333 CalibrationScene::outlineColor;
 constexpr Color333 CalibrationScene::cursorColor;
 constexpr Color333 CalibrationScene::pressedColor;
-const char CalibrationScene::message[33] = "Press for 2 seconds to calibrate";
 
 void CalibrationScene::setup(AppContext &ctx)
 {
+    static const char message[35] = "Press for 2 seconds to calibrate  ";
     ctx.gfx.setImmediate(false);
     int ts = 1;
     ctx.gfx.setTextSize(ts);

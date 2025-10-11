@@ -10,7 +10,6 @@
 class CalibrationScene final : public Scene
 {
     static const int triggerDuration = 2000; // ms
-    static const char message[33];
     static const int circleCenter = 15;
     static const int circleRadius = 15;
     static constexpr Color333 outlineColor = GRAY;
