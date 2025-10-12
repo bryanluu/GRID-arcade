@@ -9,9 +9,14 @@
  */
 class CalibrationScene final : public Scene
 {
-    static const int triggerDuration = 2000; // ms
-    static const int circleCenter = 15;
-    static const int circleRadius = 15;
+    static const int HOLD_TO_START_MS = 2'000; // ms
+    static const int CIRCLE_CENTER = 15;
+    static const int CIRCLE_RADIUS = 15;
+    static constexpr Color333 CIRCLE_COLOR = GRAY;
+    static constexpr Color333 PRESSED_COLOR = Color333{0, 1, 0};
+    static constexpr Color333 IDLE_COLOR = Color333{1, 0, 0};
+    static constexpr Color333 PRESSED_CURSOR_COLOR = GREEN;
+    static constexpr Color333 IDLE_CURSOR_COLOR = RED;
 
     millis_t lastPressTime;
 
