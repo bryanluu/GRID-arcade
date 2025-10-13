@@ -21,7 +21,7 @@ class ArduinoPassiveTiming final : public Timing
 public:
     explicit ArduinoPassiveTiming(double targetHz)
         : defaultTargetHz_(targetHz), targetHz_(targetHz),
-          dtMs_(static_cast<float>(millisPerSec / targetHz)),
+          dtMs_(static_cast<float>(MILLIS_PER_SEC / targetHz)),
           startMs_(millis()) {}
 
     // No cadence control; just reflect Arduino time
@@ -42,7 +42,7 @@ public:
     void setTargetHz(double hz) override
     {
         targetHz_ = hz;
-        dtMs_ = static_cast<float>(millisPerSec / targetHz_);
+        dtMs_ = static_cast<float>(MILLIS_PER_SEC / targetHz_);
     }
     void resetSceneClock() override
     {

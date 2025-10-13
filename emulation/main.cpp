@@ -1,6 +1,7 @@
 #include "App.h"
 #include "BoidsScene.h"
 #include "CalibrationScene.h"
+#include "EmulationLogger.h"
 #include "ExampleScene.h"
 #include "FixedStepTiming.h"
 #include "SDLInputProvider.h"
@@ -17,10 +18,14 @@ void run_emulation()
 {
     SDLMatrix32 gfx{};
     gfx.begin();
+    StdoutSink sink;
     FixedStepTiming time{TICK_HZ};
+    EmulationLogger logger(time, sink);
     SDLInputProvider inputProvider{};
     SDL_Window *win = gfx.window();
     bool running = true; // main loop flag
+    millis_t log_last_ms{};
+    millis_t now_ms{};
 
     // TODO handle init failure
     if (!inputProvider.init(win))
@@ -35,7 +40,7 @@ void run_emulation()
 
     Input input{};
     input.init(&inputProvider);
-    App app{gfx, time, input};
+    App app{gfx, time, input, logger};
 
     app.setScene<CalibrationScene>();
 
@@ -47,14 +52,13 @@ void run_emulation()
             inputProvider.pumpEvents(); // handle input events
             app.loopOnce();             // Scene consumes ctx.time
         }
-        // Log inputs
-        printf("Raw X: %d Y: %d, Norm X: %5.3f Y: %5.3f, Pressed: %d\n",
-               input.state().x_adc, input.state().y_adc,
-               input.state().x, input.state().y,
-               input.state().pressed ? 1 : 0);
-        // Log FPS
-        printf("FPS: %5.2f\n", time.fps());
-        fflush(stdout);
+
+        now_ms = time.nowMs();
+        if (now_ms - log_last_ms >= time.MILLIS_PER_SEC)
+        {
+            app.logDiagnostics();
+            log_last_ms = now_ms;
+        }
         time.sleep_to_cadence();
     }
 }
