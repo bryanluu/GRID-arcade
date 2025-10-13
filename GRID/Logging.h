@@ -10,11 +10,12 @@
 #include <cstring>
 #include <string>
 
+// Higher means more logs
 enum class LogLevel : uint8_t
 {
     Info = 0,
-    Debug = 1,
-    Warning = 2
+    Warning = 1,
+    Debug = 2
 };
 
 struct ILogSink
@@ -42,8 +43,8 @@ public:
     explicit LoggerCore(Timing &timing, ILogSink &sink, size_t bufCap = 512)
         : timing_(timing), sink_(sink) { buf_.reserve(bufCap); }
 
-    void setRuntimeLevel(LogLevel lvl) { minLevel_ = lvl; }
-    bool passes(LogLevel lvl) const { return int(lvl) >= int(minLevel_); }
+    void setRuntimeLevel(LogLevel lvl) { maxLevel_ = lvl; }
+    bool passes(LogLevel lvl) const { return int(lvl) <= int(maxLevel_); }
 
     bool begin(LogLevel lvl)
     {
@@ -110,7 +111,7 @@ private:
     ILogSink &sink_;
     std::string buf_;
     bool flushToErr_{false};
-    LogLevel minLevel_{LogLevel(0)};
+    LogLevel maxLevel_{LogLevel(0)};
 };
 
 #endif // LOGGER_CORE_H
