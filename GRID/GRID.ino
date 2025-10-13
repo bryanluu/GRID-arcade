@@ -1,5 +1,6 @@
 #include "App.h"
 #include "ArduinoInputProvider.h"
+#include "ArduinoLogger.h"
 #include "ArduinoPassiveTiming.h"
 #include "BoidsScene.h"
 #include "CalibrationScene.h"
@@ -40,6 +41,8 @@ using frames_t = uint16_t; // convenience alias for frame counts
 static RGBmatrixPanel panel(A, B, C, D, CLK, LAT, OE, false);
 static RGBMatrix32 gfx{panel};
 static ArduinoPassiveTiming time{TICK_HZ};
+static SerialSink sink;
+static ArduinoLogger logger(time, sink);
 static ArduinoInputProvider inputProvider{HORIZONTAL_PIN, VERTICAL_PIN, BUTTON_PIN};
 static Input input{};
 static App app{gfx, time, input};
@@ -114,20 +117,11 @@ void loop()
     if (elapsed >= time.millisPerSec)
     {
         float fps = time.fps();
-        Serial.print("FPS: ");
-        Serial.println(fps, 2); // 2 decimal places
+        logger.logf(LogLevel::Debug, "FPS: %.2f", fps);
 
         InputState state = input.state();
-        Serial.print("Raw ADC X: ");
-        Serial.print(state.x_adc);
-        Serial.print(" Y: ");
-        Serial.print(state.y_adc);
-        Serial.print(", Norm X: ");
-        Serial.print(state.x, 2);
-        Serial.print(" Y: ");
-        Serial.print(state.y, 2);
-        Serial.print(", Pressed: ");
-        Serial.println(state.pressed);
+        logger.logf(LogLevel::Debug, "Raw ADC X: %d Y: %d, Norm X: %.2f Norm Y: %.2f, Pressed: %d",
+                    state.x_adc, state.y_adc, state.x, state.y, state.pressed);
 
         log_last_ms = now_millis;
     }
