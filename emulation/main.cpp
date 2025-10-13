@@ -13,19 +13,6 @@
 // match GRID hardware
 static constexpr double TICK_HZ = 60.0;
 
-// Logs FPS, plus calibration values
-void logDiagnostics(Timing &time, Input &input, ILogger &logger)
-{
-    // Log FPS
-    logger.logf(LogLevel::Debug, "FPS: %5.2f", time.fps());
-    logger.flush();
-    // Log inputs
-    logger.logf(LogLevel::Debug, "Raw X: %d Y: %d, Norm X: %5.3f Y: %5.3f, Pressed: %d",
-                input.state().x_adc, input.state().y_adc,
-                input.state().x, input.state().y,
-                input.state().pressed ? 1 : 0);
-}
-
 // Main emulation loop
 void run_emulation()
 {
@@ -69,7 +56,7 @@ void run_emulation()
         now_ms = time.nowMs();
         if (now_ms - log_last_ms >= time.MILLIS_PER_SEC)
         {
-            logDiagnostics(time, input, logger);
+            app.logDiagnostics();
             log_last_ms = now_ms;
         }
         time.sleep_to_cadence();

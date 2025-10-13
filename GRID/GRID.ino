@@ -116,14 +116,7 @@ void loop()
     millis_t elapsed = now_millis - log_last_ms;
     if (elapsed >= time.MILLIS_PER_SEC)
     {
-        float fps = time.fps();
-        logger.logf(LogLevel::Debug, "FPS: %.2f", fps);
-
-        InputState state = input.state();
-        logger.logf(LogLevel::Debug, "Raw ADC X: %d Y: %d, Norm X: %.2f Norm Y: %.2f, Pressed: %d",
-                    state.x_adc, state.y_adc, state.x, state.y, state.pressed);
-        logger.flush();
-
+        app.logDiagnostics();
         log_last_ms = now_millis;
     }
 }

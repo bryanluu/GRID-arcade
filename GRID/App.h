@@ -49,6 +49,21 @@ public:
         current->loop(ctx);
         ctx.gfx.show();
     }
+
+    // Logs helpful diagnostics: FPS, plus calibration values
+    void logDiagnostics()
+    {
+        float fps = ctx.time.fps();
+        InputState input = ctx.input.state();
+        // Log FPS
+        ctx.logger.logf(LogLevel::Debug, "FPS: %5.2f", fps);
+        ctx.logger.flush();
+        // Log inputs
+        ctx.logger.logf(LogLevel::Debug, "Raw X: %d Y: %d, Norm X: %5.3f Y: %5.3f, Pressed: %d",
+                        input.x_adc, input.y_adc,
+                        input.x, input.y,
+                        input.pressed ? 1 : 0);
+    }
 };
 
 #endif
