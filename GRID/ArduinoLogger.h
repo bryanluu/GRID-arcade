@@ -16,12 +16,42 @@ struct SerialSink final : ILogSink
     void flush() override { Serial.flush(); }
 };
 
+// Helper: pad_and_write
+// - Pads with padChar to satisfy a minimum field width.
+// - If leftAlign is true, pad on the right; otherwise pad on the left.
+// - Returns total characters emitted (padding + body).
+inline size_t pad_and_write(LoggerCore &core, LogLevel lvl,
+                            const char *body, size_t len,
+                            int width, bool leftAlign, char padChar)
+{
+    if (width <= 0 || (int)len >= width)
+    {
+        core.write(body, len, lvl == LogLevel::Warning);
+        return len;
+    }
+    int pad = width - (int)len;
+    if (!leftAlign)
+    {
+        for (int i = 0; i < pad; ++i)
+            core.write(&padChar, 1, lvl == LogLevel::Warning);
+        core.write(body, len, lvl == LogLevel::Warning);
+    }
+    else
+    {
+        core.write(body, len, lvl == LogLevel::Warning);
+        for (int i = 0; i < pad; ++i)
+            core.write(&padChar, 1, lvl == LogLevel::Warning);
+    }
+    return (size_t)width;
+}
+
 // ArduinoLogger: polymorphic ILogger implementation for Arduino
 // - Uses LoggerCore for prefix, buffering, and sink I/O
-// - Implements a tiny printf-like parser that supports:
+// - Implements a small printf-like parser that supports:
 //   %%, %s, %c, %d, %i, %u, %ld, %lu, %f
 //   Optional flags (- + space 0 #), width, and precision are CONSUMED to keep va_list aligned.
-//   Padding is ignored to keep code small; precision for %f is honored via dtostrf_shim.
+//   Padding is implemented for %s, %c, integers, and %f.
+//   Precision for %f is honored via dtostrf_shim. We ignore precision for integers to stay small.
 // - Do NOT include '\n' in format strings; newline is appended by core_.end(lvl).
 class ArduinoLogger final : public ILogger
 {
@@ -74,19 +104,33 @@ private:
 
             // Parse minimal printf grammar: [%][flags][-+ 0#]* [width]* [.prec]* [length] spec
 
-            // 1) Flags (we accept but ignore for output)
+            // 1) Flags
+            bool leftAlign = false;
+            bool zeroPad = false;
             while (*fmt == '-' || *fmt == '+' || *fmt == ' ' || *fmt == '0' || *fmt == '#')
-                ++fmt;
-
-            // 2) Width (digits); consumed to keep argument alignment, ignored for padding
-            if (*fmt >= '0' && *fmt <= '9')
             {
-                while (*fmt >= '0' && *fmt <= '9')
-                    ++fmt;
+                if (*fmt == '-')
+                    leftAlign = true;
+                if (*fmt == '0')
+                    zeroPad = true;
+                ++fmt;
             }
 
-            // 3) Precision (for %f)
-            int prec = 3; // default precision for floats
+            // 2) Width (digits)
+            int width = -1;
+            if (*fmt >= '0' && *fmt <= '9')
+            {
+                int w = 0;
+                while (*fmt >= '0' && *fmt <= '9')
+                {
+                    w = w * 10 + (*fmt - '0');
+                    ++fmt;
+                }
+                width = w;
+            }
+
+            // 3) Precision (for %f only; default 3)
+            int prec = 3;
             if (*fmt == '.')
             {
                 ++fmt;
@@ -117,7 +161,8 @@ private:
                 const char *s = va_arg(ap, const char *);
                 if (!s)
                     s = "(null)";
-                core_.write(s, strlen(s), lvl == LogLevel::Warning);
+                size_t len = strlen(s);
+                pad_and_write(core_, lvl, s, len, width, leftAlign, ' ');
             }
             break;
 
@@ -125,7 +170,7 @@ private:
             {
                 // Char (promoted to int in varargs)
                 char ch = (char)va_arg(ap, int);
-                core_.write(&ch, 1, lvl == LogLevel::Warning);
+                pad_and_write(core_, lvl, &ch, 1, width, leftAlign, ' ');
             }
             break;
 
@@ -138,14 +183,16 @@ private:
                     long v = va_arg(ap, long);
                     int n = snprintf(nbuf, sizeof nbuf, "%ld", v);
                     if (n > 0)
-                        core_.write(nbuf, (size_t)n, lvl == LogLevel::Warning);
+                        pad_and_write(core_, lvl, nbuf, (size_t)n, width,
+                                      leftAlign, (zeroPad && !leftAlign) ? '0' : ' ');
                 }
                 else
                 {
                     int v = va_arg(ap, int);
                     int n = snprintf(nbuf, sizeof nbuf, "%d", v);
                     if (n > 0)
-                        core_.write(nbuf, (size_t)n, lvl == LogLevel::Warning);
+                        pad_and_write(core_, lvl, nbuf, (size_t)n, width,
+                                      leftAlign, (zeroPad && !leftAlign) ? '0' : ' ');
                 }
             }
             break;
@@ -158,24 +205,54 @@ private:
                     unsigned long v = va_arg(ap, unsigned long);
                     int n = snprintf(nbuf, sizeof nbuf, "%lu", v);
                     if (n > 0)
-                        core_.write(nbuf, (size_t)n, lvl == LogLevel::Warning);
+                        pad_and_write(core_, lvl, nbuf, (size_t)n, width,
+                                      leftAlign, (zeroPad && !leftAlign) ? '0' : ' ');
                 }
                 else
                 {
                     unsigned int v = va_arg(ap, unsigned int);
                     int n = snprintf(nbuf, sizeof nbuf, "%u", v);
                     if (n > 0)
-                        core_.write(nbuf, (size_t)n, lvl == LogLevel::Warning);
+                        pad_and_write(core_, lvl, nbuf, (size_t)n, width,
+                                      leftAlign, (zeroPad && !leftAlign) ? '0' : ' ');
                 }
             }
             break;
 
             case 'f':
             {
-                // Float (as double in varargs); precision honored, width ignored
+                // Float (as double in varargs); precision honored, width handled with padding
                 double v = va_arg(ap, double);
                 Helpers::dtostrf_shim(v, 0, (unsigned char)prec, fbuf);
-                core_.write(fbuf, strlen(fbuf), lvl == LogLevel::Warning);
+                size_t len = strlen(fbuf);
+
+                // Handle zero-pad for negative numbers so zeros come after the sign: -001.23
+                if (zeroPad && !leftAlign && width > 0 && fbuf[0] == '-')
+                {
+                    const char sign = '-';
+                    const char *rest = fbuf + 1;
+                    size_t restLen = len - 1;
+                    int pad = width - 1 - (int)restLen;
+                    if (pad > 0)
+                    {
+                        // Sign first
+                        core_.write(&sign, 1, lvl == LogLevel::Warning);
+                        // Zero padding
+                        for (int i = 0; i < pad; ++i)
+                        {
+                            char ch = '0';
+                            core_.write(&ch, 1, lvl == LogLevel::Warning);
+                        }
+                        // Remainder
+                        core_.write(rest, restLen, lvl == LogLevel::Warning);
+                        break;
+                    }
+                    // If no pad needed, fall through to generic padding below
+                }
+
+                // Generic left/right pad
+                pad_and_write(core_, lvl, fbuf, len, width,
+                              leftAlign, (zeroPad && !leftAlign) ? '0' : ' ');
             }
             break;
 
