@@ -40,8 +40,8 @@ class LoggerCore
 {
 public:
     static constexpr size_t kPrefixCap = 48;
-    explicit LoggerCore(Timing &timing, ILogSink &sink, size_t bufCap = 512)
-        : timing_(timing), sink_(sink) { buf_.reserve(bufCap); }
+    explicit LoggerCore(Timing &timing, ILogSink &sink, LogLevel maxLevel = LogLevel::Debug, size_t bufCap = 512)
+        : timing_(timing), sink_(sink), maxLevel_(maxLevel) { buf_.reserve(bufCap); }
 
     void setRuntimeLevel(LogLevel lvl) { maxLevel_ = lvl; }
     bool passes(LogLevel lvl) const { return int(lvl) <= int(maxLevel_); }
