@@ -9,9 +9,6 @@ using DigitalInput_t = bool;
 
 struct InputState
 {
-    constexpr static int ADC_MIN = 0;
-    constexpr static int ADC_MAX = 1023;
-
     // Raw Arduino-like
     AnalogInput_t x_adc; // 0..1023
     AnalogInput_t y_adc; // 0..1023
@@ -27,15 +24,17 @@ struct InputState
 
 struct InputCalibration
 {
-    const float deadzone = 0.08f; // 0..1
-    const float gamma = 1.8f;     // >0, 1=linear
+    float deadzone = 0.08f; // 0..1
+    float gamma = 1.8f;     // >0, 1=linear
     // ADC calibration (if needed)
-    const AnalogInput_t x_adc_low = InputState::ADC_MIN;
-    const AnalogInput_t x_adc_center = InputState::ADC_MAX / 2; // usually 512
-    const AnalogInput_t x_adc_high = InputState::ADC_MAX;
-    const AnalogInput_t y_adc_low = InputState::ADC_MIN;
-    const AnalogInput_t y_adc_center = InputState::ADC_MAX / 2;
-    const AnalogInput_t y_adc_high = InputState::ADC_MAX;
+    static constexpr int ADC_MIN = 0;
+    static constexpr int ADC_MAX = 1023;
+    AnalogInput_t x_adc_low = ADC_MIN;
+    AnalogInput_t x_adc_center = ADC_MAX / 2; // usually 512
+    AnalogInput_t x_adc_high = ADC_MAX;
+    AnalogInput_t y_adc_low = ADC_MIN;
+    AnalogInput_t y_adc_center = ADC_MAX / 2;
+    AnalogInput_t y_adc_high = ADC_MAX;
 
     constexpr InputCalibration() = default;
 };

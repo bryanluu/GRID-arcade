@@ -11,7 +11,7 @@ constexpr Color333 CalibrationScene::IDLE_CURSOR_COLOR;
 
 void CalibrationScene::setup(AppContext &ctx)
 {
-    static const char message[35] = "Press for 2 seconds to calibrate  ";
+    static const char message[35] = "Press for 3 seconds to calibrate  ";
     ctx.gfx.setImmediate(false);
     int ts = 1;
     ctx.gfx.setTextSize(ts);
@@ -27,7 +27,7 @@ void CalibrationScene::setup(AppContext &ctx)
     }
 }
 
-void CalibrationScene::loop(AppContext &ctx)
+void CalibrationScene::drawCalibrationCross(AppContext &ctx)
 {
     ctx.gfx.clear();
 
@@ -46,4 +46,182 @@ void CalibrationScene::loop(AppContext &ctx)
                      cursorX, cursorY,
                      state.pressed ? PRESSED_COLOR : IDLE_COLOR);
     ctx.gfx.drawPixel(cursorX, cursorY, state.pressed ? PRESSED_CURSOR_COLOR : IDLE_CURSOR_COLOR);
+}
+
+const char *CalibrationScene::stageLabel(State s) const
+{
+    switch (s)
+    {
+    case StageLeft:
+        return "Hold left";
+    case StageRight:
+        return "Hold right";
+    case StageUp:
+        return "Hold up";
+    case StageDown:
+        return "Hold down";
+    case StageCenter:
+        return "Let go";
+    default:
+        return "";
+    }
+}
+
+void CalibrationScene::handleIdle(AppContext &ctx)
+{
+    drawCalibrationCross(ctx);
+
+    // Begin calibration if button is pressed then let go
+    // after holding for more HOLD_TO_START_MS
+    if (ctx.input.state().pressed)
+    {
+        if (hold_start_ == 0)
+            hold_start_ = ctx.time.nowMs();
+        // TODO implement
+        // draw_progress(clamp01(held / float(HOLD_TO_START_MS)), "Hold 2s to start");
+    }
+    else
+    {
+        if (hold_start_ > 0)
+        {
+            const millis_t held = ctx.time.nowMs() - hold_start_;
+            hold_start_ = 0;
+            if (held >= HOLD_TO_START_MS)
+                beginStage(ctx, StageLeft);
+        }
+    }
+}
+
+// Begin a timed capture window. Reset extremum/average trackers.
+// We capture extrema for edges and a mean for center to reduce jitter.
+void CalibrationScene::beginStage(AppContext &ctx, State s)
+{
+    state_ = s;
+    stage_start_ = ctx.time.nowMs();
+    x_min_ = InputCalibration::ADC_MAX;
+    x_max_ = InputCalibration::ADC_MIN;
+    y_min_ = InputCalibration::ADC_MAX;
+    y_max_ = InputCalibration::ADC_MIN;
+    cx_acc_ = cy_acc_ = 0;
+    c_count_ = 0;
+    ctx.logger.logf(LogLevel::Info, "Begin %s", stageLabel(state_));
+}
+
+// Per-tick sample: update min/max and center accumulators.
+// Uses O(1) memory — no large buffers or histories.
+void CalibrationScene::handleStage(AppContext &ctx)
+{
+    const uint32_t elapsed = ctx.time.nowMs() - stage_start_;
+    if (elapsed < TRANSITION_BUFFER)
+        return;
+
+    if (ctx.input.state().pressed)
+    {
+        state_ = Canceled;
+        return;
+    } // cancel on press
+
+    const int ax = ctx.input.state().x_adc;
+    const int ay = ctx.input.state().y_adc;
+    if (ax < x_min_)
+        x_min_ = ax;
+    if (ax > x_max_)
+        x_max_ = ax;
+    if (ay < y_min_)
+        y_min_ = ay;
+    if (ay > y_max_)
+        y_max_ = ay;
+    cx_acc_ += ax;
+    cy_acc_ += ay;
+    ++c_count_;
+
+    // const float t = Helpers::clamp(elapsed / float(STAGE_MS), 0.0f, 1.0f);
+    // draw_progress(t, stageLabel(state_)); // TODO implement
+
+    if (elapsed >= STAGE_MS)
+    {
+        switch (state_)
+        {
+        case StageLeft:
+            cur_.x_adc_low = Helpers::clamp(x_min_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
+            break;
+        case StageRight:
+            cur_.x_adc_high = Helpers::clamp(x_max_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
+            break;
+        case StageUp:
+            cur_.y_adc_low = Helpers::clamp(y_min_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
+            break;
+        case StageDown:
+            cur_.y_adc_high = Helpers::clamp(y_max_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
+            break;
+        case StageCenter:
+            if (c_count_ > 0)
+            {
+                cur_.x_adc_center = Helpers::clamp(cx_acc_ / c_count_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
+                cur_.y_adc_center = Helpers::clamp(cy_acc_ / c_count_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
+            }
+            break;
+        default:
+            break;
+        }
+        if (state_ == StageLeft)
+            beginStage(ctx, StageRight);
+        else if (state_ == StageRight)
+            beginStage(ctx, StageUp);
+        else if (state_ == StageUp)
+            beginStage(ctx, StageDown);
+        else if (state_ == StageDown)
+            beginStage(ctx, StageCenter);
+        else if (state_ == StageCenter)
+        {
+            // simple validation
+            if (cur_.x_adc_low > cur_.x_adc_high)
+                Helpers::swap(cur_.x_adc_low, cur_.x_adc_high);
+            if (cur_.y_adc_low > cur_.y_adc_high)
+                Helpers::swap(cur_.y_adc_low, cur_.y_adc_high);
+            cur_.x_adc_center = Helpers::clamp(cur_.x_adc_center, cur_.x_adc_low, cur_.x_adc_high);
+            cur_.y_adc_center = Helpers::clamp(cur_.y_adc_center, cur_.y_adc_low, cur_.y_adc_high);
+            state_ = Done;
+        }
+    }
+}
+
+// Stage complete: latch the measured value into cur_.
+// Left/Up use minima; Right/Down use maxima; Center uses average.
+void CalibrationScene::handleDone(AppContext &ctx)
+{
+    ctx.logger.logf(LogLevel::Info, "Calibration complete");
+    state_ = Idle;
+}
+
+// Safety: pressing the button at any time cancels and restores base_ values.
+// Prevents accidental writes from brief or unintended presses.
+void CalibrationScene::handleCanceled(AppContext &ctx)
+{
+    cur_ = base_; // discard edits
+    ctx.logger.logf(LogLevel::Info, "Calibration canceled");
+    state_ = Idle;
+}
+
+void CalibrationScene::loop(AppContext &ctx)
+{
+    switch (state_)
+    {
+    case Idle:
+        handleIdle(ctx);
+        break;
+    case StageLeft:
+    case StageRight:
+    case StageUp:
+    case StageDown:
+    case StageCenter:
+        handleStage(ctx);
+        break;
+    case Done:
+        handleDone(ctx);
+        break;
+    case Canceled:
+        handleCanceled(ctx);
+        break;
+    }
 }

@@ -87,11 +87,11 @@ private:
     // Utilities
     static inline float toNormFromADC(AnalogInput_t adc)
     {
-        return ((float(adc) / float(InputState::ADC_MAX)) * 2.f) - 1.f;
+        return ((float(adc) / float(InputCalibration::ADC_MAX)) * 2.f) - 1.f;
     }
     static inline AnalogInput_t toADCFromNorm(float v)
     {
-        const float f = Helpers::clamp((v + 1.f) * (InputState::ADC_MAX / 2.f), 0.f, float(InputState::ADC_MAX));
+        const float f = Helpers::clamp((v + 1.f) * (InputCalibration::ADC_MAX / 2.f), 0.f, float(InputCalibration::ADC_MAX));
         return static_cast<AnalogInput_t>(lroundf(f));
     }
     // Check if left stick is moved beyond a small threshold
