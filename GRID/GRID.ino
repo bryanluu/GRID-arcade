@@ -114,7 +114,7 @@ void loop()
 
     // Log every second
     millis_t elapsed = now_millis - log_last_ms;
-    if (elapsed >= time.millisPerSec)
+    if (elapsed >= time.MILLIS_PER_SEC)
     {
         float fps = time.fps();
         logger.logf(LogLevel::Debug, "FPS: %.2f", fps);

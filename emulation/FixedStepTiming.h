@@ -10,14 +10,14 @@
  */
 class FixedStepTiming final : public Timing
 {
-    const double defaultTargetHz_{ 60.0 };
+    const double defaultTargetHz_{60.0};
     double targetHz_;
     double dtSec_;
     double acc_ = 0.0;
     uint64_t freq_ = 0, last_ = 0;
     uint32_t nowMs_ = 0; // scene clock
     float dtMs_ = 0.0f;
-    float fpsEMA_ = 0.0f; // exponential moving average of fps
+    float fpsEMA_ = 0.0f;                  // exponential moving average of fps
     static constexpr float k_alpha = 0.2f; // EMA smoothing factor
 
 public:
@@ -44,8 +44,8 @@ public:
         {
             acc_ -= dtSec_;
             ++steps;
-            nowMs_ += static_cast<uint32_t>(dtSec_ * millisPerSec);
-            dtMs_ = static_cast<float>(dtSec_ * millisPerSec);
+            nowMs_ += static_cast<uint32_t>(dtSec_ * MILLIS_PER_SEC);
+            dtMs_ = static_cast<float>(dtSec_ * MILLIS_PER_SEC);
         }
         if (steps > 0)
         {
@@ -61,7 +61,7 @@ public:
         if (left > 0.0)
         {
             double sleepSec = std::max(0.0, left - 0.001);
-            sleep(static_cast<Uint32>(sleepSec * millisPerSec));
+            sleep(static_cast<Uint32>(sleepSec * MILLIS_PER_SEC));
         }
     }
 
