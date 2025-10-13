@@ -45,7 +45,7 @@ static SerialSink sink;
 static ArduinoLogger logger(time, sink);
 static ArduinoInputProvider inputProvider{HORIZONTAL_PIN, VERTICAL_PIN, BUTTON_PIN};
 static Input input{};
-static App app{gfx, time, input};
+static App app{gfx, time, input, logger};
 static unsigned long prev_millis{};
 static unsigned long now_millis{};
 static millis_t log_last_ms{};
@@ -122,6 +122,7 @@ void loop()
         InputState state = input.state();
         logger.logf(LogLevel::Debug, "Raw ADC X: %d Y: %d, Norm X: %.2f Norm Y: %.2f, Pressed: %d",
                     state.x_adc, state.y_adc, state.x, state.y, state.pressed);
+        logger.flush();
 
         log_last_ms = now_millis;
     }

@@ -20,7 +20,7 @@ class App
     std::unique_ptr<Scene> current;
 
 public:
-    explicit App(Matrix32 &gfx, Timing &time, Input &input) : ctx{gfx, time, input} {}
+    explicit App(Matrix32 &gfx, Timing &time, Input &input, ILogger &logger) : ctx{gfx, time, input, logger} {}
 
     // Replace the current scene with a newly constructed SceneT.
     // - Destroys the old scene, creates SceneT(args...), then calls setup(gfx).

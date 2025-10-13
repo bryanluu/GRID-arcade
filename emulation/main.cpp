@@ -38,7 +38,7 @@ void run_emulation()
 
     Input input{};
     input.init(&inputProvider);
-    App app{gfx, time, input};
+    App app{gfx, time, input, logger};
 
     app.setScene<CalibrationScene>();
 
