@@ -32,8 +32,9 @@ namespace Helpers
 {
     inline char *dtostrf_shim(double val, signed char /*width*/, unsigned char prec, char *out)
     {
-        // Minimal, no padding; handles NaN/Inf; rounds to 'prec' digits
         char *p = out;
+
+        // Special values
         if (isnan(val))
         {
             strcpy(out, "nan");
@@ -45,14 +46,35 @@ namespace Helpers
             return out;
         }
 
-        if (val < 0)
-        {
-            *p++ = '-';
+        // Sign
+        bool neg = val < 0.0;
+        if (neg)
             val = -val;
+
+        // Precision cap for small buffers
+        unsigned char effPrec = prec > 6 ? 6 : prec;
+
+        // Split into integer and fractional, then round fractional at requested precision
+        unsigned long ip = (unsigned long)val;
+        double frac = val - (double)ip;
+
+        // Scale fractional and round
+        static const unsigned long pow10[] = {1ul, 10ul, 100ul, 1000ul, 10000ul, 100000ul, 1000000ul};
+        unsigned long scale = pow10[effPrec];
+        unsigned long fs = (unsigned long)(frac * (double)scale + 0.5);
+
+        // Carry: if fs == scale, bump integer part and zero fractional
+        if (fs >= scale)
+        {
+            fs -= scale;
+            ++ip;
         }
 
-        // integer part
-        unsigned long ip = static_cast<unsigned long>(val);
+        // Emit sign
+        if (neg)
+            *p++ = '-';
+
+        // Emit integer part (ensure at least one digit)
         char ibuf[20];
         int i = 0;
         do
@@ -63,28 +85,21 @@ namespace Helpers
         for (int j = i - 1; j >= 0; --j)
             *p++ = ibuf[j];
 
-        // fractional part
-        if (prec == 0)
+        // Optional fractional part
+        if (effPrec > 0)
         {
-            *p = '\0';
-            return out;
+            *p++ = '.';
+            // Emit exactly effPrec digits with leading zeros
+            char fbuf[8];
+            for (int j = (int)effPrec - 1; j >= 0; --j)
+            {
+                fbuf[j] = char('0' + (fs % 10));
+                fs /= 10;
+            }
+            memcpy(p, fbuf, effPrec);
+            p += effPrec;
         }
-        *p++ = '.';
-        const unsigned long pow10_table[] = {1ul, 10ul, 100ul, 1000ul, 10000ul, 100000ul, 1000000ul};
-        unsigned char effPrec = prec > 6 ? 6 : prec; // keep it small
-        unsigned long scale = pow10_table[effPrec];
-        double frac = val - static_cast<unsigned long>(val);
-        unsigned long f = static_cast<unsigned long>(frac * scale + 0.5); // rounded
 
-        // write 'effPrec' digits with leading zeros
-        char fbuf[8];
-        for (int j = effPrec - 1; j >= 0; --j)
-        {
-            fbuf[j] = char('0' + (f % 10));
-            f /= 10;
-        }
-        memcpy(p, fbuf, effPrec);
-        p += effPrec;
         *p = '\0';
         return out;
     }
