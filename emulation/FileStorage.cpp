@@ -1,19 +1,17 @@
 // FileStorage.cpp — desktop filesystem backend using ILogger
-// Implementation details:
-// - joinUnder(): avoid path concat bugs; std::filesystem handles separators portably.
-// - writeAll(): temp write -> flush -> rename to final; best-effort cleanup on failure.
-// - readAll(): sizes upfront; caller provides destination buffer to avoid backend allocation.
-// - removeTree(): recursive delete; use carefully.
+// Implementation highlights:
+// - joinUnder(): path-safe composition across platforms.
+// - writeAll(): temp write -> flush -> rename; old file replaced only on successful rename.
+// - readAll(): caller provides buffer to avoid backend allocations.
+// - removeTree(): recursive delete of a directory; use carefully.
 #include "FileStorage.h"
 #include <filesystem>
 #include <fstream>
-
-// Bring in to call ILogger::logf.
-#include "Logging.h" // defines ILogger and LogLevel
+#include "Logging.h" // Provides ILogger and LogLevel
 
 namespace fs = std::filesystem;
 
-// Compose a path under base; std::filesystem handles separators portably.
+// Compose a path under base; std::filesystem handles separators.
 static inline std::string joinUnder(const std::string &base, const char *rel)
 {
     fs::path p = fs::path(base) / rel;
@@ -33,7 +31,7 @@ void FileStorage::warn(const char *msg)
 
 void FileStorage::recoverTemp()
 {
-    const std::string tmp = joinUnder(baseDir, ".tmp_write");
+    const std::string tmp = joinUnder(baseDir, kTempName);
     std::error_code ec;
     if (fs::exists(tmp, ec))
     {
@@ -46,10 +44,8 @@ void FileStorage::recoverTemp()
 StorageResult FileStorage::init(const char *dir, ILogger *logger)
 {
     log = logger;
-    if (dir && *dir)
-        baseDir = dir;
+    baseDir = (dir && *dir) ? dir : kDefaultBaseDir;
 
-    // Ensure baseDir exists; create if missing.
     std::error_code ec;
     if (!fs::exists(baseDir, ec))
         fs::create_directories(baseDir, ec);
@@ -59,9 +55,7 @@ StorageResult FileStorage::init(const char *dir, ILogger *logger)
         return {StorageError::MountFailed, 0};
     }
 
-    // Best-effort cleanup of a generic orphan temp.
     recoverTemp();
-
     info("ready");
     return {};
 }
@@ -75,9 +69,9 @@ bool FileStorage::exists(const char *rel)
 StorageResult FileStorage::writeAll(const char *rel, const void *src, size_t n)
 {
     const std::string abs = joinUnder(baseDir, rel);
-    const std::string tmp = joinUnder(baseDir, ".tmp_write");
+    const std::string tmp = joinUnder(baseDir, kTempName);
 
-    // 1) Write to temp file; RAII closes the stream even on early return.
+    // 1) Write to temp (RAII closes on scope exit).
     {
         std::ofstream f(tmp, std::ios::binary | std::ios::trunc);
         if (!f)
@@ -91,7 +85,7 @@ StorageResult FileStorage::writeAll(const char *rel, const void *src, size_t n)
             warn("write failed");
             return {StorageError::WriteFailed, 0};
         }
-        f.flush(); // push data and metadata to the OS
+        f.flush();
         if (!f)
         {
             warn("flush failed");
@@ -99,7 +93,7 @@ StorageResult FileStorage::writeAll(const char *rel, const void *src, size_t n)
         }
     }
 
-    // 2) Replace final via rename (same directory -> atomic on most filesystems).
+    // 2) Replace final via rename.
     std::error_code ec;
     fs::rename(tmp, abs, ec);
     if (ec)
@@ -116,7 +110,7 @@ StorageResult FileStorage::writeAll(const char *rel, const void *src, size_t n)
 StorageResult FileStorage::readAll(const char *rel, void *dst, size_t cap)
 {
     const std::string abs = joinUnder(baseDir, rel);
-    std::ifstream f(abs, std::ios::binary); // RAII
+    std::ifstream f(abs, std::ios::binary);
     if (!f)
         return {StorageError::NotFound, 0};
 
@@ -124,7 +118,6 @@ StorageResult FileStorage::readAll(const char *rel, void *dst, size_t cap)
     size_t sz = (size_t)f.tellg();
     f.seekg(0);
 
-    // Enforce caller-provided buffer limits; avoids hidden allocations.
     if (sz >= cap)
     {
         warn("buffer too small");

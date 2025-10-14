@@ -1,10 +1,9 @@
 // FlashStorage.cpp — Adafruit FatFs backend using ILogger (Arduino)
-// Implementation notes:
-// - makeAbs(): supports absolute relPath (starting with '/') and base-relative paths.
-// - writeAll(): temp write -> f.sync() to push data and directory entry -> rename.
-//   Minimizes corruption under power loss; worst case you lose only the “last write.”
-// - readAll(): uses caller-provided buffer; avoids dynamic allocation on MCU.
-// - removeTree(): uses rmRfStar() to recursively delete directory contents.
+// Implementation highlights:
+// - makeAbs(): supports absolute relPath (leading '/') and base-relative paths.
+// - writeAll(): temp write -> f.sync() (data + dir entry) -> rename.
+// - readAll(): caller buffer; avoids dynamic allocation on MCU.
+// - removeTree(): rmRfStar() recursive delete; be cautious.
 #include "FlashStorage.h"
 #include "SdFat_Adafruit_Fork.h"
 #include <Adafruit_SPIFlash.h>
@@ -35,11 +34,8 @@ void FlashStorage::makeAbs(char *out, size_t cap, const char *base, const char *
 
 void FlashStorage::recoverTemp()
 {
-    // Generic cleanup: remove a known temp filename if present.
-    // If you adopt temp names that include the target (e.g., "<name>.tmp"),
-    // implement promotion to final here on boot.
-    char tmp[256];
-    makeAbs(tmp, sizeof(tmp), baseDir, ".tmp_write");
+    char tmp[kPathCap];
+    makeAbs(tmp, sizeof(tmp), baseDir, kTempName);
     if (vol.exists(tmp))
     {
         vol.remove(tmp);
@@ -50,8 +46,7 @@ void FlashStorage::recoverTemp()
 StorageResult FlashStorage::init(const char *dir, ILogger *logger)
 {
     log = logger;
-    if (dir && *dir)
-        baseDir = dir;
+    baseDir = (dir && *dir) ? dir : kDefaultBaseDir;
 
     // Ensure baseDir exists on the mounted volume.
     if (!vol.exists(baseDir) && !vol.mkdir(baseDir))
@@ -60,27 +55,25 @@ StorageResult FlashStorage::init(const char *dir, ILogger *logger)
         return {StorageError::MountFailed, 0};
     }
 
-    // Cleanup any orphan temp from an interrupted write.
     recoverTemp();
-
     info("ready");
     return {};
 }
 
 bool FlashStorage::exists(const char *rel)
 {
-    char abs[256];
+    char abs[kPathCap];
     makeAbs(abs, sizeof(abs), baseDir, rel);
     return vol.exists(abs);
 }
 
 StorageResult FlashStorage::writeAll(const char *rel, const void *src, size_t n)
 {
-    char abs[256], tmp[256];
+    char abs[kPathCap], tmp[kPathCap];
     makeAbs(abs, sizeof(abs), baseDir, rel);
-    makeAbs(tmp, sizeof(tmp), baseDir, ".tmp_write");
+    makeAbs(tmp, sizeof(tmp), baseDir, kTempName);
 
-    // 1) Write to temp file; RAII ensures close even if we return early.
+    // 1) Write to temp; RAII ensures close even if we return early.
     {
         File32 f = vol.open(tmp, FILE_WRITE);
         if (!f)
@@ -90,11 +83,10 @@ StorageResult FlashStorage::writeAll(const char *rel, const void *src, size_t n)
         }
 
         size_t w = f.write((const uint8_t *)src, n);
-        f.sync(); // push data and FAT/dir updates to the medium
-
+        f.sync(); // push data and FAT/dir metadata
         if (w != n)
         {
-            vol.remove(tmp); // cleanup partial temp
+            vol.remove(tmp);
             warn("short write");
             return {StorageError::WriteFailed, (int32_t)w};
         }
@@ -104,7 +96,7 @@ StorageResult FlashStorage::writeAll(const char *rel, const void *src, size_t n)
     // 2) Replace final by rename (keep old file until rename succeeds).
     if (!vol.rename(tmp, abs))
     {
-        vol.remove(tmp); // best-effort cleanup on failure
+        vol.remove(tmp);
         warn("rename failed");
         return {StorageError::RenameFailed, 0};
     }
@@ -115,10 +107,9 @@ StorageResult FlashStorage::writeAll(const char *rel, const void *src, size_t n)
 
 StorageResult FlashStorage::readAll(const char *rel, void *dst, size_t cap)
 {
-    char abs[256];
+    char abs[kPathCap];
     makeAbs(abs, sizeof(abs), baseDir, rel);
-
-    File32 f = vol.open(abs, FILE_READ); // RAII
+    File32 f = vol.open(abs, FILE_READ);
     if (!f)
         return {StorageError::NotFound, 0};
 
@@ -141,7 +132,7 @@ StorageResult FlashStorage::readAll(const char *rel, void *dst, size_t cap)
 
 StorageResult FlashStorage::removeFile(const char *rel)
 {
-    char abs[256];
+    char abs[kPathCap];
     makeAbs(abs, sizeof(abs), baseDir, rel);
     if (!vol.remove(abs))
     {
@@ -154,10 +145,8 @@ StorageResult FlashStorage::removeFile(const char *rel)
 
 StorageResult FlashStorage::removeTree(const char *relDir)
 {
-    char abs[256];
+    char abs[kPathCap];
     makeAbs(abs, sizeof(abs), baseDir, relDir);
-
-    // Open directory and recursively delete everything inside.
     File32 d = vol.open(abs);
     if (!d || !d.isDirectory())
         return {StorageError::PathError, 0};

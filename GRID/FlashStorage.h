@@ -1,21 +1,19 @@
 // FlashStorage.h — Adafruit FatFs backend using ILogger (Arduino)
-// Purpose: IStorage implementation on Adafruit SPI Flash + FatFs.
-//
-// Lifecycle:
-// - In setup(), initialize flash and mount the FatFs volume.
-// - Construct FlashStorage(flash, vol) with non-owning references.
-// - Call init("/save", logger) to ensure base dir exists and cleanup stale temp.
-//
+// Purpose: Implement IStorage on Adafruit SPI Flash + FatFs.
+// Lifecycle (sketch):
+//   - Initialize flash and mount volume in setup()
+//   - FlashStorage storage(flash, vol);
+//   - storage.init("/save", appLogger);
 // Safety under power loss:
-// - writeAll() uses temp -> f.sync() -> rename, keeping the old file until rename succeeds.
-// - init() removes a generic orphan temp left by interrupted writes.
-// - For “promote temp to final,” encode the target in temp name and extend recoverTemp().
+//   - writeAll(): temp write -> f.sync() -> rename; old file kept until rename succeeds.
+//   - init(): cleans up a generic orphan temp file from interrupted writes.
+//   - For temp promotion, encode target name in temp file and extend recoverTemp().
 #ifndef FLASHSTORAGE_H
 #define FLASHSTORAGE_H
 
 #include "IStorage.h"
 
-// Forward declarations to keep the interface light; the sketch provides these.
+// Forward declarations — provided by your sketch / Adafruit libs.
 class Adafruit_SPIFlash;
 class FatVolume;
 class File32;
@@ -23,6 +21,11 @@ class File32;
 class FlashStorage final : public IStorage
 {
 public:
+    // Defaults used if caller passes nullptr or empty string to init()
+    static constexpr const char *kDefaultBaseDir = "/save";
+    static constexpr const char *kTempName = ".tmp_write";
+    static constexpr size_t kPathCap = 256; // on-stack path buffers
+
     // Non-owning references; caller controls lifetime and mounting.
     FlashStorage(Adafruit_SPIFlash &flash, FatVolume &vol) : flash(flash), vol(vol) {}
 
@@ -35,18 +38,18 @@ public:
     const char *base() const override { return baseDir; }
 
 private:
-    const char *baseDir = "/save"; // Volume-relative root for game saves
-    ILogger *log = nullptr;        // non-owning
-    Adafruit_SPIFlash &flash;      // non-owning
-    FatVolume &vol;                // non-owning
+    const char *baseDir = kDefaultBaseDir; // Volume-relative root for saves
+    ILogger *log = nullptr;                // non-owning
+    Adafruit_SPIFlash &flash;              // non-owning
+    FatVolume &vol;                        // non-owning
 
-    // Remove a generic orphan temp file. Extend to promote temp if needed.
+    // Remove a generic orphan temp. Extend to promote temp if you encode target in the temp name.
     void recoverTemp();
 
     // Build absolute volume path from base + relative; respects already-absolute rel.
     static void makeAbs(char *out, size_t cap, const char *base, const char *rel);
 
-    // Logging helpers
+    // Logging helpers — include “[FlashStorage]” prefix here to keep call sites clean.
     void info(const char *msg);
     void warn(const char *msg);
 };
