@@ -16,9 +16,8 @@
 static constexpr double TICK_HZ = 60.0;
 
 // Smoke test using current working directory/save
-static void run_filestorage_smoke(ILogger &logger)
+static void run_filestorage_smoke(FileStorage &storage, ILogger &logger)
 {
-    FileStorage storage;
     const char *baseDir = "save"; // creates ./save next to the emulator
     if (!storage.init(baseDir, &logger))
     {
@@ -56,17 +55,18 @@ static void run_filestorage_smoke(ILogger &logger)
 // Main emulation loop
 void run_emulation()
 {
+    FileStorage storage;
     SDLMatrix32 gfx{};
     gfx.begin();
     StdoutSink sink;
     FixedStepTiming timing{TICK_HZ};
     EmulationLogger logger(timing, sink);
+    SDLInputProvider inputProvider{};
 
     // TODO remove
     // Run once to test FileStorage
-    run_filestorage_smoke(logger);
+    run_filestorage_smoke(storage, logger);
 
-    SDLInputProvider inputProvider{};
     SDL_Window *win = gfx.window();
     bool running = true; // main loop flag
     millis_t log_last_ms{};
@@ -85,7 +85,7 @@ void run_emulation()
 
     Input input{};
     input.init(&inputProvider);
-    App app{gfx, timing, input, logger};
+    App app{gfx, timing, input, logger, storage};
 
     app.setScene<CalibrationScene>();
 

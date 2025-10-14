@@ -47,6 +47,7 @@ using frames_t = uint16_t; // convenience alias for frame counts
 
 // Globals
 
+static FlashStorage storage(g_flash, g_fatfs);
 static RGBmatrixPanel panel(A, B, C, D, CLK, LAT, OE, false);
 static RGBMatrix32 gfx{panel};
 static ArduinoPassiveTiming timing{TICK_HZ};
@@ -54,7 +55,7 @@ static SerialSink sink;
 static ArduinoLogger logger(timing, sink);
 static ArduinoInputProvider inputProvider{HORIZONTAL_PIN, VERTICAL_PIN, BUTTON_PIN};
 static Input input{};
-static App app{gfx, timing, input, logger};
+static App app{gfx, timing, input, logger, storage};
 static unsigned long prev_millis{};
 static unsigned long now_millis{};
 static millis_t log_last_ms{};
@@ -151,19 +152,22 @@ static void smokeTest(Matrix32 &gfx, Timing &timing)
 void setup()
 {
     Serial.begin(115200);
-    randomSeed(analogRead(0));
-    pinMode(0, INPUT_PULLUP);
-    inputProvider.init();
-    input.init(&inputProvider);
-
-    gfx.begin();
-
-    // TODO remove
     while (!Serial)
     {
         delay(10);
     }
-    run_flash_storage_smoke(logger);
+
+    randomSeed(analogRead(0));
+    pinMode(0, INPUT_PULLUP);
+    inputProvider.init();
+    input.init(&inputProvider);
+    gfx.begin();
+
+    const char *baseDir = "/save";
+    storage.init(baseDir, &logger);
+
+    // TODO remove
+    // run_flash_storage_smoke(logger);
     // smokeTest(gfx, timing); // uncomment to run smoke tests before main app
 
     app.setScene<CalibrationScene>();
