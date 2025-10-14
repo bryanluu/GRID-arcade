@@ -3,7 +3,9 @@
 #include "CalibrationScene.h"
 #include "EmulationLogger.h"
 #include "ExampleScene.h"
+#include "FileStorage.h"
 #include "FixedStepTiming.h"
+#include "IStorage.h"
 #include "SDLInputProvider.h"
 #include "SDLMatrix32.h"
 #include <SDL.h>
@@ -13,14 +15,57 @@
 // match GRID hardware
 static constexpr double TICK_HZ = 60.0;
 
+// Smoke test using current working directory/save
+static void run_filestorage_smoke(ILogger &logger)
+{
+    FileStorage storage;
+    const char *baseDir = "save"; // creates ./save next to the emulator
+    if (!storage.init(baseDir, &logger))
+    {
+        logger.logf(LogLevel::Warning, "[FileStorageTest] init failed");
+        return;
+    }
+
+    const char *fname = "emu_test.bin"; // stored under ./save
+    const char payload[] = "hello-grid";
+    if (!storage.writeAll(fname, payload, sizeof(payload)))
+    {
+        logger.logf(LogLevel::Warning, "[FileStorageTest] writeAll failed");
+        return;
+    }
+    logger.logf(LogLevel::Info, "[FileStorageTest] write ok");
+
+    char buf[64] = {};
+    auto r = storage.readAll(fname, buf, sizeof(buf));
+    if (!r)
+    {
+        logger.logf(LogLevel::Warning, "[FileStorageTest] readAll failed");
+        return;
+    }
+    logger.logf(LogLevel::Info, "[FileStorageTest] read %d bytes, contents='%s'", r.bytes, buf);
+
+    // Clean up
+    if (!storage.removeFile(fname))
+    {
+        logger.logf(LogLevel::Warning, "[FileStorageTest] removeFile failed");
+        return;
+    }
+    logger.logf(LogLevel::Info, "[FileStorageTest] removed ok");
+}
+
 // Main emulation loop
 void run_emulation()
 {
     SDLMatrix32 gfx{};
     gfx.begin();
     StdoutSink sink;
-    FixedStepTiming time{TICK_HZ};
-    EmulationLogger logger(time, sink);
+    FixedStepTiming timing{TICK_HZ};
+    EmulationLogger logger(timing, sink);
+
+    // TODO remove
+    // Run once to test FileStorage
+    run_filestorage_smoke(logger);
+
     SDLInputProvider inputProvider{};
     SDL_Window *win = gfx.window();
     bool running = true; // main loop flag
@@ -40,26 +85,26 @@ void run_emulation()
 
     Input input{};
     input.init(&inputProvider);
-    App app{gfx, time, input, logger};
+    App app{gfx, timing, input, logger};
 
     app.setScene<CalibrationScene>();
 
     while (running)
     {
-        int steps = time.pump();
+        int steps = timing.pump();
         for (int i = 0; i < steps; ++i)
         {
             inputProvider.pumpEvents(); // handle input events
-            app.loopOnce();             // Scene consumes ctx.time
+            app.loopOnce();             // Scene consumes ctx.timing
         }
 
-        now_ms = time.nowMs();
-        if (now_ms - log_last_ms >= time.MILLIS_PER_SEC)
+        now_ms = timing.nowMs();
+        if (now_ms - log_last_ms >= timing.MILLIS_PER_SEC)
         {
             app.logDiagnostics();
             log_last_ms = now_ms;
         }
-        time.sleep_to_cadence();
+        timing.sleep_to_cadence();
     }
 }
 

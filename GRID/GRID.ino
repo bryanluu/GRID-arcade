@@ -7,6 +7,15 @@
 #include "ExampleScene.h"
 #include "RGBMatrix32.h"
 #include <RGBmatrixPanel.h>
+#include "FlashStorage.h"
+#include "IStorage.h"
+
+// Adafruit flash + FatFs globals
+#include "SdFat_Adafruit_Fork.h"
+#include <Adafruit_SPIFlash.h>
+#include "flash_config.h" // provides flashTransport
+static Adafruit_SPIFlash g_flash(&flashTransport);
+static FatVolume g_fatfs;
 
 // Most of the signal pins are configurable, but the CLK pin has some
 // special constraints.  On 8-bit AVR boards it must be on PORTB...
@@ -40,25 +49,76 @@ using frames_t = uint16_t; // convenience alias for frame counts
 
 static RGBmatrixPanel panel(A, B, C, D, CLK, LAT, OE, false);
 static RGBMatrix32 gfx{panel};
-static ArduinoPassiveTiming time{TICK_HZ};
+static ArduinoPassiveTiming timing{TICK_HZ};
 static SerialSink sink;
-static ArduinoLogger logger(time, sink);
+static ArduinoLogger logger(timing, sink);
 static ArduinoInputProvider inputProvider{HORIZONTAL_PIN, VERTICAL_PIN, BUTTON_PIN};
 static Input input{};
-static App app{gfx, time, input, logger};
+static App app{gfx, timing, input, logger};
 static unsigned long prev_millis{};
 static unsigned long now_millis{};
 static millis_t log_last_ms{};
 static uint16_t fps_frames{};
 
+// Simple helper to run once in setup
+static void run_flash_storage_smoke(ILogger &logger)
+{
+    // Mount flash and FatFs (skip if you already do this elsewhere)
+    if (!g_flash.begin())
+    {
+        logger.logf(LogLevel::Warning, "[FlashStorageTest] flash.begin failed");
+        return;
+    }
+    if (!g_fatfs.begin(&g_flash))
+    {
+        logger.logf(LogLevel::Warning, "[FlashStorageTest] fatfs.begin failed");
+        return;
+    }
+
+    FlashStorage storage(g_flash, g_fatfs);
+    const char *baseDir = "/save";
+    if (!storage.init(baseDir, &logger))
+    {
+        logger.logf(LogLevel::Warning, "[FlashStorageTest] init failed");
+        return;
+    }
+
+    const char *fname = "flash_test.bin"; // stored under /save
+    const char payload[] = "hello-grid";
+    if (!storage.writeAll(fname, payload, sizeof(payload)))
+    {
+        logger.logf(LogLevel::Warning, "[FlashStorageTest] writeAll failed");
+        return;
+    }
+    logger.logf(LogLevel::Info, "[FlashStorageTest] write ok");
+
+    char buf[64] = {};
+    auto r = storage.readAll(fname, buf, sizeof(buf));
+    if (!r)
+    {
+        logger.logf(LogLevel::Warning, "[FlashStorageTest] readAll failed");
+        return;
+    }
+    logger.logf(LogLevel::Info, "[FlashStorageTest] read %d bytes, contents='%s'", r.bytes, buf);
+
+    // Clean up
+    if (!storage.removeFile(fname))
+    {
+        logger.logf(LogLevel::Warning, "[FlashStorageTest] removeFile failed");
+        return;
+    }
+    logger.logf(LogLevel::Info, "[FlashStorageTest] removed ok");
+    logger.flush();
+}
+
 // Basic smoke test to verify the display is working
-static void smokeTest(Matrix32 &gfx, Timing &time)
+static void smokeTest(Matrix32 &gfx, Timing &timing)
 {
     gfx.setImmediate(true);
 
     // Solid green
     gfx.fillRect(0, 0, MATRIX_WIDTH, MATRIX_HEIGHT, GREEN);
-    time.sleep(2000);
+    timing.sleep(2000);
 
     // Alternating rows
     gfx.clear();
@@ -69,7 +129,7 @@ static void smokeTest(Matrix32 &gfx, Timing &time)
             gfx.drawPixel(x, y, (y & 1) ? RED : GREEN);
         }
     }
-    time.sleep(2000);
+    timing.sleep(2000);
 
     // Text
     gfx.clear();
@@ -77,13 +137,13 @@ static void smokeTest(Matrix32 &gfx, Timing &time)
     gfx.setTextSize(1);
     gfx.setTextColor(WHITE);
     gfx.println("GRID");
-    time.sleep(1000);
+    timing.sleep(1000);
     gfx.setCursor(1, 10);
     gfx.print("<");
-    time.sleep(1000);
+    timing.sleep(1000);
     gfx.advance();
     gfx.print(">");
-    time.sleep(1000);
+    timing.sleep(1000);
 
     gfx.setImmediate(false);
 }
@@ -97,7 +157,15 @@ void setup()
     input.init(&inputProvider);
 
     gfx.begin();
-    // smokeTest(gfx, time); // uncomment to run smoke tests before main app
+
+    // TODO remove
+    while (!Serial)
+    {
+        delay(10);
+    }
+    run_flash_storage_smoke(logger);
+    // smokeTest(gfx, timing); // uncomment to run smoke tests before main app
+
     app.setScene<CalibrationScene>();
     prev_millis = millis();
     log_last_ms = prev_millis;
@@ -106,7 +174,7 @@ void setup()
 void loop()
 {
     now_millis = millis();
-    if (now_millis - prev_millis >= static_cast<millis_t>(time.dtMs()))
+    if (now_millis - prev_millis >= static_cast<millis_t>(timing.dtMs()))
     {
         app.loopOnce();
         prev_millis = now_millis;
@@ -114,7 +182,7 @@ void loop()
 
     // Log every second
     millis_t elapsed = now_millis - log_last_ms;
-    if (elapsed >= time.MILLIS_PER_SEC)
+    if (elapsed >= timing.MILLIS_PER_SEC)
     {
         app.logDiagnostics();
         log_last_ms = now_millis;
