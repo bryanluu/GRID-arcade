@@ -53,15 +53,15 @@ const char *CalibrationScene::stageLabel(State s) const
     switch (s)
     {
     case StageLeft:
-        return "Hold left";
+        return "Left";
     case StageRight:
-        return "Hold right";
+        return "Right";
     case StageUp:
-        return "Hold up";
+        return "Up";
     case StageDown:
-        return "Hold down";
+        return "Down";
     case StageCenter:
-        return "Let go";
+        return "Mid";
     default:
         return "";
     }
@@ -104,20 +104,57 @@ void CalibrationScene::beginStage(AppContext &ctx, State s)
     y_max_ = InputCalibration::ADC_MIN;
     cx_acc_ = cy_acc_ = 0;
     c_count_ = 0;
-    ctx.logger.logf(LogLevel::Info, "Begin %s", stageLabel(state_));
+    ctx.gfx.clear();
+    ctx.gfx.setCursor(1, 1);
+
+    switch (s)
+    {
+    case Done:
+        ctx.logger.logf(LogLevel::Info, "Calibration complete");
+        ctx.gfx.println("Calib");
+        ctx.gfx.setCursor(1, 10);
+        ctx.gfx.print("Save");
+        break;
+    case Canceled:
+        ctx.logger.logf(LogLevel::Info, "Calibration canceled");
+        ctx.gfx.println("Calib");
+        ctx.gfx.setCursor(1, 10);
+        ctx.gfx.print("Stop");
+        break;
+    default:
+        ctx.logger.logf(LogLevel::Info, "Calibration Stage: %s", stageLabel(state_));
+        ctx.gfx.println("Keep");
+        ctx.gfx.setCursor(1, 10);
+        ctx.gfx.print(stageLabel(state_));
+    }
+}
+
+void CalibrationScene::drawStage(AppContext &ctx)
+{
+    const int BAR_START_X = 1;
+    const int BAR_START_Y = 29;
+    const int BAR_WIDTH = 29;
+    const int BAR_HEIGHT = 2;
+    constexpr Color333 BAR_COLOR = YELLOW;
+    const millis_t elapsed = ctx.time.nowMs() - (stage_start_ + TRANSITION_BUFFER);
+    const float progress = float(elapsed) / float(STAGE_MS);
+    const int elapsed_width = round(BAR_WIDTH * (1.0f - progress));
+    // draw over old bar
+    ctx.gfx.fillRect(BAR_START_X, BAR_START_Y, BAR_START_X + BAR_WIDTH, BAR_START_Y + BAR_HEIGHT, BLACK);
+    ctx.gfx.fillRect(BAR_START_X, BAR_START_Y, elapsed_width, BAR_START_Y + BAR_HEIGHT, BAR_COLOR);
 }
 
 // Per-tick sample: update min/max and center accumulators.
 // Uses O(1) memory — no large buffers or histories.
 void CalibrationScene::handleStage(AppContext &ctx)
 {
-    const uint32_t elapsed = ctx.time.nowMs() - stage_start_;
+    const millis_t elapsed = ctx.time.nowMs() - stage_start_;
     if (elapsed < TRANSITION_BUFFER)
         return;
 
     if (ctx.input.state().pressed)
     {
-        state_ = Canceled;
+        beginStage(ctx, Canceled);
         return;
     } // cancel on press
 
@@ -137,22 +174,26 @@ void CalibrationScene::handleStage(AppContext &ctx)
 
     // const float t = Helpers::clamp(elapsed / float(STAGE_MS), 0.0f, 1.0f);
     // draw_progress(t, stageLabel(state_)); // TODO implement
-
-    if (elapsed >= STAGE_MS)
+    drawStage(ctx);
+    if (elapsed >= TRANSITION_BUFFER + STAGE_MS)
     {
         switch (state_)
         {
         case StageLeft:
             cur_.x_adc_low = Helpers::clamp(x_min_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
+            beginStage(ctx, StageRight);
             break;
         case StageRight:
             cur_.x_adc_high = Helpers::clamp(x_max_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
+            beginStage(ctx, StageUp);
             break;
         case StageUp:
             cur_.y_adc_low = Helpers::clamp(y_min_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
+            beginStage(ctx, StageDown);
             break;
         case StageDown:
             cur_.y_adc_high = Helpers::clamp(y_max_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
+            beginStage(ctx, StageCenter);
             break;
         case StageCenter:
             if (c_count_ > 0)
@@ -160,20 +201,6 @@ void CalibrationScene::handleStage(AppContext &ctx)
                 cur_.x_adc_center = Helpers::clamp(cx_acc_ / c_count_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
                 cur_.y_adc_center = Helpers::clamp(cy_acc_ / c_count_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
             }
-            break;
-        default:
-            break;
-        }
-        if (state_ == StageLeft)
-            beginStage(ctx, StageRight);
-        else if (state_ == StageRight)
-            beginStage(ctx, StageUp);
-        else if (state_ == StageUp)
-            beginStage(ctx, StageDown);
-        else if (state_ == StageDown)
-            beginStage(ctx, StageCenter);
-        else if (state_ == StageCenter)
-        {
             // simple validation
             if (cur_.x_adc_low > cur_.x_adc_high)
                 Helpers::swap(cur_.x_adc_low, cur_.x_adc_high);
@@ -181,7 +208,10 @@ void CalibrationScene::handleStage(AppContext &ctx)
                 Helpers::swap(cur_.y_adc_low, cur_.y_adc_high);
             cur_.x_adc_center = Helpers::clamp(cur_.x_adc_center, cur_.x_adc_low, cur_.x_adc_high);
             cur_.y_adc_center = Helpers::clamp(cur_.y_adc_center, cur_.y_adc_low, cur_.y_adc_high);
-            state_ = Done;
+            beginStage(ctx, Done);
+            break;
+        default:
+            break;
         }
     }
 }
@@ -190,17 +220,23 @@ void CalibrationScene::handleStage(AppContext &ctx)
 // Left/Up use minima; Right/Down use maxima; Center uses average.
 void CalibrationScene::handleDone(AppContext &ctx)
 {
-    ctx.logger.logf(LogLevel::Info, "Calibration complete");
-    state_ = Idle;
+    const millis_t elapsed = ctx.time.nowMs() - stage_start_;
+    if (elapsed > STAGE_MS || (elapsed > TRANSITION_BUFFER && ctx.input.state().pressed))
+    {
+        state_ = Idle;
+    }
 }
 
 // Safety: pressing the button at any time cancels and restores base_ values.
 // Prevents accidental writes from brief or unintended presses.
 void CalibrationScene::handleCanceled(AppContext &ctx)
 {
-    cur_ = base_; // discard edits
-    ctx.logger.logf(LogLevel::Info, "Calibration canceled");
-    state_ = Idle;
+    const millis_t elapsed = ctx.time.nowMs() - stage_start_;
+    if (elapsed > STAGE_MS || (elapsed > TRANSITION_BUFFER && ctx.input.state().pressed))
+    {
+        state_ = Idle;
+        cur_ = base_; // discard edits}
+    }
 }
 
 void CalibrationScene::loop(AppContext &ctx)

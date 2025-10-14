@@ -50,6 +50,7 @@ class CalibrationScene final : public Scene
     const char *stageLabel(State s) const;
     void handleIdle(AppContext &ctx);
     void beginStage(AppContext &ctx, State s);
+    void drawStage(AppContext &ctx);
     void handleStage(AppContext &ctx);
     void handleDone(AppContext &ctx);
     void handleCanceled(AppContext &ctx);
