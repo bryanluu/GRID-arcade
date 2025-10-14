@@ -11,13 +11,16 @@ constexpr Color333 CalibrationScene::IDLE_CURSOR_COLOR;
 
 void CalibrationScene::setup(AppContext &ctx)
 {
+    base_ = cur_ = ctx.input.getCalibration();
     static const char message[35] = "Press for 3 seconds to calibrate  ";
     ctx.gfx.setImmediate(false);
     int ts = 1;
     ctx.gfx.setTextSize(ts);
+    Color333 tc = WHITE;
+    ctx.gfx.setTextColor(tc);
 
     ScrollText banner;
-    banner.prepare(ctx.gfx, message, /*scale=*/ts, WHITE);
+    banner.prepare(ctx.gfx, message, /*scale=*/ts, /*color=*/tc);
     banner.reset(/*startX=*/MATRIX_WIDTH, /*yTop=*/banner.yTopCentered(ts));
 
     // Smooth scroll at 1 px per frame

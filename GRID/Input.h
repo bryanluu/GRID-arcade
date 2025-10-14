@@ -42,7 +42,7 @@ struct InputCalibration
 class IInputProvider
 {
 public:
-    const InputCalibration calib;
+    InputCalibration calib;
     IInputProvider(const InputCalibration &c) : calib(c) {}
     virtual ~IInputProvider() = default;
     // Called once per tick; must be non-blocking
@@ -52,7 +52,10 @@ public:
 class Input
 {
 public:
-    void init(IInputProvider *provider) { prov = provider; }
+    void init(IInputProvider *provider)
+    {
+        prov = provider;
+    }
     // Call at start of each tick
     void sample()
     {
@@ -63,6 +66,8 @@ public:
     }
     const InputState &state() const { return current; }
     uint64_t frame() const { return frameId; }
+
+    const InputCalibration &getCalibration() const { return prov->calib; };
 
 private:
     IInputProvider *prov = nullptr;

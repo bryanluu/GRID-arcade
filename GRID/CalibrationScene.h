@@ -56,7 +56,6 @@ class CalibrationScene final : public Scene
     void handleCanceled(AppContext &ctx);
 
 public:
-    CalibrationScene(const InputCalibration &initial) : base_(initial), cur_(initial) {}
     void setup(AppContext &ctx) override;
     void loop(AppContext &ctx) override;
     bool finished() const
