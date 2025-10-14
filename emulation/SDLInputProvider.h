@@ -42,8 +42,18 @@ class SDLInputProvider final : public IInputProvider
     // Mouse analog accumulator (velocity model)
     float vx = 0.f, vy = 0.f;
 
+    // experimentally determined defaults
+    static constexpr InputCalibration defaultCalib{.deadzone = .02f,
+                                                   .gamma = 1.8f,
+                                                   .x_adc_low = InputCalibration::ADC_MIN,
+                                                   .x_adc_center = (InputCalibration::ADC_MAX - InputCalibration::ADC_MIN) / 2,
+                                                   .x_adc_high = InputCalibration::ADC_MAX,
+                                                   .y_adc_low = InputCalibration::ADC_MIN,
+                                                   .y_adc_center = (InputCalibration::ADC_MAX - InputCalibration::ADC_MIN) / 2,
+                                                   .y_adc_high = InputCalibration::ADC_MAX};
+
 public:
-    SDLInputProvider(const InputCalibration &c = {}) : IInputProvider(c) {}
+    SDLInputProvider(const InputCalibration &c = defaultCalib) : IInputProvider(c) {}
     bool init(SDL_Window *win);
     void shutdown();
     ~SDLInputProvider() override { shutdown(); }
@@ -65,6 +75,7 @@ public:
 private:
     // Constants
     static constexpr float EPSILON = 1e-6f;
+    static constexpr float PAD_MOVEMENT_THRESHOLD = 0.005f;
 
     // Helpers
     void openFirstController();
@@ -95,7 +106,7 @@ private:
         return static_cast<AnalogInput_t>(lroundf(f));
     }
     // Check if left stick is moved beyond a small threshold
-    static inline bool stickActive(SDL_GameController *pad, float thresh = 0.02f)
+    static inline bool stickActive(SDL_GameController *pad, float thresh = SDLInputProvider::PAD_MOVEMENT_THRESHOLD)
     {
         if (!pad)
             return false;
