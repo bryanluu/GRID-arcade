@@ -36,8 +36,7 @@ class CalibrationScene final : public Scene
         Canceled
     } state_ = Idle;
 
-    InputCalibration base_;
-    InputCalibration cur_;
+    InputCalibration staged_calib;
     millis_t hold_start_{0};
     millis_t stage_start_{0};
 
@@ -64,7 +63,7 @@ public:
     }
     const InputCalibration &getResult() const
     {
-        return cur_;
+        return staged_calib;
     }
 };
 

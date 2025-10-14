@@ -11,7 +11,7 @@ constexpr Color333 CalibrationScene::IDLE_CURSOR_COLOR;
 
 void CalibrationScene::setup(AppContext &ctx)
 {
-    base_ = cur_ = ctx.input.getCalibration();
+    staged_calib = ctx.input.getCalibration();
     static const char message[35] = "Press for 3 seconds to calibrate  ";
     ctx.gfx.setImmediate(false);
     int ts = 1;
@@ -80,8 +80,6 @@ void CalibrationScene::handleIdle(AppContext &ctx)
     {
         if (hold_start_ == 0)
             hold_start_ = ctx.time.nowMs();
-        // TODO implement
-        // draw_progress(clamp01(held / float(HOLD_TO_START_MS)), "Hold 2s to start");
     }
     else
     {
@@ -177,42 +175,40 @@ void CalibrationScene::handleStage(AppContext &ctx)
     cy_acc_ += ay;
     ++c_count_;
 
-    // const float t = Helpers::clamp(elapsed / float(STAGE_MS), 0.0f, 1.0f);
-    // draw_progress(t, stageLabel(state_)); // TODO implement
     drawStage(ctx);
     if (elapsed >= TRANSITION_BUFFER + STAGE_MS)
     {
         switch (state_)
         {
         case StageLeft:
-            cur_.x_adc_low = Helpers::clamp(x_min_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
+            staged_calib.x_adc_low = Helpers::clamp(x_min_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
             beginStage(ctx, StageRight);
             break;
         case StageRight:
-            cur_.x_adc_high = Helpers::clamp(x_max_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
+            staged_calib.x_adc_high = Helpers::clamp(x_max_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
             beginStage(ctx, StageUp);
             break;
         case StageUp:
-            cur_.y_adc_low = Helpers::clamp(y_min_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
+            staged_calib.y_adc_low = Helpers::clamp(y_min_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
             beginStage(ctx, StageDown);
             break;
         case StageDown:
-            cur_.y_adc_high = Helpers::clamp(y_max_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
+            staged_calib.y_adc_high = Helpers::clamp(y_max_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
             beginStage(ctx, StageCenter);
             break;
         case StageCenter:
             if (c_count_ > 0)
             {
-                cur_.x_adc_center = Helpers::clamp(cx_acc_ / c_count_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
-                cur_.y_adc_center = Helpers::clamp(cy_acc_ / c_count_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
+                staged_calib.x_adc_center = Helpers::clamp(cx_acc_ / c_count_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
+                staged_calib.y_adc_center = Helpers::clamp(cy_acc_ / c_count_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
             }
             // simple validation
-            if (cur_.x_adc_low > cur_.x_adc_high)
-                Helpers::swap(cur_.x_adc_low, cur_.x_adc_high);
-            if (cur_.y_adc_low > cur_.y_adc_high)
-                Helpers::swap(cur_.y_adc_low, cur_.y_adc_high);
-            cur_.x_adc_center = Helpers::clamp(cur_.x_adc_center, cur_.x_adc_low, cur_.x_adc_high);
-            cur_.y_adc_center = Helpers::clamp(cur_.y_adc_center, cur_.y_adc_low, cur_.y_adc_high);
+            if (staged_calib.x_adc_low > staged_calib.x_adc_high)
+                Helpers::swap(staged_calib.x_adc_low, staged_calib.x_adc_high);
+            if (staged_calib.y_adc_low > staged_calib.y_adc_high)
+                Helpers::swap(staged_calib.y_adc_low, staged_calib.y_adc_high);
+            staged_calib.x_adc_center = Helpers::clamp(staged_calib.x_adc_center, staged_calib.x_adc_low, staged_calib.x_adc_high);
+            staged_calib.y_adc_center = Helpers::clamp(staged_calib.y_adc_center, staged_calib.y_adc_low, staged_calib.y_adc_high);
             beginStage(ctx, Done);
             break;
         default:
@@ -228,6 +224,7 @@ void CalibrationScene::handleDone(AppContext &ctx)
     const millis_t elapsed = ctx.time.nowMs() - stage_start_;
     if (elapsed > STAGE_MS || (elapsed > TRANSITION_BUFFER && ctx.input.state().pressed))
     {
+        ctx.input.setCalibration(staged_calib);
         state_ = Idle;
     }
 }
@@ -240,7 +237,6 @@ void CalibrationScene::handleCanceled(AppContext &ctx)
     if (elapsed > STAGE_MS || (elapsed > TRANSITION_BUFFER && ctx.input.state().pressed))
     {
         state_ = Idle;
-        cur_ = base_; // discard edits}
     }
 }
 

@@ -68,6 +68,7 @@ public:
     uint64_t frame() const { return frameId; }
 
     const InputCalibration &getCalibration() const { return prov->calib; };
+    void setCalibration(InputCalibration &calibration) { prov->calib = calibration; }
 
 private:
     IInputProvider *prov = nullptr;
