@@ -62,19 +62,16 @@ void run_emulation()
     FixedStepTiming timing{TICK_HZ};
     EmulationLogger logger(timing, sink);
     SDLInputProvider inputProvider{};
-
-    // TODO remove
-    // Run once to test FileStorage
-    run_filestorage_smoke(storage, logger);
-
     SDL_Window *win = gfx.window();
     bool running = true; // main loop flag
     millis_t log_last_ms{};
     millis_t now_ms{};
 
-    // TODO handle init failure
     if (!inputProvider.init(win))
+    {
+        logger.logf(LogLevel::Warning, "Failed to initialize emulator input");
         return; // failed to init input provider
+    }
 
     // Wire quit (Q/Esc) and LED toggle (L)
     inputProvider.onQuit([&]
