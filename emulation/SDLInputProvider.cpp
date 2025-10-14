@@ -2,8 +2,6 @@
 #include "SDLInputProvider.h"
 #include "Helpers.h"
 
-constexpr float EPSILON = 1e-6f;
-
 bool SDLInputProvider::init(SDL_Window *win)
 {
     if (initialized)
@@ -19,6 +17,7 @@ bool SDLInputProvider::init(SDL_Window *win)
     // Mouse relative + grab as requested
     setMouseRelative(true);
 
+    initialized = true;
     return true;
 }
 
@@ -26,6 +25,7 @@ void SDLInputProvider::shutdown()
 {
     closeController();
     setMouseRelative(false);
+    initialized = false;
 }
 
 void SDLInputProvider::openFirstController()
@@ -98,25 +98,17 @@ void SDLInputProvider::handleWindowEvent(const SDL_WindowEvent &we)
 void SDLInputProvider::handleMouseButtonDown(const SDL_MouseButtonEvent &be)
 {
     if (be.button == SDL_BUTTON_LEFT)
-    {
         lmbHeld = true;
-    }
     if (be.button == SDL_BUTTON_RIGHT)
-    {
         rmbHeld = true;
-    }
 }
 
 void SDLInputProvider::handleMouseButtonUp(const SDL_MouseButtonEvent &be)
 {
     if (be.button == SDL_BUTTON_LEFT)
-    {
         lmbHeld = false;
-    }
     if (be.button == SDL_BUTTON_RIGHT)
-    {
         rmbHeld = false;
-    }
 }
 
 void SDLInputProvider::pumpEvents()
@@ -127,31 +119,20 @@ void SDLInputProvider::pumpEvents()
         switch (e.type)
         {
         case SDL_QUIT:
-        {
             if (quitCb)
                 quitCb();
             break;
-        }
         case SDL_KEYDOWN:
-        {
-            const SDL_Keycode k = e.key.keysym.sym;
             handleKeyDown(e.key);
             break;
-        }
         case SDL_WINDOWEVENT:
-        {
-            const SDL_WindowEvent &we = e.window;
-            handleWindowEvent(we);
+            handleWindowEvent(e.window);
             break;
-        }
         case SDL_CONTROLLERDEVICEADDED:
-        {
             if (!pad)
                 openFirstController();
             break;
-        }
         case SDL_CONTROLLERDEVICEREMOVED:
-        {
             if (pad)
             {
                 SDL_Joystick *js = SDL_GameControllerGetJoystick(pad);
@@ -161,19 +142,12 @@ void SDLInputProvider::pumpEvents()
                 }
             }
             break;
-        }
         case SDL_MOUSEBUTTONDOWN:
-        {
-            const SDL_MouseButtonEvent &be = e.button;
-            handleMouseButtonDown(be);
+            handleMouseButtonDown(e.button);
             break;
-        }
         case SDL_MOUSEBUTTONUP:
-        {
-            const SDL_MouseButtonEvent &be = e.button;
-            handleMouseButtonUp(be);
+            handleMouseButtonUp(e.button);
             break;
-        }
         default:
             break;
         }
@@ -188,7 +162,7 @@ void SDLInputProvider::sample(InputState &state)
     const bool padMoving = stickActive(pad);
     const bool analogEngaged = padMoving || lmbHeld;
 
-    // RMB acts as “button” while in Analog
+    // While in Analog, RMB acts as “button”; otherwise Space in D‑pad.
     if (mode == InputMode::Analog || analogEngaged)
     {
         mode = InputMode::Analog;
@@ -199,12 +173,13 @@ void SDLInputProvider::sample(InputState &state)
     else
     {
         // If previously in Analog, check idle timeout
-        if (mode == InputMode::Analog && (now - lastAnalogActiveMs) > analogIdleTimeoutMs)
+        if (mode == InputMode::Analog &&
+            (now - lastAnalogActiveMs) > analogIdleTimeoutMs)
         {
             mode = InputMode::DPad;
             vx = vy = 0.f; // reset mouse accumulator on exit
         }
-        // In D-pad, button is Space (you can also keep RMB if desired)
+        // In D‑pad, button is Space
         state.pressed = (kb && kb[SDL_SCANCODE_SPACE] != 0);
         genDPad(state);
     }
@@ -213,7 +188,7 @@ void SDLInputProvider::sample(InputState &state)
 void SDLInputProvider::normalizeToUnitCircle(float &x, float &y)
 {
     float mag = std::sqrt(x * x + y * y);
-    if (mag > EPSILON)
+    if (mag > InputTuning::EPSILON)
     {
         x /= mag;
         y /= mag;
@@ -227,7 +202,7 @@ void SDLInputProvider::normalizeToUnitCircle(float &x, float &y)
 
 void SDLInputProvider::genDPad(InputState &s)
 {
-    // Keyboard D-pad only. Ignore ramping for now.
+    // Keyboard D‑pad only. Ignore ramping for now.
     int x = 0, y = 0;
     if (kb[SDL_SCANCODE_A] || kb[SDL_SCANCODE_LEFT])
         x -= 1;
@@ -242,7 +217,7 @@ void SDLInputProvider::genDPad(InputState &s)
     float fx = float(x), fy = float(y);
     normalizeToUnitCircle(fx, fy);
 
-    if (invertY)
+    if (invertY) // typical camera-style invert
         fy = -fy;
 
     // Snap to full deflection in ADC space (0 or 1023)
@@ -256,13 +231,14 @@ void SDLInputProvider::useSDLAxis(float &x, float &y, bool &haveAnalog)
 {
     if (pad)
     {
-        // SDL axes are -32768..32767
-        const float k = 1.0f / 32767.0f;
+        // SDL axes are −32768..32767 → scale to [−1..1]
+        const float k = InputTuning::SDL_AXIS_SCALE;
         Sint16 ax = SDL_GameControllerGetAxis(pad, SDL_CONTROLLER_AXIS_LEFTX);
         Sint16 ay = SDL_GameControllerGetAxis(pad, SDL_CONTROLLER_AXIS_LEFTY);
         x = Helpers::clamp(ax * k, -1.f, 1.f);
         y = Helpers::clamp(ay * k, -1.f, 1.f);
-        haveAnalog = std::fabs(x) > EPSILON || std::fabs(y) > EPSILON;
+        haveAnalog = std::fabs(x) > InputTuning::EPSILON ||
+                     std::fabs(y) > InputTuning::EPSILON;
     }
 }
 
@@ -274,24 +250,26 @@ void SDLInputProvider::useMouseDeltas(float &nx, float &ny, bool &haveAnalog)
     if (lmbHeld)
     {
         SDL_GetRelativeMouseState(&dx, &dy);
-        const float kSens = 0.015f;
-        const float decay = 0.12f;
+        // Velocity model: accumulate scaled deltas then decay toward center each tick.
+        const float kSens = InputTuning::MOUSE_SENS;  // sensitivity px→norm
+        const float decay = InputTuning::MOUSE_DECAY; // per‑tick decay (~60 Hz)
         vx += kSens * float(dx);
         vy += kSens * float(dy);
-        // when LMB is down, you can keep weaker decay or none; keep gentle default:
+        // gentle decay while held
         vx *= (1.f - decay);
         vy *= (1.f - decay);
     }
     else
     {
-        // If LMB not held, decay aggressively toward 0 so we quickly “let go”
-        vx *= 0.5f;
-        vy *= 0.5f;
+        // Fast decay when not held to quickly “let go”
+        vx *= InputTuning::MOUSE_FAST_DECAY;
+        vy *= InputTuning::MOUSE_FAST_DECAY;
     }
 
     nx = Helpers::clamp(vx, -1.f, 1.f);
     ny = Helpers::clamp(vy, -1.f, 1.f);
-    haveAnalog = std::fabs(nx) > EPSILON || std::fabs(ny) > EPSILON;
+    haveAnalog = std::fabs(nx) > InputTuning::EPSILON ||
+                 std::fabs(ny) > InputTuning::EPSILON;
 }
 
 void SDLInputProvider::genAnalog(InputState &s)
@@ -318,7 +296,7 @@ void SDLInputProvider::genAnalog(InputState &s)
 
     normalizeToUnitCircle(nx, ny);
 
-    if (invertY)
+    if (invertY) // typical camera-style invert
         ny = -ny;
 
     s.x = Helpers::clamp(nx, -1.f, 1.f);
