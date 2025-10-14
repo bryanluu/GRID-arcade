@@ -13,7 +13,7 @@ class CalibrationScene final : public Scene
 {
     static const int HOLD_TO_START_MS = 2'000;
     static const int STAGE_MS = 3'000;
-    static const millis_t TRANSITION_BUFFER = 500; // buffer between state transitions
+    static const millis_t TRANSITION_BUFFER = 1'000; // buffer between state transitions
     static const int CIRCLE_CENTER = 15;
     static const int CIRCLE_RADIUS = 15;
     static constexpr Color333 CIRCLE_COLOR = GRAY;

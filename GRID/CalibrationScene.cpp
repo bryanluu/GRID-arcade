@@ -111,19 +111,21 @@ void CalibrationScene::beginStage(AppContext &ctx, State s)
     {
     case Done:
         ctx.logger.logf(LogLevel::Info, "Calibration complete");
-        ctx.gfx.println("Calib");
+        ctx.gfx.print("Calib");
         ctx.gfx.setCursor(1, 10);
-        ctx.gfx.print("Save");
+        ctx.gfx.print("Saved");
         break;
     case Canceled:
         ctx.logger.logf(LogLevel::Info, "Calibration canceled");
-        ctx.gfx.println("Calib");
+        ctx.gfx.print("Calib");
         ctx.gfx.setCursor(1, 10);
-        ctx.gfx.print("Stop");
+        ctx.gfx.print("Not");
+        ctx.gfx.setCursor(1, 19);
+        ctx.gfx.print("Kept");
         break;
     default:
         ctx.logger.logf(LogLevel::Info, "Calibration Stage: %s", stageLabel(state_));
-        ctx.gfx.println("Keep");
+        ctx.gfx.print("Keep");
         ctx.gfx.setCursor(1, 10);
         ctx.gfx.print(stageLabel(state_));
     }
