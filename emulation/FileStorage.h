@@ -1,11 +1,15 @@
 // FileStorage.h — desktop filesystem backend
+// Purpose: IStorage implementation using std::filesystem and std::fstream.
+// Guarantees:
+// - Atomic-ish update using temp file + rename (same directory).
+// - No heap allocation beyond std::string internal usage.
+// - Cleanup of a generic temp name on init (best effort).
 #ifndef FILESTORAGE_H
 #define FILESTORAGE_H
 
 #include "IStorage.h"
 #include <string>
 
-// Purpose: Implement IStorage using std::filesystem and std::fstream.
 class FileStorage final : public IStorage
 {
 public:
@@ -21,7 +25,7 @@ private:
     std::string baseDir = "/save";
     StorageLogFn log = nullptr;
 
-    // Remove generic leftover temp file (best-effort).
+    // Remove a leftover generic temp file (e.g., from abrupt termination).
     void recoverTemp();
 };
 
