@@ -1,9 +1,11 @@
-// FileStorage.h — desktop filesystem backend
+// FileStorage.h — desktop filesystem backend using ILogger
 // Purpose: IStorage implementation using std::filesystem and std::fstream.
-// Guarantees:
+//
+// Guarantees and behavior:
 // - Atomic-ish update using temp file + rename (same directory).
-// - No heap allocation beyond std::string internal usage.
 // - Cleanup of a generic temp name on init (best effort).
+// - Uses ILogger for informative progress and warnings.
+// - No hidden heap allocation beyond std::string internals.
 #ifndef FILESTORAGE_H
 #define FILESTORAGE_H
 
@@ -13,7 +15,7 @@
 class FileStorage final : public IStorage
 {
 public:
-    StorageResult init(const char *baseDir, StorageLogFn logger = nullptr) override;
+    StorageResult init(const char *baseDir, ILogger *logger = nullptr) override;
     StorageResult readAll(const char *relPath, void *dst, size_t cap) override;
     StorageResult writeAll(const char *relPath, const void *src, size_t nbytes) override;
     bool exists(const char *relPath) override;
@@ -23,10 +25,14 @@ public:
 
 private:
     std::string baseDir = "/save";
-    StorageLogFn log = nullptr;
+    ILogger *log = nullptr; // non-owning
 
     // Remove a leftover generic temp file (e.g., from abrupt termination).
     void recoverTemp();
+
+    // Small helpers to log without repeating formatting boilerplate.
+    void info(const char *msg);
+    void warn(const char *msg);
 };
 
 #endif // FILESTORAGE_H
