@@ -61,7 +61,13 @@ void run_emulation()
     StdoutSink sink;
     FixedStepTiming timing{TICK_HZ};
     EmulationLogger logger(timing, sink);
-    SDLInputProvider inputProvider{};
+
+    InputCalibration calib = SDLInputProvider::defaultCalib;
+    const char *baseDir = "save";
+    storage.init(baseDir, &logger);
+    calib.load(storage, logger); // load any saved calib
+    SDLInputProvider inputProvider{calib};
+
     SDL_Window *win = gfx.window();
     bool running = true; // main loop flag
     millis_t log_last_ms{};

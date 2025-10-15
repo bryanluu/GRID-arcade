@@ -68,6 +68,7 @@ class SDLInputProvider final : public IInputProvider
     // Mouse analog accumulator (velocity model)
     float vx = 0.f, vy = 0.f;
 
+public:
     // Experimentally determined defaults (documented)
     // deadzone: ignore |v| < 0.02; gamma: response curve exponent
     static constexpr InputCalibration defaultCalib{
@@ -81,7 +82,6 @@ class SDLInputProvider final : public IInputProvider
         .y_adc_high = InputCalibration::ADC_MAX,
     };
 
-public:
     SDLInputProvider(const InputCalibration &c = defaultCalib) : IInputProvider(c) {}
     bool init(SDL_Window *win);
     void shutdown();

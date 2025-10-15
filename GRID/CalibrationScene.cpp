@@ -1,5 +1,6 @@
 #include "CalibrationScene.h"
 #include "Colors.h"
+#include "Input.h"
 #include "ScrollTextHelper.h"
 #include <cstring>
 
@@ -122,7 +123,7 @@ void CalibrationScene::beginStage(AppContext &ctx, State s)
         ctx.gfx.setCursor(1, 10);
         ctx.gfx.print("Not");
         ctx.gfx.setCursor(1, 19);
-        ctx.gfx.print("Kept");
+        ctx.gfx.print("Saved");
         break;
     default:
         ctx.logger.logf(LogLevel::Info, "Calibration Stage: %s", stageLabel(state_));
@@ -209,7 +210,10 @@ void CalibrationScene::handleStage(AppContext &ctx)
                 Helpers::swap(staged_calib.y_adc_low, staged_calib.y_adc_high);
             staged_calib.x_adc_center = Helpers::clamp(staged_calib.x_adc_center, staged_calib.x_adc_low, staged_calib.x_adc_high);
             staged_calib.y_adc_center = Helpers::clamp(staged_calib.y_adc_center, staged_calib.y_adc_low, staged_calib.y_adc_high);
-            beginStage(ctx, Done);
+            if (staged_calib.save(ctx.storage, ctx.logger))
+                beginStage(ctx, Done);
+            else
+                beginStage(ctx, Canceled);
             break;
         default:
             break;

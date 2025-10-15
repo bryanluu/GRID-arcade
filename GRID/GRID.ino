@@ -8,6 +8,7 @@
 #include "RGBMatrix32.h"
 #include <RGBmatrixPanel.h>
 #include "FlashStorage.h"
+#include "Input.h"
 #include "IStorage.h"
 
 // Adafruit flash + FatFs globals
@@ -53,7 +54,8 @@ static RGBMatrix32 gfx{panel};
 static ArduinoPassiveTiming timing{TICK_HZ};
 static SerialSink sink;
 static ArduinoLogger logger(timing, sink);
-static ArduinoInputProvider inputProvider{HORIZONTAL_PIN, VERTICAL_PIN, BUTTON_PIN};
+static InputCalibration calib = ArduinoInputProvider::defaultCalib;
+static ArduinoInputProvider inputProvider{HORIZONTAL_PIN, VERTICAL_PIN, BUTTON_PIN, calib};
 static Input input{};
 static App app{gfx, timing, input, logger, storage};
 static unsigned long prev_millis{};
@@ -163,8 +165,20 @@ void setup()
     input.init(&inputProvider);
     gfx.begin();
 
-    const char *baseDir = "/save";
+    if (!g_flash.begin())
+    {
+        logger.logf(LogLevel::Warning, "[FlashStorage] flash.begin failed");
+        return;
+    }
+    if (!g_fatfs.begin(&g_flash))
+    {
+        logger.logf(LogLevel::Warning, "[FlashStorage] fatfs.begin failed");
+        return;
+    }
+    const char *baseDir = "save";
     storage.init(baseDir, &logger);
+    calib.load(storage, logger);
+    input.setCalibration(calib);
 
     // TODO remove
     // run_flash_storage_smoke(logger);
