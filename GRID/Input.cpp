@@ -67,6 +67,17 @@ bool InputCalibration::load(IStorage &storage, ILogger &log, InputCalibration &o
     return out.load(storage, log, filename);
 }
 
+float Input::toNorm(float adc, float adc_min, float adc_center, float adc_max)
+{
+    // Clamp to calibrated range
+    adc = Helpers::clamp(adc, adc_min, adc_max);
+    // Map to -1..+1 with center at 0
+    if (adc < adc_center)
+        return -((adc_center - adc) / std::max(adc_center - adc_min, EPSILON));
+    else
+        return (adc - adc_center) / std::max(adc_max - adc_center, EPSILON);
+};
+
 // Normalize from calibrated ADC space (0..1023) to -1..+1
 void Input::normalizeAndCalibrate(InputState &s)
 {
@@ -76,17 +87,6 @@ void Input::normalizeAndCalibrate(InputState &s)
     const float y_adc_min = prov->calib.y_adc_low;
     const float y_adc_center = prov->calib.y_adc_center;
     const float y_adc_max = prov->calib.y_adc_high;
-
-    auto toNorm = [=](float adc, float adc_min, float adc_center, float adc_max)
-    {
-        // Clamp to calibrated range
-        adc = Helpers::clamp(adc, adc_min, adc_max);
-        // Map to -1..+1 with center at 0
-        if (adc < adc_center)
-            return -((adc_center - adc) / std::max(adc_center - adc_min, EPSILON));
-        else
-            return (adc - adc_center) / std::max(adc_max - adc_center, EPSILON);
-    };
 
     s.x = toNorm(static_cast<float>(s.x_adc), x_adc_min, x_adc_center, x_adc_max);
     s.y = toNorm(static_cast<float>(s.y_adc), y_adc_min, y_adc_center, y_adc_max);

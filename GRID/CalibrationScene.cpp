@@ -2,6 +2,7 @@
 #include "Colors.h"
 #include "Input.h"
 #include "ScrollTextHelper.h"
+#include <algorithm>
 #include <cstring>
 
 constexpr Color333 CalibrationScene::CIRCLE_COLOR;
@@ -201,6 +202,14 @@ void CalibrationScene::handleStage(AppContext &ctx)
             {
                 staged_calib.x_adc_center = Helpers::clamp(cx_acc_ / c_count_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
                 staged_calib.y_adc_center = Helpers::clamp(cy_acc_ / c_count_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
+                // calibrate deadzone
+                float x_min_normalized = Input::toNorm(x_min_, staged_calib.x_adc_low, staged_calib.x_adc_center, staged_calib.x_adc_high);
+                float x_max_normalized = Input::toNorm(x_max_, staged_calib.x_adc_low, staged_calib.x_adc_center, staged_calib.x_adc_high);
+                float x_drift = std::max(fabsf(x_min_normalized), fabsf(x_max_normalized));
+                float y_min_normalized = Input::toNorm(y_min_, staged_calib.y_adc_low, staged_calib.y_adc_center, staged_calib.y_adc_high);
+                float y_max_normalized = Input::toNorm(y_max_, staged_calib.y_adc_low, staged_calib.y_adc_center, staged_calib.y_adc_high);
+                float y_drift = std::max(fabsf(y_min_normalized), fabsf(y_max_normalized));
+                staged_calib.deadzone = std::max(x_drift, y_drift);
             }
             // simple validation
             if (staged_calib.x_adc_low > staged_calib.x_adc_high)

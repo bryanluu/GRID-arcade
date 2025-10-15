@@ -95,6 +95,7 @@ public:
 
     const InputCalibration &getCalibration() const { return prov->calib; };
     void setCalibration(InputCalibration &calibration) { prov->calib = calibration; }
+    static float toNorm(float adc, float adc_min, float adc_center, float adc_max);
 
 private:
     IInputProvider *prov = nullptr;
