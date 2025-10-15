@@ -1,6 +1,9 @@
 # Any build products
 build/
 
+# Save data
+save/
+
 # Prerequisites
 *.d
 
