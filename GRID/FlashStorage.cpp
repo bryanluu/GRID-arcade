@@ -69,11 +69,19 @@ bool FlashStorage::exists(const char *rel)
 
 StorageResult FlashStorage::writeAll(const char *rel, const void *src, size_t n)
 {
-    char abs[kPathCap], tmp[kPathCap];
+    char abs[kPathCap], tmp[kPathCap], bak[kPathCap];
     makeAbs(abs, sizeof(abs), baseDir, rel);
     makeAbs(tmp, sizeof(tmp), baseDir, kTempName);
 
-    // 1) Write to temp; RAII ensures close even if we return early.
+    // Derive per-target backup path: "<final>.bak"
+    // If it wouldn't fit, fail early to avoid partial writes.
+    if (snprintf(bak, sizeof(bak), "%s.bak", abs) >= (int)sizeof(bak))
+    {
+        warn("backup path too long");
+        return {StorageError::PathError, 0};
+    }
+
+    // 1) Write temp
     {
         File32 f = vol.open(tmp, FILE_WRITE);
         if (!f)
@@ -81,9 +89,8 @@ StorageResult FlashStorage::writeAll(const char *rel, const void *src, size_t n)
             warn("open temp failed");
             return {StorageError::OpenFailed, 0};
         }
-
         size_t w = f.write((const uint8_t *)src, n);
-        f.sync(); // push data and FAT/dir metadata
+        f.sync(); // push data + FAT/dir metadata
         if (w != n)
         {
             vol.remove(tmp);
@@ -93,13 +100,35 @@ StorageResult FlashStorage::writeAll(const char *rel, const void *src, size_t n)
         // f closes on scope exit
     }
 
-    // 2) Replace final by rename (keep old file until rename succeeds).
+    // 2) Clean any stray backup
+    vol.remove(bak);
+
+    // 3) If final exists, move it to backup first
+    if (vol.exists(abs))
+    {
+        if (!vol.rename(abs, bak))
+        {
+            vol.remove(tmp);
+            warn("rename final->bak failed");
+            return {StorageError::RenameFailed, 0};
+        }
+    }
+
+    // 4) Promote temp -> final
     if (!vol.rename(tmp, abs))
     {
+        // Try to restore backup to final
+        if (vol.exists(bak))
+        {
+            vol.rename(bak, abs);
+        }
         vol.remove(tmp);
-        warn("rename failed");
+        warn("rename temp->final failed");
         return {StorageError::RenameFailed, 0};
     }
+
+    // 5) Cleanup backup
+    vol.remove(bak);
 
     info("write ok");
     return {StorageError::None, (int32_t)n};
