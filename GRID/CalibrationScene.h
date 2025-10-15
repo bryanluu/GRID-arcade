@@ -43,7 +43,7 @@ class CalibrationScene final : public Scene
     // extremum trackers and center accumulators
     int x_min_ = InputCalibration::ADC_MAX, x_max_ = InputCalibration::ADC_MIN;
     int y_min_ = InputCalibration::ADC_MAX, y_max_ = InputCalibration::ADC_MIN;
-    int cx_acc_ = 0, cy_acc_ = 0, c_count_ = 0;
+    int x_acc_ = 0, y_acc_ = 0, count_ = 0;
 
     void drawCalibrationCross(AppContext &ctx);
     const char *stageLabel(State s) const;

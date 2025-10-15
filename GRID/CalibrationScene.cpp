@@ -104,8 +104,8 @@ void CalibrationScene::beginStage(AppContext &ctx, State s)
     x_max_ = InputCalibration::ADC_MIN;
     y_min_ = InputCalibration::ADC_MAX;
     y_max_ = InputCalibration::ADC_MIN;
-    cx_acc_ = cy_acc_ = 0;
-    c_count_ = 0;
+    x_acc_ = y_acc_ = 0;
+    count_ = 0;
     ctx.gfx.clear();
     ctx.gfx.setCursor(1, 1);
 
@@ -172,9 +172,9 @@ void CalibrationScene::handleStage(AppContext &ctx)
         y_min_ = ay;
     if (ay > y_max_)
         y_max_ = ay;
-    cx_acc_ += ax;
-    cy_acc_ += ay;
-    ++c_count_;
+    x_acc_ += ax;
+    y_acc_ += ay;
+    ++count_;
 
     drawStage(ctx);
     if (elapsed >= TRANSITION_BUFFER + STAGE_MS)
@@ -182,26 +182,26 @@ void CalibrationScene::handleStage(AppContext &ctx)
         switch (state_)
         {
         case StageLeft:
-            staged_calib.x_adc_low = Helpers::clamp(x_min_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
+            staged_calib.x_adc_low = Helpers::clamp(x_acc_ / count_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
             beginStage(ctx, StageRight);
             break;
         case StageRight:
-            staged_calib.x_adc_high = Helpers::clamp(x_max_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
+            staged_calib.x_adc_high = Helpers::clamp(x_acc_ / count_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
             beginStage(ctx, StageUp);
             break;
         case StageUp:
-            staged_calib.y_adc_low = Helpers::clamp(y_min_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
+            staged_calib.y_adc_low = Helpers::clamp(y_acc_ / count_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
             beginStage(ctx, StageDown);
             break;
         case StageDown:
-            staged_calib.y_adc_high = Helpers::clamp(y_max_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
+            staged_calib.y_adc_high = Helpers::clamp(y_acc_ / count_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
             beginStage(ctx, StageCenter);
             break;
         case StageCenter:
-            if (c_count_ > 0)
+            if (count_ > 0)
             {
-                staged_calib.x_adc_center = Helpers::clamp(cx_acc_ / c_count_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
-                staged_calib.y_adc_center = Helpers::clamp(cy_acc_ / c_count_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
+                staged_calib.x_adc_center = Helpers::clamp(x_acc_ / count_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
+                staged_calib.y_adc_center = Helpers::clamp(y_acc_ / count_, InputCalibration::ADC_MIN, InputCalibration::ADC_MAX);
                 // calibrate deadzone
                 float x_min_normalized = Input::toNorm(x_min_, staged_calib.x_adc_low, staged_calib.x_adc_center, staged_calib.x_adc_high);
                 float x_max_normalized = Input::toNorm(x_max_, staged_calib.x_adc_low, staged_calib.x_adc_center, staged_calib.x_adc_high);
