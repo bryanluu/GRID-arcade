@@ -21,6 +21,15 @@ void FlashStorage::warn(const char *msg)
         log->logf(LogLevel::Warning, "[FlashStorage] %s", msg);
 }
 
+// Helper because clang doesn't like brace-initializers for some structs
+static inline StorageResult makeRes(StorageError e, int32_t b = 0)
+{
+    StorageResult r;
+    r.err = e;
+    r.bytes = b;
+    return r;
+}
+
 void FlashStorage::makeAbs(char *out, size_t cap, const char *base, const char *rel)
 {
     if (rel && rel[0] == '/')
@@ -52,7 +61,7 @@ StorageResult FlashStorage::init(const char *dir, ILogger *logger)
     if (!vol.exists(baseDir) && !vol.mkdir(baseDir))
     {
         warn("base dir create failed");
-        return {StorageError::MountFailed, 0};
+        return makeRes(StorageError::MountFailed, 0);
     }
 
     recoverTemp();
@@ -78,7 +87,7 @@ StorageResult FlashStorage::writeAll(const char *rel, const void *src, size_t n)
     if (snprintf(bak, sizeof(bak), "%s.bak", abs) >= (int)sizeof(bak))
     {
         warn("backup path too long");
-        return {StorageError::PathError, 0};
+        return makeRes(StorageError::PathError, 0);
     }
 
     // 1) Write temp
@@ -87,7 +96,7 @@ StorageResult FlashStorage::writeAll(const char *rel, const void *src, size_t n)
         if (!f)
         {
             warn("open temp failed");
-            return {StorageError::OpenFailed, 0};
+            return makeRes(StorageError::OpenFailed, 0);
         }
         size_t w = f.write((const uint8_t *)src, n);
         f.sync(); // push data + FAT/dir metadata
@@ -95,7 +104,7 @@ StorageResult FlashStorage::writeAll(const char *rel, const void *src, size_t n)
         {
             vol.remove(tmp);
             warn("short write");
-            return {StorageError::WriteFailed, (int32_t)w};
+            return makeRes(StorageError::WriteFailed, (int32_t)w);
         }
         // f closes on scope exit
     }
@@ -110,7 +119,7 @@ StorageResult FlashStorage::writeAll(const char *rel, const void *src, size_t n)
         {
             vol.remove(tmp);
             warn("rename final->bak failed");
-            return {StorageError::RenameFailed, 0};
+            return makeRes(StorageError::RenameFailed, 0);
         }
     }
 
@@ -124,14 +133,14 @@ StorageResult FlashStorage::writeAll(const char *rel, const void *src, size_t n)
         }
         vol.remove(tmp);
         warn("rename temp->final failed");
-        return {StorageError::RenameFailed, 0};
+        return makeRes(StorageError::RenameFailed, 0);
     }
 
     // 5) Cleanup backup
     vol.remove(bak);
 
     info("write ok");
-    return {StorageError::None, (int32_t)n};
+    return makeRes(StorageError::None, (int32_t)n);
 }
 
 StorageResult FlashStorage::readAll(const char *rel, void *dst, size_t cap)
@@ -140,23 +149,23 @@ StorageResult FlashStorage::readAll(const char *rel, void *dst, size_t cap)
     makeAbs(abs, sizeof(abs), baseDir, rel);
     File32 f = vol.open(abs, FILE_READ);
     if (!f)
-        return {StorageError::NotFound, 0};
+        return makeRes(StorageError::NotFound, 0);
 
     size_t sz = (size_t)f.size();
     if (sz >= cap)
     {
         warn("buffer too small");
-        return {StorageError::TooLarge, 0};
+        return makeRes(StorageError::TooLarge, 0);
     }
 
     size_t r = f.read(dst, sz);
     if (r != sz)
     {
         warn("read failed");
-        return {StorageError::ReadFailed, (int32_t)r};
+        return makeRes(StorageError::ReadFailed, (int32_t)r);
     }
 
-    return {StorageError::None, (int32_t)sz};
+    return makeRes(StorageError::None, (int32_t)sz);
 }
 
 StorageResult FlashStorage::removeFile(const char *rel)
@@ -166,7 +175,7 @@ StorageResult FlashStorage::removeFile(const char *rel)
     if (!vol.remove(abs))
     {
         warn("remove failed");
-        return {StorageError::RemoveFailed, 0};
+        return makeRes(StorageError::RemoveFailed, 0);
     }
     info("removed");
     return {};
@@ -178,12 +187,12 @@ StorageResult FlashStorage::removeTree(const char *relDir)
     makeAbs(abs, sizeof(abs), baseDir, relDir);
     File32 d = vol.open(abs);
     if (!d || !d.isDirectory())
-        return {StorageError::PathError, 0};
+        return makeRes(StorageError::PathError, 0);
     bool ok = d.rmRfStar();
     if (!ok)
     {
         warn("remove tree failed");
-        return {StorageError::RemoveFailed, 0};
+        return makeRes(StorageError::RemoveFailed, 0);
     }
     info("tree removed");
     return {};

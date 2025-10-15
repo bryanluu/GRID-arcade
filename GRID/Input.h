@@ -49,6 +49,12 @@ struct InputCalibration
     AnalogInput_t y_adc_high = ADC_MAX;
 
     constexpr InputCalibration() = default;
+    constexpr InputCalibration(float dz, float gm,
+                               uint16_t xl, uint16_t xc, uint16_t xh,
+                               uint16_t yl, uint16_t yc, uint16_t yh)
+        : deadzone(dz), gamma(gm),
+          x_adc_low(xl), x_adc_center(xc), x_adc_high(xh),
+          y_adc_low(yl), y_adc_center(yc), y_adc_high(yh) {}
 
     // Serialize this object to JSON into dst.
     // Returns bytes written, or 0 on failure.

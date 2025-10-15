@@ -11,7 +11,8 @@ using millis_t = uint32_t; // convenience alias for time in milliseconds
  */
 struct SceneTimingPrefs
 {
-  double targetHz{NAN};
+  explicit constexpr SceneTimingPrefs(double targetHz_) : targetHz(targetHz_) {}
+  double targetHz;
 };
 
 struct Timing
