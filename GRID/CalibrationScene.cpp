@@ -13,22 +13,21 @@ constexpr Color333 CalibrationScene::IDLE_CURSOR_COLOR;
 void CalibrationScene::setup(AppContext &ctx)
 {
     staged_calib = ctx.input.getCalibration();
-    static const char message[35] = "Press for 3 seconds to calibrate  ";
-    ctx.gfx.setImmediate(false);
+    ctx.gfx.setImmediate(true);
     int ts = 1;
     ctx.gfx.setTextSize(ts);
     Color333 tc = WHITE;
     ctx.gfx.setTextColor(tc);
 
-    ScrollText banner;
-    banner.prepare(ctx.gfx, message, /*scale=*/ts, /*color=*/tc);
-    banner.reset(/*startX=*/MATRIX_WIDTH, /*yTop=*/banner.yTopCentered(ts));
+    ctx.gfx.setCursor(1, 1);
+    ctx.gfx.print("Press");
+    ctx.gfx.setCursor(1, 10);
+    ctx.gfx.print("2s to");
+    ctx.gfx.setCursor(1, 19);
+    ctx.gfx.print("Calib");
 
-    // Smooth scroll at 1 px per frame
-    while (!banner.step(ctx.gfx, /*dx=*/-1))
-    {
-        ctx.time.sleep(20);
-    }
+    ctx.time.sleep(STAGE_MS);
+    ctx.gfx.setImmediate(false);
 }
 
 void CalibrationScene::drawCalibrationCross(AppContext &ctx)
@@ -144,8 +143,8 @@ void CalibrationScene::drawStage(AppContext &ctx)
     const float progress = float(elapsed) / float(STAGE_MS);
     const int elapsed_width = round(BAR_WIDTH * (1.0f - progress));
     // draw over old bar
-    ctx.gfx.fillRect(BAR_START_X, BAR_START_Y, BAR_START_X + BAR_WIDTH, BAR_START_Y + BAR_HEIGHT, BLACK);
-    ctx.gfx.fillRect(BAR_START_X, BAR_START_Y, elapsed_width, BAR_START_Y + BAR_HEIGHT, BAR_COLOR);
+    ctx.gfx.fillRect(BAR_START_X, BAR_START_Y, BAR_WIDTH, BAR_HEIGHT, BLACK);
+    ctx.gfx.fillRect(BAR_START_X, BAR_START_Y, elapsed_width, BAR_HEIGHT, BAR_COLOR);
 }
 
 // Per-tick sample: update min/max and center accumulators.
