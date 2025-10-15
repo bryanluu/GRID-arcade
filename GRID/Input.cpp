@@ -1,9 +1,63 @@
 #include "Input.h"
 #include "Helpers.h"
+#include "IStorage.h"
+#include "Logging.h"
+#include "Serializer.h"
 #include <cmath>
 #include <algorithm>
 
 static constexpr float EPSILON = 1e-6f;
+
+size_t InputCalibration::toJSON(char *dst, size_t cap) const
+{
+    return Serializer::Calibration::toJSON(*this, dst, cap);
+}
+
+bool InputCalibration::fromJSON(const char *src)
+{
+    return Serializer::Calibration::fromJSON(src, *this);
+}
+
+bool InputCalibration::save(IStorage &storage, ILogger &log, const char *filename) const
+{
+    char json[kJsonCap]{};
+    const size_t n = toJSON(json, sizeof(json));
+    if (n == 0)
+    {
+        log.logf(LogLevel::Warning, "[%s] toJSON failed", kLogTag);
+        return false;
+    }
+    if (!storage.writeAll(filename, json, n))
+    {
+        log.logf(LogLevel::Warning, "[%s] writeAll failed", kLogTag);
+        return false;
+    }
+    log.logf(LogLevel::Info, "[%s] saved %u bytes to %s", kLogTag, static_cast<unsigned>(n), filename);
+    return true;
+}
+
+bool InputCalibration::load(IStorage &storage, ILogger &log, const char *filename)
+{
+    char buf[kReadCap]{};
+    const auto r = storage.readAll(filename, buf, sizeof(buf));
+    if (!r)
+    {
+        log.logf(LogLevel::Info, "[%s] %s not found or read failed", kLogTag, filename);
+        return false;
+    }
+    if (!fromJSON(buf))
+    {
+        log.logf(LogLevel::Warning, "[%s] fromJSON failed", kLogTag);
+        return false;
+    }
+    log.logf(LogLevel::Info, "[%s] loaded %d bytes from %s", kLogTag, r.bytes, filename);
+    return true;
+}
+
+bool InputCalibration::load(IStorage &storage, ILogger &log, InputCalibration &out, const char *filename)
+{
+    return out.load(storage, log, filename);
+}
 
 // Normalize from calibrated ADC space (0..1023) to -1..+1
 void Input::normalizeAndCalibrate(InputState &s)

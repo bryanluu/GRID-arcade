@@ -1,11 +1,16 @@
 #ifndef INPUT_H
 #define INPUT_H
 
+#include "Serializer.h"
 #include "Vector.h"
 #include <cstdint>
 
 using AnalogInput_t = uint16_t;
 using DigitalInput_t = bool;
+
+// forward decl
+struct IStorage;
+struct ILogger;
 
 struct InputState
 {
@@ -24,6 +29,13 @@ struct InputState
 
 struct InputCalibration
 {
+    // ---- Persistence config ----
+    static constexpr const char *kDefaultFile = "calibration.json"; // default save path (relative to storage base)
+    static constexpr size_t kJsonCap = 192;                         // serialize buffer capacity
+    static constexpr size_t kReadCap = 256;                         // read buffer capacity (>= kJsonCap)
+    static constexpr const char *kLogTag = "Calib";
+
+    // ---- Data ----
     float deadzone = 0.08f; // 0..1
     float gamma = 1.8f;     // >0, 1=linear
     // ADC calibration (if needed)
@@ -37,6 +49,20 @@ struct InputCalibration
     AnalogInput_t y_adc_high = ADC_MAX;
 
     constexpr InputCalibration() = default;
+
+    // Serialize this object to JSON into dst.
+    // Returns bytes written, or 0 on failure.
+    size_t toJSON(char *dst, size_t cap) const;
+
+    // Parse JSON into this object. Returns true on success.
+    bool fromJSON(const char *src);
+
+    // Save/load using IStorage (atomic write) with default filename.
+    bool save(IStorage &storage, ILogger &log, const char *filename = "calibration.json") const;
+    bool load(IStorage &storage, ILogger &log, const char *filename = "calibration.json");
+
+    // Optional: static factory that returns a loaded instance.
+    static bool load(IStorage &storage, ILogger &log, InputCalibration &out, const char *filename = "calibration.json");
 };
 
 class IInputProvider
