@@ -27,7 +27,11 @@ bool InputCalibration::save(IStorage &storage, ILogger &log, const char *filenam
         log.logf(LogLevel::Warning, "[%s] toJSON failed", kLogTag);
         return false;
     }
-    if (!storage.writeAll(filename, json, n))
+    if (storage.writeAll(filename, json, n))
+    {
+        log.logf(LogLevel::Debug, "Calibration Saved:\n%s", json);
+    }
+    else
     {
         log.logf(LogLevel::Warning, "[%s] writeAll failed", kLogTag);
         return false;
@@ -45,7 +49,11 @@ bool InputCalibration::load(IStorage &storage, ILogger &log, const char *filenam
         log.logf(LogLevel::Info, "[%s] %s not found or read failed", kLogTag, filename);
         return false;
     }
-    if (!fromJSON(buf))
+    if (fromJSON(buf))
+    {
+        log.logf(LogLevel::Debug, "Calibration Loaded:\n%s", buf);
+    }
+    else
     {
         log.logf(LogLevel::Warning, "[%s] fromJSON failed", kLogTag);
         return false;
