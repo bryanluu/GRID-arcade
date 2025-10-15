@@ -21,6 +21,8 @@ class CalibrationScene final : public Scene
     static constexpr Color333 IDLE_COLOR = Color333{1, 0, 0};
     static constexpr Color333 PRESSED_CURSOR_COLOR = GREEN;
     static constexpr Color333 IDLE_CURSOR_COLOR = RED;
+    static constexpr float DZ_BUFFER = 1.5;  // buffer to add to deadzone calibration
+    static constexpr float DZ_CEILING = 0.1; // max deadzone for calibration
 
     // State machine: Idle → Left → Right → Up → Down → Center → Done or Canceled.
     // Pressing the button during any stage aborts with no changes (safety).

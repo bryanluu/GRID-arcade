@@ -1,5 +1,6 @@
 #include "CalibrationScene.h"
 #include "Colors.h"
+#include "Helpers.h"
 #include "Input.h"
 #include "ScrollTextHelper.h"
 #include <algorithm>
@@ -209,7 +210,7 @@ void CalibrationScene::handleStage(AppContext &ctx)
                 float y_min_normalized = Input::toNorm(y_min_, staged_calib.y_adc_low, staged_calib.y_adc_center, staged_calib.y_adc_high);
                 float y_max_normalized = Input::toNorm(y_max_, staged_calib.y_adc_low, staged_calib.y_adc_center, staged_calib.y_adc_high);
                 float y_drift = std::max(fabsf(y_min_normalized), fabsf(y_max_normalized));
-                staged_calib.deadzone = std::max(x_drift, y_drift);
+                staged_calib.deadzone = Helpers::clamp(DZ_BUFFER * std::max(x_drift, y_drift), 0.0f, DZ_CEILING);
             }
             // simple validation
             if (staged_calib.x_adc_low > staged_calib.x_adc_high)
