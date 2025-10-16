@@ -271,7 +271,7 @@ void SDLMatrix32::renderPixelAsLED(int x, int y, const LEDcell &cell)
     const int cy_led = sy + cell.margin + cell.inner / 2;
 
     // Color from framebuffer (dim "off" LED for dome look)
-    const auto pix = fb_[y * MATRIX_HEIGHT + x];
+    const auto pix = fb_[coordToIndex(x, y)];
     Intensity8 r = pix.r, g = pix.g, b = pix.b;
     if ((r | g | b) == 0)
         r = g = b = 12;
