@@ -127,8 +127,8 @@ InputState Input::processInput(const InputState &s)
     // Rescale vector to new magnitude
     if (r > EPSILON)
     {
-        o.x = (v.x / r) * rp;
-        o.y = (v.y / r) * rp;
+        o.x = (v.x * rp) / r;
+        o.y = (v.y * rp) / r;
     }
     else
     {
