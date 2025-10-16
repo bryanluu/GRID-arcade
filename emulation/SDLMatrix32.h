@@ -119,6 +119,8 @@ private:
     // Rendering options
     bool led_mode_{false};
     int scale_{16}; // screen pixels per logical LED
+    int ledOffsetX_{0};
+    int ledOffsetY_{0};
 
     // Low-level framebuffer helpers
     void span(int x0, int x1, int y, Color333 c); // clamped horizontal span

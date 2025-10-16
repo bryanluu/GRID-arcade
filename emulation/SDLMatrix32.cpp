@@ -259,13 +259,18 @@ void SDLMatrix32::recomputeScale()
     SDL_GetRendererOutputSize(ren_, &outW, &outH); // HiDPI-safe
     const int square = std::min(outW, outH);
     scale_ = std::max(1, square / MATRIX_WIDTH);
+
+    // Centered offsets for LED canvas
+    const int canvas = scale_ * MATRIX_WIDTH;
+    ledOffsetX_ = (outW - canvas) / 2;
+    ledOffsetY_ = (outH - canvas) / 2;
 }
 
 // Render one matrix pixel as a circular LED inside a black cell
 void SDLMatrix32::renderPixelAsLED(int x, int y, const LEDcell &cell)
 {
-    const int sx = x * cell.scale;
-    const int sy = y * cell.scale;
+    const int sx = ledOffsetX_ + x * cell.scale;
+    const int sy = ledOffsetY_ + y * cell.scale;
 
     // Bezel
     SetRGBA(ren_, 0, 0, 0, 255);
@@ -278,6 +283,7 @@ void SDLMatrix32::renderPixelAsLED(int x, int y, const LEDcell &cell)
 
     // Color from framebuffer (dim "off" LED for dome look)
     const auto pix = fb_[coordToIndex(x, y)];
+
     Intensity8 r = pix.r, g = pix.g, b = pix.b;
     if ((r | g | b) == 0)
         r = g = b = 12;
