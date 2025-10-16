@@ -1,11 +1,9 @@
 #include "App.h"
-#include "BoidsScene.h"
-#include "CalibrationScene.h"
 #include "EmulationLogger.h"
-#include "ExampleScene.h"
 #include "FileStorage.h"
 #include "FixedStepTiming.h"
 #include "IStorage.h"
+#include "MenuScene.h"
 #include "SDLInputProvider.h"
 #include "SDLMatrix32.h"
 #include <SDL.h>
@@ -93,7 +91,7 @@ void run_emulation()
     input.init(&inputProvider);
     App app{gfx, timing, input, logger, storage};
 
-    app.setScene<CalibrationScene>();
+    app.setScene<MenuScene>();
 
     while (running)
     {

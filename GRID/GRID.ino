@@ -2,14 +2,12 @@
 #include "ArduinoInputProvider.h"
 #include "ArduinoLogger.h"
 #include "ArduinoPassiveTiming.h"
-#include "BoidsScene.h"
-#include "CalibrationScene.h"
-#include "ExampleScene.h"
 #include "RGBMatrix32.h"
 #include <RGBmatrixPanel.h>
 #include "FlashStorage.h"
 #include "Input.h"
 #include "IStorage.h"
+#include "MenuScene.h"
 
 // Adafruit flash + FatFs globals
 #include "SdFat_Adafruit_Fork.h"
@@ -184,7 +182,7 @@ void setup()
     // run_flash_storage_smoke(logger);
     // smokeTest(gfx, timing); // uncomment to run smoke tests before main app
 
-    app.setScene<CalibrationScene>();
+    app.setScene<MenuScene>();
     prev_millis = millis();
     log_last_ms = prev_millis;
 }

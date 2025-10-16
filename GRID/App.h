@@ -13,14 +13,33 @@
 #include "RGBMatrix32.h"
 #endif
 
+#include "SceneBus.h"
+#include "BoidsScene.h"
+#include "CalibrationScene.h"
+#include "ExampleScene.h"
+#include "MenuScene.h"
+
 // App manages the current scene; only holds Matrix32&
 class App
 {
     AppContext ctx;
     std::unique_ptr<Scene> current;
+    SceneBus bus{};
 
 public:
-    explicit App(Matrix32 &gfx, Timing &time, Input &input, ILogger &logger, IStorage &storage) : ctx{gfx, time, input, logger, storage} {}
+    explicit App(Matrix32 &gfx, Timing &time, Input &input, ILogger &logger, IStorage &storage) : ctx{gfx, time, input, logger, storage}
+    {
+        ctx.bus = &bus;
+        // Bind routes. Lambdas capture this App and call setScene.
+        bus.toMenu = [this]
+        { this->setScene<MenuScene>(); };
+        bus.toExample = [this]
+        { this->setScene<ExampleScene>(); };
+        bus.toBoids = [this]
+        { this->setScene<BoidsScene>(); };
+        bus.toCalibration = [this]
+        { this->setScene<CalibrationScene>(); };
+    }
 
     // Replace the current scene with a newly constructed SceneT.
     // - Destroys the old scene, creates SceneT(args...), then calls setup(gfx).
