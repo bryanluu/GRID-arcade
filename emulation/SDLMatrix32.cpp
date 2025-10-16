@@ -50,10 +50,7 @@ void SDLMatrix32::begin()
     if (!tex_)
         throw std::runtime_error(SDL_GetError());
     clear();
-    int w{0};
-    int h{0};
-    SDL_GetWindowSize(win_, &w, &h);
-    scale_ = std::max(1, std::min(w, h) / MATRIX_WIDTH);
+    recomputeScale();
     // Pump once so macOS shows the window promptly
     SDL_PumpEvents();
 }
@@ -253,6 +250,15 @@ void SDLMatrix32::println(const char *s)
 {
     print(s);
     print('\n');
+}
+
+// Minimal helper: recompute integer scale_ from current renderer output size
+void SDLMatrix32::recomputeScale()
+{
+    int outW = 0, outH = 0;
+    SDL_GetRendererOutputSize(ren_, &outW, &outH); // HiDPI-safe
+    const int square = std::min(outW, outH);
+    scale_ = std::max(1, square / MATRIX_WIDTH);
 }
 
 // Render one matrix pixel as a circular LED inside a black cell

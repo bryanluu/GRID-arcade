@@ -90,6 +90,9 @@ public:
     void setLEDMode(bool on) { led_mode_ = on; }
     bool ledMode() const { return led_mode_; }
 
+    // Minimal helper: recompute integer scale_ from current renderer output size
+    void recomputeScale();
+
     // Render one matrix pixel as an LED circle into the SDL renderer.
     void renderPixelAsLED(int x, int y, const LEDcell &cell);
     // Render the entire framebuffer as an LED matrix.
