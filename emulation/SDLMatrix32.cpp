@@ -50,6 +50,8 @@ void SDLMatrix32::begin()
     if (!tex_)
         throw std::runtime_error(SDL_GetError());
     clear();
+    SDL_RenderSetLogicalSize(ren_, MATRIX_WIDTH, MATRIX_HEIGHT);
+    SDL_RenderSetIntegerScale(ren_, SDL_TRUE); // keeps integer scale and centers
     recomputeScale();
     // Pump once so macOS shows the window promptly
     SDL_PumpEvents();
@@ -316,7 +318,7 @@ void SDLMatrix32::renderAsScreen()
         SDL_UnlockTexture(tex_);
     }
     SDL_RenderClear(ren_);
-    SDL_RenderCopy(ren_, tex_, nullptr, nullptr);
+    SDL_RenderCopy(ren_, tex_, nullptr, nullptr); // NULL dst uses logical size
     SDL_RenderPresent(ren_);
 }
 
