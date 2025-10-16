@@ -111,6 +111,7 @@ private:
     void closeController();
     void setMouseRelative(bool enabled);
 
+    void clampMagnitudeToOne(float &x, float &y);
     void normalizeToUnitCircle(float &x, float &y);
     void useSDLAxis(float &nx, float &ny, bool &haveAnalog);
     void useMouseDeltas(float &nx, float &ny, bool &haveAnalog);

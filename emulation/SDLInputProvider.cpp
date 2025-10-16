@@ -185,6 +185,16 @@ void SDLInputProvider::sample(InputState &state)
     }
 }
 
+void SDLInputProvider::clampMagnitudeToOne(float &x, float &y)
+{
+    float m = std::sqrt(x * x + y * y);
+    if (m > 1.f && m > InputTuning::EPSILON)
+    {
+        x /= m;
+        y /= m;
+    }
+}
+
 void SDLInputProvider::normalizeToUnitCircle(float &x, float &y)
 {
     float mag = std::sqrt(x * x + y * y);
@@ -294,7 +304,7 @@ void SDLInputProvider::genAnalog(InputState &s)
         return;
     }
 
-    normalizeToUnitCircle(nx, ny);
+    clampMagnitudeToOne(s.x, s.y);
 
     if (invertY) // typical camera-style invert
         ny = -ny;
