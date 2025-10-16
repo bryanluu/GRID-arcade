@@ -154,7 +154,7 @@ static void smokeTest(Matrix32 &gfx, Timing &timing)
 void setup()
 {
     Serial.begin(115200);
-    while (!Serial)
+    while (!Serial) // TODO remove for final build
     {
         delay(10);
     }
