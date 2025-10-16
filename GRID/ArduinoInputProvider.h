@@ -13,7 +13,16 @@ class ArduinoInputProvider final : public IInputProvider
     bool initialized = false;
 
 public:
-    ArduinoInputProvider(uint8_t x, uint8_t y, uint8_t b, const InputCalibration &c = {})
+    // experimentally determined defaults
+    static constexpr InputCalibration defaultCalib{.1f,
+                                                   1.8f,
+                                                   8,
+                                                   745,
+                                                   1023,
+                                                   110,
+                                                   678,
+                                                   1023};
+    ArduinoInputProvider(uint8_t x, uint8_t y, uint8_t b, const InputCalibration &c = defaultCalib)
         : IInputProvider(c), pinX(x), pinY(y), pinBtn(b) {}
 
     bool init()

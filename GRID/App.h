@@ -20,7 +20,7 @@ class App
     std::unique_ptr<Scene> current;
 
 public:
-    explicit App(Matrix32 &gfx, Timing &time, Input &input) : ctx{gfx, time, input} {}
+    explicit App(Matrix32 &gfx, Timing &time, Input &input, ILogger &logger, IStorage &storage) : ctx{gfx, time, input, logger, storage} {}
 
     // Replace the current scene with a newly constructed SceneT.
     // - Destroys the old scene, creates SceneT(args...), then calls setup(gfx).
@@ -48,6 +48,21 @@ public:
         ctx.input.sample();
         current->loop(ctx);
         ctx.gfx.show();
+    }
+
+    // Logs helpful diagnostics: FPS, plus calibration values
+    void logDiagnostics()
+    {
+        float fps = ctx.time.fps();
+        InputState input = ctx.input.state();
+        // Log FPS
+        ctx.logger.logf(LogLevel::Debug, "FPS: %5.2f", fps);
+        ctx.logger.flush();
+        // Log inputs
+        ctx.logger.logf(LogLevel::Debug, "Raw X: %d Y: %d, Norm X: %5.3f Y: %5.3f, Pressed: %d",
+                        input.x_adc, input.y_adc,
+                        input.x, input.y,
+                        input.pressed ? 1 : 0);
     }
 };
 

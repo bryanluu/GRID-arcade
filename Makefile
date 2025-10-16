@@ -40,6 +40,8 @@ INCLUDES := -Iemulation -IGRID
 SRCS := $(wildcard emulation/*.cpp) $(wildcard GRID/*.cpp)
 # Exclude RGBMatrix32.cpp from build (SDLMatrix32 used instead)
 SRCS := $(filter-out GRID/RGBMatrix32.cpp,$(SRCS))
+SRCS := $(filter-out GRID/ArduinoInputProvider.cpp,$(SRCS))
+SRCS := $(filter-out GRID/FlashStorage.cpp,$(SRCS))
 OBJS := $(addprefix $(BUILD)/,$(SRCS:.cpp=.o))
 BIN  := $(BUILD)/$(APP)
 
