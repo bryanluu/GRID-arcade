@@ -57,6 +57,7 @@ class SDLInputProvider final : public IInputProvider
     // Callbacks
     std::function<void()> quitCb;      // Q or Esc
     std::function<void()> toggleLEDCb; // L
+    std::function<void()> resizeCb;    // resize window
 
     // Config
     InputMode mode = InputMode::DPad; // whether to use D‑pad or analog mode
@@ -93,6 +94,7 @@ public:
     // Hooks
     void onQuit(std::function<void()> cb) { quitCb = std::move(cb); }
     void onToggleLED(std::function<void()> cb) { toggleLEDCb = std::move(cb); }
+    void onResize(std::function<void()> cb) { resizeCb = std::move(cb); }
 
     // Fills state based on current mode and devices
     void sample(InputState &state) override;

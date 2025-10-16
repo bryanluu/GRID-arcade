@@ -85,6 +85,9 @@ void run_emulation()
     // toggle LED mode when L is pressed
     inputProvider.onToggleLED([&]
                               { gfx.toggleLEDMode(); });
+    // resize window updates LED size
+    inputProvider.onResize([&]
+                           { gfx.recomputeScale(); });
 
     Input input{};
     input.init(&inputProvider);

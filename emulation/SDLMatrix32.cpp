@@ -50,10 +50,7 @@ void SDLMatrix32::begin()
     if (!tex_)
         throw std::runtime_error(SDL_GetError());
     clear();
-    int w{0};
-    int h{0};
-    SDL_GetWindowSize(win_, &w, &h);
-    scale_ = std::max(1, std::min(w, h) / MATRIX_WIDTH);
+    recomputeScale();
     // Pump once so macOS shows the window promptly
     SDL_PumpEvents();
 }
@@ -255,11 +252,25 @@ void SDLMatrix32::println(const char *s)
     print('\n');
 }
 
+// Minimal helper: recompute integer scale_ from current renderer output size
+void SDLMatrix32::recomputeScale()
+{
+    int outW = 0, outH = 0;
+    SDL_GetRendererOutputSize(ren_, &outW, &outH); // HiDPI-safe
+    const int square = std::min(outW, outH);
+    scale_ = std::max(1, square / MATRIX_WIDTH);
+
+    // Centered offsets for LED canvas
+    const int canvas = scale_ * MATRIX_WIDTH;
+    ledOffsetX_ = (outW - canvas) / 2;
+    ledOffsetY_ = (outH - canvas) / 2;
+}
+
 // Render one matrix pixel as a circular LED inside a black cell
 void SDLMatrix32::renderPixelAsLED(int x, int y, const LEDcell &cell)
 {
-    const int sx = x * cell.scale;
-    const int sy = y * cell.scale;
+    const int sx = ledOffsetX_ + x * cell.scale;
+    const int sy = ledOffsetY_ + y * cell.scale;
 
     // Bezel
     SetRGBA(ren_, 0, 0, 0, 255);
@@ -271,7 +282,8 @@ void SDLMatrix32::renderPixelAsLED(int x, int y, const LEDcell &cell)
     const int cy_led = sy + cell.margin + cell.inner / 2;
 
     // Color from framebuffer (dim "off" LED for dome look)
-    const auto pix = fb_[y * MATRIX_HEIGHT + x];
+    const auto pix = fb_[coordToIndex(x, y)];
+
     Intensity8 r = pix.r, g = pix.g, b = pix.b;
     if ((r | g | b) == 0)
         r = g = b = 12;
@@ -284,6 +296,13 @@ void SDLMatrix32::renderPixelAsLED(int x, int y, const LEDcell &cell)
 // Render the whole framebuffer as LEDs
 void SDLMatrix32::renderAsLEDMatrix()
 {
+    // Turn off logical-size scaling so LED cells use real drawable pixels
+    SDL_RenderSetLogicalSize(ren_, 0, 0); // disables logical size
+    SDL_RenderSetIntegerScale(ren_, SDL_FALSE);
+
+    // Make sure our integer scale_ and offsets are based on drawable size
+    recomputeScale(); // also recomputeOffsets() if you followed earlier step
+
     SDL_RenderClear(ren_);
     SetRGBA(ren_, 0, 0, 0, 255);
     const LEDcell cell = makeLEDcell();
@@ -296,6 +315,9 @@ void SDLMatrix32::renderAsLEDMatrix()
 // Render the whole framebuffer as a 32x32 texture
 void SDLMatrix32::renderAsScreen()
 {
+    // Use SDL’s logical-size pipeline for crisp, centered integer scaling
+    SDL_RenderSetLogicalSize(ren_, MATRIX_WIDTH, MATRIX_HEIGHT);
+    SDL_RenderSetIntegerScale(ren_, SDL_TRUE);
     void *pixels = nullptr;
     int pitch = 0;
     if (SDL_LockTexture(tex_, nullptr, &pixels, &pitch) == 0)
@@ -310,7 +332,7 @@ void SDLMatrix32::renderAsScreen()
         SDL_UnlockTexture(tex_);
     }
     SDL_RenderClear(ren_);
-    SDL_RenderCopy(ren_, tex_, nullptr, nullptr);
+    SDL_RenderCopy(ren_, tex_, nullptr, nullptr); // NULL dst uses logical size
     SDL_RenderPresent(ren_);
 }
 

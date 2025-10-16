@@ -93,6 +93,11 @@ void SDLInputProvider::handleWindowEvent(const SDL_WindowEvent &we)
         lmbHeld = rmbHeld = false;
         vx = vy = 0.f;
     }
+    else if (we.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+    {
+        if (resizeCb)
+            resizeCb();
+    }
 }
 
 void SDLInputProvider::handleMouseButtonDown(const SDL_MouseButtonEvent &be)
