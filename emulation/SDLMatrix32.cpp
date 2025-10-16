@@ -50,8 +50,6 @@ void SDLMatrix32::begin()
     if (!tex_)
         throw std::runtime_error(SDL_GetError());
     clear();
-    SDL_RenderSetLogicalSize(ren_, MATRIX_WIDTH, MATRIX_HEIGHT);
-    SDL_RenderSetIntegerScale(ren_, SDL_TRUE); // keeps integer scale and centers
     recomputeScale();
     // Pump once so macOS shows the window promptly
     SDL_PumpEvents();
@@ -292,6 +290,13 @@ void SDLMatrix32::renderPixelAsLED(int x, int y, const LEDcell &cell)
 // Render the whole framebuffer as LEDs
 void SDLMatrix32::renderAsLEDMatrix()
 {
+    // Turn off logical-size scaling so LED cells use real drawable pixels
+    SDL_RenderSetLogicalSize(ren_, 0, 0); // disables logical size
+    SDL_RenderSetIntegerScale(ren_, SDL_FALSE);
+
+    // Make sure our integer scale_ and offsets are based on drawable size
+    recomputeScale(); // also recomputeOffsets() if you followed earlier step
+
     SDL_RenderClear(ren_);
     SetRGBA(ren_, 0, 0, 0, 255);
     const LEDcell cell = makeLEDcell();
@@ -304,6 +309,9 @@ void SDLMatrix32::renderAsLEDMatrix()
 // Render the whole framebuffer as a 32x32 texture
 void SDLMatrix32::renderAsScreen()
 {
+    // Use SDL’s logical-size pipeline for crisp, centered integer scaling
+    SDL_RenderSetLogicalSize(ren_, MATRIX_WIDTH, MATRIX_HEIGHT);
+    SDL_RenderSetIntegerScale(ren_, SDL_TRUE);
     void *pixels = nullptr;
     int pitch = 0;
     if (SDL_LockTexture(tex_, nullptr, &pixels, &pitch) == 0)
