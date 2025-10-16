@@ -72,14 +72,14 @@ public:
     // Experimentally determined defaults (documented)
     // deadzone: ignore |v| < 0.02; gamma: response curve exponent
     static constexpr InputCalibration defaultCalib{
-        .deadzone = 0.02f, // was .02f
-        .gamma = 1.8f,
-        .x_adc_low = InputCalibration::ADC_MIN,
-        .x_adc_center = (InputCalibration::ADC_MAX - InputCalibration::ADC_MIN) / 2,
-        .x_adc_high = InputCalibration::ADC_MAX,
-        .y_adc_low = InputCalibration::ADC_MIN,
-        .y_adc_center = (InputCalibration::ADC_MAX - InputCalibration::ADC_MIN) / 2,
-        .y_adc_high = InputCalibration::ADC_MAX,
+        0.02f,                                                       // deadzone
+        1.8f,                                                        // gamma
+        InputCalibration::ADC_MIN,                                   // x_adc_low
+        (InputCalibration::ADC_MAX - InputCalibration::ADC_MIN) / 2, // x_adc_center
+        InputCalibration::ADC_MAX,                                   // x_adc_high
+        InputCalibration::ADC_MIN,                                   // y_adc_low
+        (InputCalibration::ADC_MAX - InputCalibration::ADC_MIN) / 2, // y_adc_center
+        InputCalibration::ADC_MAX,                                   // y_adc_high
     };
 
     SDLInputProvider(const InputCalibration &c = defaultCalib) : IInputProvider(c) {}
@@ -111,6 +111,7 @@ private:
     void closeController();
     void setMouseRelative(bool enabled);
 
+    void clampMagnitudeToOne(float &x, float &y);
     void normalizeToUnitCircle(float &x, float &y);
     void useSDLAxis(float &nx, float &ny, bool &haveAnalog);
     void useMouseDeltas(float &nx, float &ny, bool &haveAnalog);
