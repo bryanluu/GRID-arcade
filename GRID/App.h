@@ -56,6 +56,7 @@ public:
         ctx.time.resetSceneClock();
         // immediate only during setup (works on SDLMatrix32, no-op on Arduino)
         ctx.gfx.setImmediate(true);
+        ctx.gfx.clear();
         current->setup(ctx);
         ctx.gfx.setImmediate(false);
     }
