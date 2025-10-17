@@ -108,6 +108,6 @@ const char *MenuScene::label(const MenuScene::Item scene) const
     case MenuScene::Item::Calibration:
         return "Calib";
     default:
-        break;
+        return "NULL";
     }
 }
