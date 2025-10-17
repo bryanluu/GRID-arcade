@@ -136,13 +136,16 @@ private:
     // Build LEDcell from current scale and chosen styling.
     LEDcell makeLEDcell() const;
 
+    // v: 0..7  ->  0..255 with inverse-gamma to brighten low codes
+    static const Intensity8 kExpand3to8Gamma[8];
+
     // Converts 0..7 -> 0..255 with rounding
     Intensity8 expand3to8(Intensity3 v)
     {
         // Adding half the divisor before dividing performs round‑to‑nearest: floor((v × 255 + 7/2) / 7)
         // Since we can’t add 3.5 in integers, we use +3 as a close, deterministic half
-        return (Intensity8)((v * 255 + 3) / 7);
-    }
+        return kExpand3to8Gamma[v & 0x7];
+        }
 };
 
 #endif // SDL_MATRIX32_H

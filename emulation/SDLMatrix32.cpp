@@ -421,3 +421,7 @@ LEDcell SDLMatrix32::makeLEDcell() const
     cell.radius = std::max(1, int(0.5f * cell.inner * cell.fill));
     return cell;
 }
+
+// v: 0..7  ->  0..255 with inverse-gamma to brighten low codes
+const Intensity8 SDLMatrix32::kExpand3to8Gamma[8] =
+    {0, 150, 181, 202, 220, 233, 245, 255};
