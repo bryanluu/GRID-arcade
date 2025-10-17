@@ -422,6 +422,28 @@ LEDcell SDLMatrix32::makeLEDcell() const
     return cell;
 }
 
+/*
+Mapping 3-bit intensities (0..7) to 8-bit (0..255) using a perceptual curve.
+
+Background:
+- A linear map (v * 255 / 7) looks too dim at low codes in emulation compared
+  to real LEDs. Human brightness perception is non-linear, so we apply an
+  inverse‑gamma curve to brighten lows.
+
+How this LUT was computed:
+1) Choose a target for v=1 in 8-bit space (Y1). Here we use Y1 = 150.
+2) Solve for the curve exponent (gamma_inv) that hits that anchor:
+     gamma_inv = ln(Y1 / 255) / ln(1 / 7)
+3) For each v in [0..7], compute:
+     LUT[v] = round( (v / 7)^gamma_inv * 255 )
+   with hard anchors LUT[0] = 0 and LUT[7] = 255.
+
+Notes:
+- This keeps v=7 at full scale while making v=1 “noticeably bright”.
+- If highlights feel too hot, increase Y1? No—decrease it (or clamp results).
+  If lows are still dull, increase Y1.
+- Regenerate the table by changing Y1 and re-running the formula above.
+*/
 // v: 0..7  ->  0..255 with inverse-gamma to brighten low codes
 const Intensity8 SDLMatrix32::kExpand3to8Gamma[8] =
     {0, 150, 181, 202, 220, 233, 245, 255};
