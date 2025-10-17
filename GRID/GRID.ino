@@ -2,14 +2,12 @@
 #include "ArduinoInputProvider.h"
 #include "ArduinoLogger.h"
 #include "ArduinoPassiveTiming.h"
-#include "BoidsScene.h"
-#include "CalibrationScene.h"
-#include "ExampleScene.h"
 #include "RGBMatrix32.h"
 #include <RGBmatrixPanel.h>
 #include "FlashStorage.h"
 #include "Input.h"
 #include "IStorage.h"
+#include "MenuScene.h"
 
 // Adafruit flash + FatFs globals
 #include "SdFat_Adafruit_Fork.h"
@@ -120,7 +118,7 @@ static void smokeTest(Matrix32 &gfx, Timing &timing)
     gfx.setImmediate(true);
 
     // Solid green
-    gfx.fillRect(0, 0, MATRIX_WIDTH, MATRIX_HEIGHT, GREEN);
+    gfx.fillRect(0, 0, MATRIX_WIDTH, MATRIX_HEIGHT, Colors::Bright::Green);
     timing.sleep(2000);
 
     // Alternating rows
@@ -129,7 +127,7 @@ static void smokeTest(Matrix32 &gfx, Timing &timing)
     {
         for (int x = 0; x < MATRIX_WIDTH; ++x)
         {
-            gfx.drawPixel(x, y, (y & 1) ? RED : GREEN);
+            gfx.drawPixel(x, y, (y & 1) ? Colors::Bright::Red : Colors::Bright::Green);
         }
     }
     timing.sleep(2000);
@@ -138,7 +136,7 @@ static void smokeTest(Matrix32 &gfx, Timing &timing)
     gfx.clear();
     gfx.setCursor(1, 0);
     gfx.setTextSize(1);
-    gfx.setTextColor(WHITE);
+    gfx.setTextColor(Colors::Bright::White);
     gfx.println("GRID");
     timing.sleep(1000);
     gfx.setCursor(1, 10);
@@ -184,7 +182,7 @@ void setup()
     // run_flash_storage_smoke(logger);
     // smokeTest(gfx, timing); // uncomment to run smoke tests before main app
 
-    app.setScene<CalibrationScene>();
+    app.setScene<MenuScene>();
     prev_millis = millis();
     log_last_ms = prev_millis;
 }

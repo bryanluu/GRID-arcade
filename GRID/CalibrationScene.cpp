@@ -18,7 +18,7 @@ void CalibrationScene::setup(AppContext &ctx)
     ctx.gfx.setImmediate(true);
     int ts = 1;
     ctx.gfx.setTextSize(ts);
-    Color333 tc = WHITE;
+    Color333 tc = Colors::Muted::White;
     ctx.gfx.setTextColor(tc);
 
     ctx.gfx.setCursor(1, 1);
@@ -140,12 +140,12 @@ void CalibrationScene::drawStage(AppContext &ctx)
     const int BAR_START_Y = 29;
     const int BAR_WIDTH = 29;
     const int BAR_HEIGHT = 2;
-    constexpr Color333 BAR_COLOR = YELLOW;
+    constexpr Color333 BAR_COLOR = Color333{1, 1, 0};
     const millis_t elapsed = ctx.time.nowMs() - (stage_start_ + TRANSITION_BUFFER);
     const float progress = float(elapsed) / float(STAGE_MS);
     const int elapsed_width = round(BAR_WIDTH * (1.0f - progress));
     // draw over old bar
-    ctx.gfx.fillRect(BAR_START_X, BAR_START_Y, BAR_WIDTH, BAR_HEIGHT, BLACK);
+    ctx.gfx.fillRect(BAR_START_X, BAR_START_Y, BAR_WIDTH, BAR_HEIGHT, Colors::Black);
     ctx.gfx.fillRect(BAR_START_X, BAR_START_Y, elapsed_width, BAR_HEIGHT, BAR_COLOR);
 }
 
