@@ -27,9 +27,14 @@ struct MenuScene : public Scene
     void loop(AppContext &ctx) override;
 
 private:
+    // Basic nav: X left/right to change selection, button to activate
+    // Simple hysteresis with thresholds
+    static constexpr float HYSTERESIS_THRESHOLD = 0.45f;
+
     void next();
     void prev();
-    void draw(AppContext &ctx);
+    void draw(AppContext &ctx, bool left, bool right, bool press);
+    const char *label(const Item scene) const;
 };
 
 #endif

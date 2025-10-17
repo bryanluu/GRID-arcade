@@ -5,21 +5,19 @@ void MenuScene::loop(AppContext &ctx)
     const InputState s = ctx.input.state();
 
     // Basic nav: X left/right to change selection, button to activate
-    // Simple hysteresis with thresholds
-    const float TH = 0.45f;
     static bool prevLeft = false, prevRight = false, prevPress = false;
 
-    bool left = (s.x < -TH);
-    bool right = (s.x > TH);
+    bool left = (s.x < -MenuScene::HYSTERESIS_THRESHOLD);
+    bool right = (s.x > MenuScene::HYSTERESIS_THRESHOLD);
     bool press = s.pressed;
 
-    if (right && !prevRight)
-        next();
     if (left && !prevLeft)
+        next();
+    if (right && !prevRight)
         prev();
 
     // Draw menu each frame
-    draw(ctx);
+    draw(ctx, left, right, press);
 
     if (press && !prevPress && ctx.bus)
     {
@@ -58,26 +56,51 @@ void MenuScene::prev()
     selected = static_cast<Item>(v);
 }
 
-void MenuScene::draw(AppContext &ctx)
+void MenuScene::draw(AppContext &ctx, bool left, bool right, bool press)
 {
     ctx.gfx.clear();
     ctx.gfx.setTextSize(1);
     ctx.gfx.setCursor(1, 1);
+    ctx.gfx.setTextColor(GRAY);
 
     ctx.gfx.print("Menu:");
-
-    auto printItem = [&](const char *label, bool sel)
-    {
-        ctx.gfx.setTextColor(sel ? GREEN : WHITE);
-        ctx.gfx.println(label);
-    };
-
-    printItem("E.g.", selected == Item::Example);
-    printItem("Boids", selected == Item::Boids);
-    printItem("Calib", selected == Item::Calibration);
+    ctx.gfx.setCursor(1, 12);
+    ctx.gfx.println(label(selected));
 
     // arrow hint
     ctx.gfx.setCursor(1, MATRIX_HEIGHT - 8);
-    ctx.gfx.setTextColor(WHITE);
-    ctx.gfx.print("<OK>");
+    if (left)
+        ctx.gfx.setTextColor(WHITE);
+    else
+        ctx.gfx.setTextColor(GRAY);
+    ctx.gfx.print("<");
+
+    ctx.gfx.setCursor(10, MATRIX_HEIGHT - 8);
+    if (press)
+        ctx.gfx.setTextColor(WHITE);
+    else
+        ctx.gfx.setTextColor(GRAY);
+    ctx.gfx.print("OK");
+
+    if (right)
+        ctx.gfx.setTextColor(WHITE);
+    else
+        ctx.gfx.setTextColor(GRAY);
+    ctx.gfx.setCursor(MATRIX_WIDTH - 6, MATRIX_HEIGHT - 8);
+    ctx.gfx.print(">");
+}
+
+const char *MenuScene::label(const MenuScene::Item scene) const
+{
+    switch (scene)
+    {
+    case MenuScene::Item::Example:
+        return "E.g.";
+    case MenuScene::Item::Boids:
+        return "Boids";
+    case MenuScene::Item::Calibration:
+        return "Calib";
+    default:
+        break;
+    }
 }
