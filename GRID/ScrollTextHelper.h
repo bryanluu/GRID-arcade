@@ -8,7 +8,7 @@
  *
  * Usage:
  *   ScrollText s;
- *   s.prepare("Hello", 1, WHITE, BLACK, true, true);
+ *   s.prepare("Hello", 1, Colors::Bright::White, Colors::Black, true, true);
  *   s.reset(MATRIX_WIDTH, ScrollText::yTopCentered(s.ts));
  *   while (running) { s.step(-1, gfx); }
  */
@@ -20,9 +20,9 @@ struct ScrollText
     /// Text scale (integer, >= 1).
     int ts{1};
     /// Foreground (text) color.
-    Color333 fg{WHITE};
+    Color333 fg{Colors::Bright::White};
     /// Background band color.
-    Color333 bg{BLACK};
+    Color333 bg{Colors::Black};
     /// Whether to fill/clear the text band each frame.
     bool useBg{true};
     /// Looping mode: wrap seamlessly when the banner exits left.
@@ -60,12 +60,12 @@ struct ScrollText
      * @param message          C-string text to scroll.
      * @param scale            Integer scale for the 5x7 font.
      * @param color            Foreground text color.
-     * @param bgColor          Background band color (default BLACK).
+     * @param bgColor          Background band color (default Colors::Black).
      * @param fillBackground   If true, fills the text band each frame.
      * @param shouldLoop       If true, enables seamless looping.
      */
     void prepare(Matrix32 &m, const char *message, int scale, Color333 color,
-                 Color333 bgColor = BLACK, bool fillBackground = true, bool shouldLoop = false)
+                 Color333 bgColor = Colors::Black, bool fillBackground = true, bool shouldLoop = false)
     {
         ts = std::max(1, scale);
         fg = color;

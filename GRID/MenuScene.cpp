@@ -64,35 +64,35 @@ void MenuScene::draw(AppContext &ctx, bool left, bool right, bool press)
     ctx.gfx.clear();
     ctx.gfx.setTextSize(1);
     ctx.gfx.setCursor(1, 1);
-    ctx.gfx.setTextColor(GRAY);
+    ctx.gfx.setTextColor(Colors::Muted::White);
 
     ctx.gfx.print("Menu:");
     ctx.gfx.setCursor(1, 12);
     if (press)
-        ctx.gfx.setTextColor(WHITE);
+        ctx.gfx.setTextColor(Colors::Bright::White);
     else
-        ctx.gfx.setTextColor(GRAY);
+        ctx.gfx.setTextColor(Colors::Muted::White);
     ctx.gfx.println(label(selected));
 
     // arrow hint
     ctx.gfx.setCursor(1, MATRIX_HEIGHT - 8);
     if (left)
-        ctx.gfx.setTextColor(WHITE);
+        ctx.gfx.setTextColor(Colors::Bright::White);
     else
-        ctx.gfx.setTextColor(GRAY);
+        ctx.gfx.setTextColor(Colors::Muted::White);
     ctx.gfx.print("<");
 
     ctx.gfx.setCursor(10, MATRIX_HEIGHT - 8);
     if (press)
-        ctx.gfx.setTextColor(WHITE);
+        ctx.gfx.setTextColor(Colors::Bright::White);
     else
-        ctx.gfx.setTextColor(GRAY);
+        ctx.gfx.setTextColor(Colors::Muted::White);
     ctx.gfx.print("OK");
 
     if (right)
-        ctx.gfx.setTextColor(WHITE);
+        ctx.gfx.setTextColor(Colors::Bright::White);
     else
-        ctx.gfx.setTextColor(GRAY);
+        ctx.gfx.setTextColor(Colors::Muted::White);
     ctx.gfx.setCursor(MATRIX_WIDTH - 6, MATRIX_HEIGHT - 8);
     ctx.gfx.print(">");
 }

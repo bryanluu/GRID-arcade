@@ -16,11 +16,11 @@ class CalibrationScene final : public Scene
     static const millis_t TRANSITION_BUFFER = 1000; // buffer between state transitions
     static const int CIRCLE_CENTER = 15;
     static const int CIRCLE_RADIUS = 15;
-    static constexpr Color333 CIRCLE_COLOR = GRAY;
+    static constexpr Color333 CIRCLE_COLOR = Colors::Muted::White;
     static constexpr Color333 PRESSED_COLOR = Color333{0, 1, 0};
     static constexpr Color333 IDLE_COLOR = Color333{1, 0, 0};
-    static constexpr Color333 PRESSED_CURSOR_COLOR = GREEN;
-    static constexpr Color333 IDLE_CURSOR_COLOR = RED;
+    static constexpr Color333 PRESSED_CURSOR_COLOR = Colors::Bright::Green;
+    static constexpr Color333 IDLE_CURSOR_COLOR = Colors::Bright::Red;
     static constexpr float DZ_BUFFER = 1.5;  // buffer to add to deadzone calibration
     static constexpr float DZ_CEILING = 0.1; // max deadzone for calibration
 

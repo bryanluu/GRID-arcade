@@ -16,19 +16,37 @@ struct Color888
     Intensity8 r, g, b; // RGB are each 0..255
 };
 
-#define BLACK (Color333{0, 0, 0})
-#define WHITE (Color333{7, 7, 7})
-#define RED (Color333{7, 0, 0})
-#define GREEN (Color333{0, 7, 0})
-#define BLUE (Color333{0, 0, 7})
-#define YELLOW (Color333{7, 7, 0})
-#define CYAN (Color333{0, 7, 7})
-#define VIOLET (Color333{7, 0, 7})
-#define ORANGE (Color333{7, 3, 0})
-#define LIME (Color333{4, 7, 0})
-#define AZURE (Color333{0, 3, 7})
-#define PURPLE (Color333{4, 0, 7})
-#define PINK (Color333{7, 0, 4})
-#define GRAY (Color333{1, 1, 1})
+// Color constants (3-3-3)
+namespace Colors
+{
+    constexpr Color333 Black{0, 0, 0};
+    namespace Muted
+    {
+        constexpr Color333 White{1, 1, 1};
+        constexpr Color333 Red{1, 0, 0};
+        constexpr Color333 Green{0, 1, 0};
+        constexpr Color333 Blue{0, 0, 1};
+        constexpr Color333 Yellow{1, 1, 0};
+        constexpr Color333 Cyan{0, 1, 1};
+        constexpr Color333 Violet{1, 0, 1}; // aka Magenta at full intensity
+    }
+
+    namespace Bright
+    {
+        constexpr Color333 Black{0, 0, 0};
+        constexpr Color333 White{7, 7, 7};
+        constexpr Color333 Red{7, 0, 0};
+        constexpr Color333 Green{0, 7, 0};
+        constexpr Color333 Blue{0, 0, 7};
+        constexpr Color333 Yellow{7, 7, 0};
+        constexpr Color333 Cyan{0, 7, 7};
+        constexpr Color333 Violet{7, 0, 7}; // aka Magenta at full intensity
+        constexpr Color333 Orange{7, 3, 0};
+        constexpr Color333 Lime{4, 7, 0};
+        constexpr Color333 Azure{0, 3, 7};
+        constexpr Color333 Purple{4, 0, 7};
+        constexpr Color333 Pink{7, 0, 4};
+    }
+}
 
 #endif // COLORS_H
