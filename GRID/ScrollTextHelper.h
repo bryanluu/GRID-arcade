@@ -88,6 +88,22 @@ struct ScrollText
     }
 
     /**
+     * @brief Returns the position of the left edge
+     */
+    int leftEdge()
+    {
+        return x;
+    }
+
+    /**
+     * @brief Returns the position of the right edge
+     */
+    int rightEdge()
+    {
+        return x + int(cols.size()) * ts;
+    }
+
+    /**
      * @brief Render one frame and advance position.
      *
      * Ensures one present per frame when Matrix32::immediate == false.
@@ -138,14 +154,34 @@ struct ScrollText
         m.show();
         x += dx;
 
-        const int rightEdge = x + int(cols.size()) * ts;
+        const int rightEdge_ = rightEdge();
         if (loop)
         {
-            if (rightEdge <= 0)
+            if (rightEdge_ <= 0)
                 x += int(cols.size()) * ts;
             return false;
         }
-        return (rightEdge < 0);
+        return (rightEdge_ < 0);
+    }
+
+    // Render ScrollText without clearing its band and without presenting.
+    // Advances x by dx. Returns "finished" semantics like step().
+    bool stepNoBgNoPresent(Matrix32 &m, int dx)
+    {
+        if (!cols.empty())
+        {
+            const int totalCols = int(cols.size());
+            const int firstCol = std::max(0, (-x + (ts - 1)) / ts);
+            const int lastCol = std::min(totalCols, (MATRIX_WIDTH - x + ts - 1) / ts);
+            if (firstCol < lastCol)
+            {
+                const int x0 = x + firstCol * ts;
+                m.blitCols(x0, y, cols.data() + firstCol, lastCol - firstCol, fg, ts);
+            }
+        }
+        x += dx;
+        const int rightEdge_ = x + int(cols.size()) * ts;
+        return (rightEdge_ < 0); // loop==false behavior
     }
 };
 
