@@ -30,7 +30,7 @@ private:
     // Per-letter widths (columns)
     static const uint8_t kGWidth = 8;
     static const uint8_t kRWidth = 8;
-    static const uint8_t kIWidth = 4;
+    static const uint8_t kIWidth = 2;
     static const uint8_t kDWidth = 8;
 
     // Column tables use the matching widths above

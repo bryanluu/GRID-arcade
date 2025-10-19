@@ -3,37 +3,35 @@
 
 // ── Glyph bitmaps (10 px tall), bold blocky to match photo ────────────────────
 const uint16_t StartScene::G_cols[kGWidth] = {
-    0b0011111111,
-    0b0110000000,
-    0b1100000000,
-    0b1100000000,
-    0b1100011111,
+    0b0011111100,
+    0b0011111100,
     0b1100000011,
-    0b0110000011,
-    0b0011111100};
+    0b1100000011,
+    0b1100110011,
+    0b1100110011,
+    0b0011110011,
+    0b0011110011};
 const uint16_t StartScene::R_cols[kRWidth] = {
-    0b1111111110,
-    0b1100000011,
-    0b1100000011,
-    0b1111111110,
-    0b1100110000,
-    0b1100011000,
+    0b1111111111,
+    0b1111111111,
+    0b0000110011,
+    0b0000110011,
+    0b0011110011,
+    0b0011110011,
     0b1100001100,
-    0b1100000110};
+    0b1100001100};
 const uint16_t StartScene::I_cols[kIWidth] = {
-    0b1111111100,
-    0b0001100000,
-    0b0001100000,
-    0b1111111100};
+    0b1111111111,
+    0b1111111111};
 const uint16_t StartScene::D_cols[kDWidth] = {
-    0b1111111100,
+    0b1111111111,
     0b1100000011,
     0b1100000011,
     0b1100000011,
     0b1100000011,
     0b1100000011,
-    0b1100000011,
-    0b1111111100};
+    0b0011111100,
+    0b0011111100};
 
 const StartScene::Glyph StartScene::kWord[kWordLetters] = {
     {StartScene::G_cols, kGWidth},
@@ -55,7 +53,7 @@ void StartScene::setup(AppContext &ctx)
     totalCols_ = 0;
     for (int i = 0; i < kWordLetters; i++)
         totalCols_ += kWord[i].w;
-    totalCols_ += kGapCols * 3;
+    totalCols_ += kGapCols * (kWordLetters - 1);
 
     revealCols_ = 0;
 }
