@@ -48,6 +48,8 @@ void StartScene::setup(AppContext &ctx)
     const int yTop = ScrollText::yTopCentered(scale) - kBannerShiftUp;
     banner_.prepare(ctx.gfx, "Welcome to ", scale, Colors::Muted::White, Colors::Black, true, false);
     banner_.reset(MATRIX_WIDTH, std::max(0, yTop));
+    the_.prepare(ctx.gfx, "The", scale, Colors::Muted::White, Colors::Black, false, false);
+    the_.reset(MATRIX_WIDTH, std::max(0, yTop));
 
     // prepare GRID title bookkeeping
     totalCols_ = 0;
@@ -101,7 +103,7 @@ static inline void blitCols(Matrix32 &gfx,
 void StartScene::drawGRID(AppContext &ctx)
 {
     // Draw into lower band (rows 12..21) with dim background for nice look
-    const Color333 FG = Colors::Bright::Green;
+    const Color333 FG = Colors::Muted::Green;
 
     // Clear band
     ctx.gfx.fillRect(0, kBandTop, MATRIX_WIDTH, kGlyphH, Colors::Black);
@@ -141,11 +143,19 @@ void StartScene::drawGRID(AppContext &ctx)
 void StartScene::loop(AppContext &ctx)
 {
     // 1) show scrollText intro
+    // Clear the text band once per frame (shared by both banners)
+    ctx.gfx.fillRect(0, banner_.y, MATRIX_WIDTH, ScrollText::bandHeightPx(banner_.ts), Colors::Black);
+
+    banner_.useBg = false;
     if (!bannerDone_)
-        bannerDone_ = banner_.step(ctx.gfx, -1); // scroll to left
-    // 2) show GRID glyph
-    if (bannerDone_)
     {
+        bannerDone_ = banner_.stepNoBgNoPresent(ctx.gfx, -1); // scroll to left
+    }
+    // 2) show GRID glyph
+    if (bannerDone_ || banner_.rightEdge() < MATRIX_WIDTH)
+    {
+        const int dxThe = (the_.leftEdge() > kTheLeftStop) ? -1 : 0;
+        the_.stepNoBgNoPresent(ctx.gfx, dxThe); // scroll to left
         // advance animation
         animStepCols_ += kStepColsPerTick;
         drawGRID(ctx);

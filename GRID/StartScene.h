@@ -50,11 +50,13 @@ private:
     bool bannerDone_{false};
 
     // Animation
+    static const int kTheLeftStop = 7;                // final position of "The"
     static const int kStartOffsetCols = MATRIX_WIDTH; // start fully offscreen right
     static const int kStaggerCols = 3;                // extra delay per letter
     static const int kStepColsPerTick = 1;            // speed in columns per frame
     int animStepCols_{0};                             // grows each tick
 
+    ScrollText the_;
     uint8_t totalCols_{0}; // total columns (word + gaps)
 
     void drawGRID(AppContext &ctx);
