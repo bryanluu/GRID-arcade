@@ -25,7 +25,7 @@ private:
     static const uint8_t kWordLetters = 4; // letters in "GRID"
     static const uint32_t kHoldMs = 3000;  // hold duration after fully visible (ms)
     static const int kBandTop = 12;        // Y top for GRID band
-    static const int kBannerShiftUp = 6;   // shift "Welcome to the" upward
+    static const int kBannerShiftUp = 10;  // shift "Welcome to the" upward
 
     // Per-letter widths (columns)
     static const uint8_t kGWidth = 8;
@@ -47,6 +47,7 @@ private:
     static const Glyph kWord[kWordLetters]; // = { G, R, I, D }
 
     ScrollText banner_;
+    bool bannerDone_{false};
 
     uint8_t totalCols_{0};  // total columns (word + gaps)
     uint8_t revealCols_{0}; // columns currently visible from the right
