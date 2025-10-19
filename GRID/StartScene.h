@@ -2,6 +2,7 @@
 #define GRID_STARTSCENE_H
 
 #include "Scene.h"
+#include "ScrollTextHelper.h"
 
 class StartScene final : public Scene
 {
@@ -16,6 +17,9 @@ public:
 
     void setup(AppContext &ctx) override;
     void loop(AppContext &ctx) override;
+
+private:
+    ScrollText banner_;
 };
 
 #endif // GRID_STARTSCENE_H

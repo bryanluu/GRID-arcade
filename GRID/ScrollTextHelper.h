@@ -88,6 +88,14 @@ struct ScrollText
     }
 
     /**
+     * @brief Returns the position of the right edge
+     */
+    int rightEdge()
+    {
+        return x + int(cols.size()) * ts;
+    }
+
+    /**
      * @brief Render one frame and advance position.
      *
      * Ensures one present per frame when Matrix32::immediate == false.
@@ -138,14 +146,14 @@ struct ScrollText
         m.show();
         x += dx;
 
-        const int rightEdge = x + int(cols.size()) * ts;
+        const int rightEdge_ = rightEdge();
         if (loop)
         {
-            if (rightEdge <= 0)
+            if (rightEdge_ <= 0)
                 x += int(cols.size()) * ts;
             return false;
         }
-        return (rightEdge < 0);
+        return (rightEdge_ < 0);
     }
 };
 
