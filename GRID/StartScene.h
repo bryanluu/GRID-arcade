@@ -58,6 +58,7 @@ private:
 
     ScrollText the_;
     uint8_t totalCols_{0}; // total columns (word + gaps)
+    millis_t titleDoneMs_{0};
 
     void drawGRID(AppContext &ctx);
 };

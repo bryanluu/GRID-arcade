@@ -1,5 +1,6 @@
 #include "StartScene.h"
 #include "Colors.h"
+#include "SceneBus.h"
 
 // ── Glyph bitmaps (10 px tall), bold blocky to match photo ────────────────────
 const uint16_t StartScene::G_cols[kGWidth] = {
@@ -58,6 +59,7 @@ void StartScene::setup(AppContext &ctx)
     totalCols_ += kGapCols * (kWordLetters - 1);
 
     animStepCols_ = 0;
+    titleDoneMs_ = 0;
 }
 
 // Batch-draw contiguous "on" runs per column (column-major; bit 0 = top).
@@ -137,6 +139,11 @@ void StartScene::drawGRID(AppContext &ctx)
                  kGlyphH);
 
         cursor += g.w;
+
+        if (!titleDoneMs_ && xAnim == 0)
+        {
+            titleDoneMs_ = ctx.time.nowMs();
+        }
     }
 }
 
@@ -160,6 +167,14 @@ void StartScene::loop(AppContext &ctx)
         animStepCols_ += kStepColsPerTick;
         drawGRID(ctx);
     }
-    // 3) pause
-    // 4) transition to MenuScene
+    if (titleDoneMs_)
+    {
+        // 3) pause
+        // 4) transition to MenuScene
+        const millis_t now = ctx.time.nowMs();
+        if ((now - titleDoneMs_) >= kHoldMs)
+        {
+            ctx.bus->toMenu();
+        }
+    }
 }
