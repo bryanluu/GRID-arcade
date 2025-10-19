@@ -49,10 +49,15 @@ private:
     ScrollText banner_;
     bool bannerDone_{false};
 
-    uint8_t totalCols_{0};  // total columns (word + gaps)
-    uint8_t revealCols_{0}; // columns currently visible from the right
+    // Animation
+    static const int kStartOffsetCols = MATRIX_WIDTH; // start fully offscreen right
+    static const int kStaggerCols = 3;                // extra delay per letter
+    static const int kStepColsPerTick = 1;            // speed in columns per frame
+    int animStepCols_{0};                             // grows each tick
 
-    void drawGRID(AppContext &ctx, int visibleCols);
+    uint8_t totalCols_{0}; // total columns (word + gaps)
+
+    void drawGRID(AppContext &ctx);
 };
 
 #endif // GRID_STARTSCENE_H

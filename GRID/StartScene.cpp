@@ -55,7 +55,7 @@ void StartScene::setup(AppContext &ctx)
         totalCols_ += kWord[i].w;
     totalCols_ += kGapCols * (kWordLetters - 1);
 
-    revealCols_ = 0;
+    animStepCols_ = 0;
 }
 
 // Batch-draw contiguous "on" runs per column (column-major; bit 0 = top).
@@ -98,7 +98,7 @@ static inline void blitCols(Matrix32 &gfx,
     }
 }
 
-void StartScene::drawGRID(AppContext &ctx, int visibleCols)
+void StartScene::drawGRID(AppContext &ctx)
 {
     // Draw into lower band (rows 12..21) with dim background for nice look
     const Color333 FG = Colors::Bright::Green;
@@ -109,7 +109,6 @@ void StartScene::drawGRID(AppContext &ctx, int visibleCols)
     // Final word left edge centered
     const int total = totalCols_;
     const int left = (MATRIX_WIDTH - total) / 2;
-    const int xStart = left + std::max(0, total - visibleCols); // reveal from right
 
     // Iterate glyphs, emit only columns inside [xStart, xStart+visibleCols)
     int cursor = left;
@@ -120,23 +119,20 @@ void StartScene::drawGRID(AppContext &ctx, int visibleCols)
 
         const Glyph &g = kWord[gi];
 
-        // Compute the slice of this glyph that is currently visible
-        const int glyphX0 = cursor;
-        const int colFirst = std::max(0, xStart - glyphX0);
-        const int colLastExc = std::min<int>(g.w, xStart + visibleCols - glyphX0);
-        const int sliceCols = colLastExc - colFirst;
+        // Compute animated X for this letter: target position + remaining offset to slide in
+        const int targetX = cursor;
+        const int extraWait = gi * kStaggerCols; // stagger per letter
+        const int remain = std::max(0, kStartOffsetCols + extraWait - animStepCols_);
+        const int xAnim = targetX + remain;
 
-        if (sliceCols > 0)
-        {
-            // Batch draw: vertical span rectangles instead of per-pixel plotting
-            blitCols(ctx.gfx,
-                     glyphX0 + colFirst, // x0 on screen
-                     kBandTop,           // y0 (band top)
-                     g.cols + colFirst,  // starting column pointer
-                     sliceCols,          // number of columns to draw
-                     FG,
-                     kGlyphH);
-        }
+        // Batch draw the whole glyph at its animated X (blitCols clips for us)
+        blitCols(ctx.gfx,
+                 xAnim,    // x0 on screen (may be off-right; clipped)
+                 kBandTop, // y0 (band top)
+                 g.cols,   // full glyph columns
+                 g.w,      // number of columns to draw
+                 FG,
+                 kGlyphH);
 
         cursor += g.w;
     }
@@ -150,8 +146,9 @@ void StartScene::loop(AppContext &ctx)
     // 2) show GRID glyph
     if (bannerDone_)
     {
-        revealCols_ = totalCols_;
-        drawGRID(ctx, revealCols_);
+        // advance animation
+        animStepCols_ += kStepColsPerTick;
+        drawGRID(ctx);
     }
     // 3) pause
     // 4) transition to MenuScene
