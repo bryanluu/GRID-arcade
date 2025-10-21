@@ -17,7 +17,6 @@ struct Scene
   {
     Start,
     Menu,
-    Example,
     Boids,
     Calibration,
   };

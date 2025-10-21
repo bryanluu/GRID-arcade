@@ -5,7 +5,6 @@
 struct SceneBus
 {
     std::function<void()> toMenu;
-    std::function<void()> toExample;
     std::function<void()> toBoids;
     std::function<void()> toCalibration;
 };
