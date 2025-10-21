@@ -31,8 +31,12 @@ class App
     millis_t pauseHoldStartMs_ = 0;
     bool pausePrevPressed_ = false;
     bool pauseArmed_ = false;
-    bool paused_;
+    bool paused_ = false;
     bool selectQuit_ = false;
+    // Basic nav: X left/right to change selection, button to activate
+    bool prevLeft = false;
+    bool prevRight = false;
+    bool prevPress = false;
     static constexpr millis_t PAUSE_TRIGGER_MS = 5000;
     // Basic nav: X left/right to change selection, button to activate
     // Simple hysteresis with thresholds
@@ -121,8 +125,6 @@ class App
     void handlePause()
     {
         const InputState s = ctx.input.state();
-        // Basic nav: X left/right to change selection, button to activate
-        static bool prevLeft = false, prevRight = false, prevPress = false;
 
         bool left = (s.x < -HYSTERESIS_THRESHOLD);
         bool right = (s.x > HYSTERESIS_THRESHOLD);
@@ -152,6 +154,18 @@ class App
         prevLeft = left;
         prevRight = right;
         prevPress = press;
+    }
+
+    void pause()
+    {
+        paused_ = true;
+        selectQuit_ = false;
+        pausePrevPressed_ = false;
+        pauseArmed_ = false;
+        // avoid errant input from previous Scene
+        prevPress = true;
+        prevLeft = true;
+        prevRight = true;
     }
 
 public:
@@ -196,11 +210,11 @@ public:
     {
         ctx.input.sample();
         if (paused_)
-            handlePause(); // handles global pause
+            handlePause();
         else
         {
             if (checkCurrentSceneCanPause() && checkPauseTrigger())
-                paused_ = true;
+                pause();
             else
                 current->loop(ctx);
         }
