@@ -57,6 +57,8 @@ class CalibrationScene final : public Scene
     void handleCanceled(AppContext &ctx);
 
 public:
+    SceneKind kind() const override { return SceneKind::Calibration; }
+    const char *label() const override { return "Calibration"; }
     void setup(AppContext &ctx) override;
     void loop(AppContext &ctx) override;
     bool finished() const

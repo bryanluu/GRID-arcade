@@ -8,13 +8,12 @@ struct MenuScene : public Scene
 {
     enum class Item : int
     {
-        Example,
         Boids,
         Calibration,
         COUNT
     };
 
-    Item selected = Item::Example;
+    Item selected = Item::Boids;
 
     SceneTimingPrefs timingPrefs() const override
     {
@@ -26,11 +25,14 @@ struct MenuScene : public Scene
 
     void loop(AppContext &ctx) override;
 
+    SceneKind kind() const override { return SceneKind::Menu; }
+    const char *label() const override { return "Menu"; }
+
 private:
     // Basic nav: X left/right to change selection, button to activate
     // Simple hysteresis with thresholds
     static constexpr float HYSTERESIS_THRESHOLD = 0.45f;
-    static const millis_t SELECT_PAUSE = 500; // wait after select for drama
+    static const millis_t SELECT_WAIT = 500; // wait after select for drama
 
     void next();
     void prev();

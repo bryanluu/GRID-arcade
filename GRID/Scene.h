@@ -13,7 +13,19 @@
  */
 struct Scene
 {
+  enum class SceneKind : uint8_t
+  {
+    Start,
+    Menu,
+    Example,
+    Boids,
+    Calibration,
+  };
+
   virtual ~Scene() = default;
+
+  virtual SceneKind kind() const = 0;
+  virtual const char *label() const = 0;
   // Override to specify a preferred targetHz for the scene
   // Return NaN to use default (60Hz if not set otherwise)
   virtual SceneTimingPrefs timingPrefs() const { return SceneTimingPrefs(std::numeric_limits<float>::quiet_NaN()); };
