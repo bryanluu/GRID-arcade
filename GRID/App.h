@@ -26,13 +26,13 @@ class App
     std::unique_ptr<Scene> current;
     SceneBus bus{};
 
-    // --- Quit-to-menu state ---
-    millis_t quitHoldStartMs_ = 0;
-    bool quitPrevPressed_ = false;
-    bool quitArmed_ = false;
-    static constexpr millis_t QUIT_HOLD_MS = 5000;
+    // --- Pause Menu state ---
+    millis_t pauseHoldStartMs_ = 0;
+    bool pausePrevPressed_ = false;
+    bool pauseArmed_ = false;
+    static constexpr millis_t PAUSE_HOLD_MS = 5000;
 
-    bool checkQuitToMenu_()
+    bool checkPauseTrigger_()
     {
         const InputState s = ctx.input.state();
         const millis_t now = ctx.time.nowMs();
@@ -40,24 +40,24 @@ class App
         if (s.pressed)
         {
             // Rising edge: start timing
-            if (!quitPrevPressed_)
+            if (!pausePrevPressed_)
             {
-                quitHoldStartMs_ = now;
+                pauseHoldStartMs_ = now;
             }
             // Arm once threshold reached (do not switch yet)
-            if (!quitArmed_ && quitHoldStartMs_ && (now - quitHoldStartMs_) >= QUIT_HOLD_MS)
+            if (!pauseArmed_ && pauseHoldStartMs_ && (now - pauseHoldStartMs_) >= PAUSE_HOLD_MS)
             {
-                quitArmed_ = true;
+                pauseArmed_ = true;
             }
         }
         else
         {
             // Button released: fire if armed
-            if (quitArmed_)
+            if (pauseArmed_)
             {
-                quitArmed_ = false;
-                quitHoldStartMs_ = 0;
-                quitPrevPressed_ = s.pressed;
+                pauseArmed_ = false;
+                pauseHoldStartMs_ = 0;
+                pausePrevPressed_ = s.pressed;
 
                 // Switch scenes here. If you have a MenuScene route bound on a bus:
                 if (ctx.bus && ctx.bus->toMenu)
@@ -67,9 +67,9 @@ class App
                 return true;
             }
             // Not armed -> just cancel timer
-            quitHoldStartMs_ = 0;
+            pauseHoldStartMs_ = 0;
         }
-        quitPrevPressed_ = s.pressed;
+        pausePrevPressed_ = s.pressed;
         return false;
     }
 
@@ -113,8 +113,8 @@ public:
     void loopOnce()
     {
         ctx.input.sample();
-        if (checkQuitToMenu_())
-            return; // handle global quit before scene logic
+        if (checkPauseTrigger_())
+            return; // handle global pause before scene logic
         current->loop(ctx);
         ctx.gfx.show();
     }
