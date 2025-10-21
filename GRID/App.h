@@ -61,23 +61,16 @@ class App
             {
                 pauseHoldStartMs_ = now;
             }
-            // Arm once threshold reached (do not switch yet)
-            if (!pauseArmed_ && pauseHoldStartMs_ && (now - pauseHoldStartMs_) >= PAUSE_TRIGGER_MS)
+            // Trigger once threshold reached
+            if (!paused_ && pauseHoldStartMs_ && (now - pauseHoldStartMs_) >= PAUSE_TRIGGER_MS)
             {
-                pauseArmed_ = true;
+                paused_ = true;
+                selectQuit_ = false;
+                return true;
             }
         }
         else
         {
-            // Button released: fire if armed
-            if (pauseArmed_)
-            {
-                pauseArmed_ = false;
-                pauseHoldStartMs_ = 0;
-                pausePrevPressed_ = s.pressed;
-
-                return true;
-            }
             // Not armed -> just cancel timer
             pauseHoldStartMs_ = 0;
         }
@@ -137,12 +130,10 @@ class App
         bool right = (s.x > HYSTERESIS_THRESHOLD);
         bool press = s.pressed;
 
-        if (left && !prevLeft)
-            selectQuit_ = false;
-        if (right && !prevRight)
-            selectQuit_ = true;
+        if ((left && !prevLeft) || (right && !prevRight))
+            selectQuit_ = !selectQuit_;
 
-        drawPauseMenu(selectQuit_, left, right, press);
+        drawPauseMenu(selectQuit_, left, right, press && !prevPress);
 
         if (press && !prevPress && ctx.bus)
         {
@@ -159,6 +150,10 @@ class App
             }
             paused_ = false;
         }
+
+        prevLeft = left;
+        prevRight = right;
+        prevPress = press;
     }
 
 public:
