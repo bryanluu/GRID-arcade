@@ -26,6 +26,8 @@ struct MenuScene : public Scene
 
     void loop(AppContext &ctx) override;
 
+    SceneKind kind() const override { return SceneKind::Menu; }
+
 private:
     // Basic nav: X left/right to change selection, button to activate
     // Simple hysteresis with thresholds

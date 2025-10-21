@@ -18,6 +18,7 @@
 #include "CalibrationScene.h"
 #include "ExampleScene.h"
 #include "MenuScene.h"
+#include "StartScene.h"
 
 // App manages the current scene; only holds Matrix32&
 class App
@@ -32,7 +33,15 @@ class App
     bool pauseArmed_ = false;
     static constexpr millis_t PAUSE_HOLD_MS = 5000;
 
-    bool checkPauseTrigger_()
+    bool checkCurrentSceneCanPause() const
+    {
+        bool isStart = (current && current->kind() == Scene::SceneKind::Start);
+        bool isMenu = (current && current->kind() == Scene::SceneKind::Menu);
+        return !(isStart || isMenu);
+    }
+
+    // returns true if pause is triggered
+    bool checkPauseTrigger()
     {
         const InputState s = ctx.input.state();
         const millis_t now = ctx.time.nowMs();
@@ -113,7 +122,7 @@ public:
     void loopOnce()
     {
         ctx.input.sample();
-        if (checkPauseTrigger_())
+        if (checkCurrentSceneCanPause() && checkPauseTrigger())
             return; // handle global pause before scene logic
         current->loop(ctx);
         ctx.gfx.show();

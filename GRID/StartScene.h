@@ -18,6 +18,8 @@ public:
     void setup(AppContext &ctx) override;
     void loop(AppContext &ctx) override;
 
+    SceneKind kind() const override { return SceneKind::Start; }
+
 private:
     // Dimensions and timings for StartScene
     static const uint8_t kGlyphH = 10;     // pixel height of custom glyphs

@@ -10,6 +10,7 @@ class ExampleScene final : public Scene
 public:
     void setup(AppContext &ctx) override;
     void loop(AppContext &ctx) override;
+    SceneKind kind() const override { return SceneKind::Example; }
 };
 
 #endif
