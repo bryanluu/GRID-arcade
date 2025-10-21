@@ -33,7 +33,7 @@ private:
     // Basic nav: X left/right to change selection, button to activate
     // Simple hysteresis with thresholds
     static constexpr float HYSTERESIS_THRESHOLD = 0.45f;
-    static const millis_t SELECT_PAUSE = 500; // wait after select for drama
+    static const millis_t SELECT_WAIT = 500; // wait after select for drama
 
     void next();
     void prev();

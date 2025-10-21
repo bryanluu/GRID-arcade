@@ -31,7 +31,15 @@ class App
     millis_t pauseHoldStartMs_ = 0;
     bool pausePrevPressed_ = false;
     bool pauseArmed_ = false;
-    static constexpr millis_t PAUSE_HOLD_MS = 5000;
+    bool paused_;
+    bool selectQuit_ = false;
+    static constexpr millis_t PAUSE_TRIGGER_MS = 5000;
+    // Basic nav: X left/right to change selection, button to activate
+    // Simple hysteresis with thresholds
+    static constexpr float HYSTERESIS_THRESHOLD = 0.45f;
+    static constexpr millis_t SELECT_WAIT = 500; // wait after select for drama
+    static constexpr Color333 IDLE_COLOR = Colors::Muted::White;
+    static constexpr Color333 SELECT_COLOR = Colors::Bright::White;
 
     bool checkCurrentSceneCanPause() const
     {
@@ -54,7 +62,7 @@ class App
                 pauseHoldStartMs_ = now;
             }
             // Arm once threshold reached (do not switch yet)
-            if (!pauseArmed_ && pauseHoldStartMs_ && (now - pauseHoldStartMs_) >= PAUSE_HOLD_MS)
+            if (!pauseArmed_ && pauseHoldStartMs_ && (now - pauseHoldStartMs_) >= PAUSE_TRIGGER_MS)
             {
                 pauseArmed_ = true;
             }
@@ -68,11 +76,6 @@ class App
                 pauseHoldStartMs_ = 0;
                 pausePrevPressed_ = s.pressed;
 
-                // Switch scenes here. If you have a MenuScene route bound on a bus:
-                if (ctx.bus && ctx.bus->toMenu)
-                    ctx.bus->toMenu();
-                else
-                    this->setScene<MenuScene>();
                 return true;
             }
             // Not armed -> just cancel timer
@@ -80,6 +83,82 @@ class App
         }
         pausePrevPressed_ = s.pressed;
         return false;
+    }
+
+    void drawPauseMenu(bool selectQuit, bool left, bool right, bool press)
+    {
+        ctx.gfx.clear();
+        ctx.gfx.setTextSize(1);
+
+        ctx.gfx.setCursor(1, 1);
+        if (!selectQuit)
+            ctx.gfx.setTextColor((press ? Colors::Bright::Green : SELECT_COLOR));
+        else
+            ctx.gfx.setTextColor(IDLE_COLOR);
+        ctx.gfx.print("Cont.");
+
+        ctx.gfx.setCursor(1, 12);
+        if (selectQuit)
+            ctx.gfx.setTextColor((press ? Colors::Bright::Red : SELECT_COLOR));
+        else
+            ctx.gfx.setTextColor(IDLE_COLOR);
+        ctx.gfx.print("Quit");
+
+        // arrow hint
+        ctx.gfx.setCursor(1, MATRIX_HEIGHT - 8);
+        if (left)
+            ctx.gfx.setTextColor(Colors::Bright::White);
+        else
+            ctx.gfx.setTextColor(Colors::Muted::White);
+        ctx.gfx.print("<");
+
+        ctx.gfx.setCursor(10, MATRIX_HEIGHT - 8);
+        if (press)
+            ctx.gfx.setTextColor(Colors::Bright::White);
+        else
+            ctx.gfx.setTextColor(Colors::Muted::White);
+        ctx.gfx.print("OK");
+
+        if (right)
+            ctx.gfx.setTextColor(Colors::Bright::White);
+        else
+            ctx.gfx.setTextColor(Colors::Muted::White);
+        ctx.gfx.setCursor(MATRIX_WIDTH - 6, MATRIX_HEIGHT - 8);
+        ctx.gfx.print(">");
+    }
+
+    void handlePause()
+    {
+        const InputState s = ctx.input.state();
+        // Basic nav: X left/right to change selection, button to activate
+        static bool prevLeft = false, prevRight = false, prevPress = false;
+
+        bool left = (s.x < -HYSTERESIS_THRESHOLD);
+        bool right = (s.x > HYSTERESIS_THRESHOLD);
+        bool press = s.pressed;
+
+        if (left && !prevLeft)
+            selectQuit_ = false;
+        if (right && !prevRight)
+            selectQuit_ = true;
+
+        drawPauseMenu(selectQuit_, left, right, press);
+
+        if (press && !prevPress && ctx.bus)
+        {
+            // shows center press with a small pause
+            ctx.gfx.show();
+            ctx.time.sleep(SELECT_WAIT);
+            if (selectQuit_)
+            {
+                // Switch scenes here. If you have a MenuScene route bound on a bus:
+                if (ctx.bus && ctx.bus->toMenu)
+                    ctx.bus->toMenu();
+                else
+                    this->setScene<MenuScene>();
+            }
+            paused_ = false;
+        }
     }
 
 public:
@@ -123,9 +202,15 @@ public:
     void loopOnce()
     {
         ctx.input.sample();
-        if (checkCurrentSceneCanPause() && checkPauseTrigger())
-            return; // handle global pause before scene logic
-        current->loop(ctx);
+        if (paused_)
+            handlePause(); // handles global pause
+        else
+        {
+            if (checkCurrentSceneCanPause() && checkPauseTrigger())
+                paused_ = true;
+            else
+                current->loop(ctx);
+        }
         ctx.gfx.show();
     }
 

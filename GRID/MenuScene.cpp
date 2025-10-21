@@ -23,7 +23,7 @@ void MenuScene::loop(AppContext &ctx)
     {
         // shows center press with a small pause
         ctx.gfx.show();
-        ctx.time.sleep(SELECT_PAUSE);
+        ctx.time.sleep(SELECT_WAIT);
         switch (selected)
         {
         case Item::Example:
@@ -69,7 +69,7 @@ void MenuScene::draw(AppContext &ctx, bool left, bool right, bool press)
     ctx.gfx.print("Menu:");
     ctx.gfx.setCursor(1, 12);
     if (press)
-        ctx.gfx.setTextColor(Colors::Bright::White);
+        ctx.gfx.setTextColor(Colors::Bright::Green);
     else
         ctx.gfx.setTextColor(Colors::Muted::White);
     ctx.gfx.println(label(selected));
