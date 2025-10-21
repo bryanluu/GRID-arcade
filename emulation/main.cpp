@@ -6,10 +6,13 @@
 #include "SDLInputProvider.h"
 #include "SDLMatrix32.h"
 #include "StartScene.h"
-#include "MazeScene.h"
 #include <SDL.h>
 #include <algorithm>
 #include <cstdint>
+
+// TODO remove
+#include "MazeScene.h"
+#include "TestScene.h"
 
 // match GRID hardware
 static constexpr double TICK_HZ = 60.0;
@@ -55,7 +58,7 @@ void run_emulation()
     input.init(&inputProvider);
     App app{gfx, timing, input, logger, storage};
 
-    app.setScene<Maze::StartScene>();
+    app.setScene<TestScene>();
 
     while (running)
     {
