@@ -14,43 +14,6 @@
 // match GRID hardware
 static constexpr double TICK_HZ = 60.0;
 
-// Smoke test using current working directory/save
-static void run_filestorage_smoke(FileStorage &storage, ILogger &logger)
-{
-    const char *baseDir = "save"; // creates ./save next to the emulator
-    if (!storage.init(baseDir, &logger))
-    {
-        logger.logf(LogLevel::Warning, "[FileStorageTest] init failed");
-        return;
-    }
-
-    const char *fname = "emu_test.bin"; // stored under ./save
-    const char payload[] = "hello-grid";
-    if (!storage.writeAll(fname, payload, sizeof(payload)))
-    {
-        logger.logf(LogLevel::Warning, "[FileStorageTest] writeAll failed");
-        return;
-    }
-    logger.logf(LogLevel::Info, "[FileStorageTest] write ok");
-
-    char buf[64] = {};
-    auto r = storage.readAll(fname, buf, sizeof(buf));
-    if (!r)
-    {
-        logger.logf(LogLevel::Warning, "[FileStorageTest] readAll failed");
-        return;
-    }
-    logger.logf(LogLevel::Info, "[FileStorageTest] read %d bytes, contents='%s'", r.bytes, buf);
-
-    // Clean up
-    if (!storage.removeFile(fname))
-    {
-        logger.logf(LogLevel::Warning, "[FileStorageTest] removeFile failed");
-        return;
-    }
-    logger.logf(LogLevel::Info, "[FileStorageTest] removed ok");
-}
-
 // Main emulation loop
 void run_emulation()
 {
