@@ -6,6 +6,7 @@
 #include "SDLInputProvider.h"
 #include "SDLMatrix32.h"
 #include "StartScene.h"
+#include "MazeScene.h"
 #include <SDL.h>
 #include <algorithm>
 #include <cstdint>
@@ -91,7 +92,7 @@ void run_emulation()
     input.init(&inputProvider);
     App app{gfx, timing, input, logger, storage};
 
-    app.setScene<StartScene>();
+    app.setScene<Maze::StartScene>();
 
     while (running)
     {
