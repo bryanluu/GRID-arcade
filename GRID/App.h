@@ -38,8 +38,6 @@ class App
     // Simple hysteresis with thresholds
     static constexpr float HYSTERESIS_THRESHOLD = 0.45f;
     static constexpr millis_t SELECT_WAIT = 500; // wait after select for drama
-    static constexpr Color333 IDLE_COLOR = Colors::Muted::White;
-    static constexpr Color333 SELECT_COLOR = Colors::Bright::White;
 
     bool checkCurrentSceneCanPause() const
     {
@@ -85,16 +83,16 @@ class App
 
         ctx.gfx.setCursor(1, 1);
         if (!selectQuit)
-            ctx.gfx.setTextColor((press ? Colors::Bright::Green : SELECT_COLOR));
+            ctx.gfx.setTextColor((press ? Colors::Bright::Green : Colors::Bright::White));
         else
-            ctx.gfx.setTextColor(IDLE_COLOR);
+            ctx.gfx.setTextColor(Colors::Muted::White);
         ctx.gfx.print("Cont.");
 
         ctx.gfx.setCursor(1, 12);
         if (selectQuit)
-            ctx.gfx.setTextColor((press ? Colors::Bright::Red : SELECT_COLOR));
+            ctx.gfx.setTextColor((press ? Colors::Bright::Red : Colors::Bright::White));
         else
-            ctx.gfx.setTextColor(IDLE_COLOR);
+            ctx.gfx.setTextColor(Colors::Muted::White);
         ctx.gfx.print("Quit");
 
         // arrow hint
