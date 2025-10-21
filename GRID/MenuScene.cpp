@@ -26,9 +26,6 @@ void MenuScene::loop(AppContext &ctx)
         ctx.time.sleep(SELECT_WAIT);
         switch (selected)
         {
-        case Item::Example:
-            ctx.bus->toExample();
-            return;
         case Item::Boids:
             ctx.bus->toBoids();
             return;
@@ -101,8 +98,6 @@ const char *MenuScene::label(const MenuScene::Item scene) const
 {
     switch (scene)
     {
-    case MenuScene::Item::Example:
-        return "E.g.";
     case MenuScene::Item::Boids:
         return "Boids";
     case MenuScene::Item::Calibration:

@@ -16,7 +16,6 @@
 #include "SceneBus.h"
 #include "BoidsScene.h"
 #include "CalibrationScene.h"
-#include "ExampleScene.h"
 #include "MenuScene.h"
 #include "StartScene.h"
 
@@ -175,8 +174,6 @@ public:
         // Bind routes. Lambdas capture this App and call setScene.
         bus.toMenu = [this]
         { this->setScene<MenuScene>(); };
-        bus.toExample = [this]
-        { this->setScene<ExampleScene>(); };
         bus.toBoids = [this]
         { this->setScene<BoidsScene>(); };
         bus.toCalibration = [this]
