@@ -106,6 +106,7 @@ public:
     {
         static_assert(std::is_base_of<Scene, SceneT>::value, "SceneT must derive from Scene");
         current.reset(new SceneT(std::forward<Args>(args)...));
+        ctx.logger.logf(LogLevel::Debug, "Started %s Scene.", current->label());
         // apply preferred timing
         auto prefs = current->timingPrefs();
         ctx.time.applyPreference(prefs);

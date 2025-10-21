@@ -27,6 +27,7 @@ struct MenuScene : public Scene
     void loop(AppContext &ctx) override;
 
     SceneKind kind() const override { return SceneKind::Menu; }
+    const char *label() const override { return "Menu"; }
 
 private:
     // Basic nav: X left/right to change selection, button to activate

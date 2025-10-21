@@ -19,6 +19,7 @@ public:
     void loop(AppContext &ctx) override;
 
     SceneKind kind() const override { return SceneKind::Start; }
+    const char *label() const override { return "Start"; }
 
 private:
     // Dimensions and timings for StartScene

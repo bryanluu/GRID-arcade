@@ -11,6 +11,7 @@ public:
     void setup(AppContext &ctx) override;
     void loop(AppContext &ctx) override;
     SceneKind kind() const override { return SceneKind::Example; }
+    const char *label() const override { return "Example"; }
 };
 
 #endif
