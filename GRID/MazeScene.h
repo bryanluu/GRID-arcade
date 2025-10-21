@@ -35,6 +35,9 @@ namespace Maze
     public:
         void setup(AppContext &ctx) override;
         void loop(AppContext &ctx) override;
+
+        SceneKind kind() const override { return SceneKind::Maze; }
+        const char *label() const override { return "Maze"; }
     };
 };
 

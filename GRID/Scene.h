@@ -19,6 +19,7 @@ struct Scene
     Menu,
     Boids,
     Calibration,
+    Maze
   };
 
   virtual ~Scene() = default;
