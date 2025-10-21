@@ -49,4 +49,127 @@ namespace Colors
     }
 }
 
+// Hue helper: degrees → internal hue units
+// Internally we use 6 segments (R→Y→G→C→B→M) of 256 steps each = 1536 total.
+constexpr uint16_t HUE_SEGMENTS = 6;                            // number of primary ramps
+constexpr uint16_t HUE_SEGMENT_SIZE = 256;                      // steps per segment
+constexpr uint16_t HUE_RANGE = HUE_SEGMENTS * HUE_SEGMENT_SIZE; // 1536
+
+// Convert degrees (0..360) to Adafruit-compatible hue units (0..1535)
+#define HUE(deg) static_cast<uint16_t>(HUE_RANGE * ((deg) / 360.0))
+
+// Channel and HSV ranges
+constexpr uint8_t BYTE_MIN = 0;
+constexpr uint8_t BYTE_MAX = 255; // 8-bit channel max
+constexpr uint16_t HUE_MIN = 0;
+constexpr uint16_t HUE_MAX = HUE_RANGE - 1; // 1535
+
+// Optional gamma shaping
+// This approximates gamma > 2.0 with two squaring passes.
+// You can tune PASSES to 1 for ~gamma 2.0 feel, or keep 2 for stronger shaping.
+constexpr bool GAMMA_DEFAULT_ENABLE = false;
+constexpr uint8_t GAMMA_PASSES = 2; // 1 = mild, 2 = stronger
+
+inline uint8_t applyGamma(uint8_t c, bool enable)
+{
+    if (!enable || c == 0 || c == BYTE_MAX)
+        return c;
+
+    // Iteratively square and renormalize to 0..255 to approximate gamma
+    uint16_t v = c;
+    for (uint8_t i = 0; i < GAMMA_PASSES; ++i)
+    {
+        v = (v * v + (BYTE_MAX / 2)) / BYTE_MAX; // round to nearest
+    }
+    return static_cast<uint8_t>(v);
+}
+
+// HSV( hue: 0..1535, sat: 0..255, val: 0..255 ) → 8-bit RGB
+inline Color888 ColorHSV888(uint16_t hue, uint8_t sat, uint8_t val, bool gamma = GAMMA_DEFAULT_ENABLE)
+{
+    // Normalize hue into [0, HUE_MAX]
+    hue = static_cast<uint16_t>(hue % HUE_RANGE);
+
+    // Fully desaturated → grayscale
+    if (sat == 0)
+    {
+        uint8_t g = applyGamma(val, gamma);
+        return Color888{g, g, g};
+    }
+
+    // Identify which primary segment we are in and our position within it
+    const uint8_t region = static_cast<uint8_t>(hue / HUE_SEGMENT_SIZE); // 0..5
+    const uint8_t pos = static_cast<uint8_t>(hue % HUE_SEGMENT_SIZE);    // 0..255
+
+    // Precompute the three auxiliaries used by HSV→RGB
+    // p = v*(1-s)
+    // q = v*(1-s*f)
+    // t = v*(1-s*(1-f))
+    const uint16_t p = static_cast<uint16_t>(val) * (BYTE_MAX - sat) / BYTE_MAX;
+    const uint16_t q = static_cast<uint16_t>(val) *
+                       (BYTE_MAX - static_cast<uint16_t>(sat) * pos / BYTE_MAX) / BYTE_MAX;
+    const uint16_t t = static_cast<uint16_t>(val) *
+                       (BYTE_MAX - static_cast<uint16_t>(sat) * (HUE_SEGMENT_SIZE - 1 - pos) / BYTE_MAX) / BYTE_MAX;
+
+    uint8_t r, g, b;
+    switch (region)
+    {
+    default: // 0: Red → Yellow
+    case 0:
+        r = val;
+        g = static_cast<uint8_t>(t);
+        b = static_cast<uint8_t>(p);
+        break;
+    case 1:
+        r = static_cast<uint8_t>(q);
+        g = val;
+        b = static_cast<uint8_t>(p);
+        break; // 1: Yellow → Green
+    case 2:
+        r = static_cast<uint8_t>(p);
+        g = val;
+        b = static_cast<uint8_t>(t);
+        break; // 2: Green → Cyan
+    case 3:
+        r = static_cast<uint8_t>(p);
+        g = static_cast<uint8_t>(q);
+        b = val;
+        break; // 3: Cyan → Blue
+    case 4:
+        r = static_cast<uint8_t>(t);
+        g = static_cast<uint8_t>(p);
+        b = val;
+        break; // 4: Blue → Magenta
+    case 5:
+        r = val;
+        g = static_cast<uint8_t>(p);
+        b = static_cast<uint8_t>(q);
+        break; // 5: Magenta → Red
+    }
+
+    // Optional gamma shaping
+    if (gamma)
+    {
+        r = applyGamma(r, true);
+        g = applyGamma(g, true);
+        b = applyGamma(b, true);
+    }
+    return Color888{r, g, b};
+}
+
+// HSV → 3-3-3 RGB (down-quantized for Color333)
+inline Color333 ColorHSV333(uint16_t hue, uint8_t sat, uint8_t val, bool gamma = GAMMA_DEFAULT_ENABLE)
+{
+    const Color888 c8 = ColorHSV888(hue, sat, val, gamma);
+
+    // Map 8-bit 0..255 to 3-bit 0..7 with rounding
+    auto to3 = [](uint8_t x) -> uint8_t
+    {
+        // 0..255 → 0..7: (x * 7 + 127) / 255 for nearest rounding
+        return static_cast<uint8_t>((static_cast<uint16_t>(x) * 7 + (BYTE_MAX / 2)) / BYTE_MAX);
+    };
+
+    return Color333{to3(c8.r), to3(c8.g), to3(c8.b)};
+}
+
 #endif // COLORS_H
