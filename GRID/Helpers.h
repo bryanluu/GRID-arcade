@@ -22,7 +22,7 @@ namespace Helpers
     template <typename T>
     inline T clamp(T v, T lo, T hi) { return v < lo ? lo : (v > hi ? hi : v); } // Arduino lacks std::clamp
     // Provide a random int between 0..range
-    inline int random(int range) { return static_cast<float>(rand()) * range / RAND_MAX; }
+    inline int random(long int range) { return static_cast<float>(rand()) * range / RAND_MAX; }
     inline int random() { return rand(); }
 }
 
