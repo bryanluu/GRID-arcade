@@ -57,7 +57,7 @@ void run_emulation()
     input.init(&inputProvider);
     App app{gfx, timing, input, logger, storage};
 
-    app.setScene<Maze::StartScene>();
+    app.setScene<MazeScene>();
 
     while (running)
     {

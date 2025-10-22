@@ -1,19 +1,27 @@
 #include "MazeScene.h"
 
-const char *Maze::StartScene::textPlayer = "You";
-const char *Maze::StartScene::textStart = "Start";
-const char *Maze::StartScene::textWall = "Wall";
-const char *Maze::StartScene::textFinish = "Exit";
-const char *Maze::StartScene::textHint = "Hint";
-const char *Maze::StartScene::textFood = "Food";
-const char *Maze::StartScene::textTime = "Time";
+const char *MazeScene::textPlayer = "You";
+const char *MazeScene::textStart = "Start";
+const char *MazeScene::textWall = "Wall";
+const char *MazeScene::textFinish = "Exit";
+const char *MazeScene::textHint = "Hint";
+const char *MazeScene::textFood = "Food";
+const char *MazeScene::textTime = "Time";
+
+const Color333 MazeScene::kPlayerColor = Colors::Muted::White;
+const Color333 MazeScene::kWallColor = Colors::Muted::Red;
+const Color333 MazeScene::kStartColor = Colors::Muted::Blue;
+const Color333 MazeScene::kFinishColor = Colors::Muted::Green;
+const Color333 MazeScene::kSolutionColor = Colors::Muted::Yellow;
+const Color333 MazeScene::kFoodColor = Colors::Muted::Cyan;
+const Color333 MazeScene::kTimeColor = Colors::Muted::Violet;
 
 // ########## START CODE ##########
 
 /**
  * @brief Displays the starting graphics
  */
-void Maze::StartScene::renderHints(AppContext &ctx)
+void MazeScene::renderHints(AppContext &ctx)
 {
     ctx.gfx.clear();
     ctx.gfx.setCursor(0, textY--);
@@ -33,7 +41,7 @@ void Maze::StartScene::renderHints(AppContext &ctx)
     ctx.gfx.println(textTime);
 }
 
-void Maze::StartScene::setup(AppContext &ctx)
+void MazeScene::setup(AppContext &ctx)
 {
     startTime = ctx.time.nowMs();
     textY = 5;
@@ -49,7 +57,7 @@ void Maze::StartScene::setup(AppContext &ctx)
     ctx.gfx.setImmediate(true);
 }
 
-void Maze::StartScene::loop(AppContext &ctx)
+void MazeScene::loop(AppContext &ctx)
 {
     ctx.gfx.setCursor(1, 1);
     ctx.gfx.println("MAZE");

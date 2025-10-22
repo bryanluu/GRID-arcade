@@ -93,7 +93,7 @@ void setup()
     calib.load(storage, logger);
     input.setCalibration(calib);
 
-    app.setScene<Maze::StartScene>();
+    app.setScene<MazeScene>();
     prev_millis = millis();
     log_last_ms = prev_millis;
 }
