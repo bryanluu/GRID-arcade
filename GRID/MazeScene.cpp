@@ -37,12 +37,20 @@ void Maze::StartScene::setup(AppContext &ctx)
 {
     startTime = ctx.time.nowMs();
     textY = 5;
+
+    // show Hint text before game starts
+    ctx.gfx.setImmediate(false);
+    while (textY > -kStartLoopSteps)
+    {
+        renderHints(ctx);
+        ctx.gfx.show();
+        ctx.time.sleep(kStartLoopDelay);
+    }
+    ctx.gfx.setImmediate(true);
 }
 
 void Maze::StartScene::loop(AppContext &ctx)
 {
-    // if (ctx.time.nowMs() - startTime >= kStartDuration)
-    // mazeScene.start();
-    renderHints(ctx);
-    ctx.time.sleep(kStartLoopDelay);
+    ctx.gfx.setCursor(1, 1);
+    ctx.gfx.println("MAZE");
 }

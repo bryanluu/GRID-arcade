@@ -11,7 +11,6 @@
 
 // TODO remove
 #include "MazeScene.h"
-#include "TestScene.h"
 
 // Adafruit flash + FatFs globals
 #include "SdFat_Adafruit_Fork.h"
@@ -94,7 +93,7 @@ void setup()
     calib.load(storage, logger);
     input.setCalibration(calib);
 
-    app.setScene<TestScene>();
+    app.setScene<Maze::StartScene>();
     prev_millis = millis();
     log_last_ms = prev_millis;
 }

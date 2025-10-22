@@ -18,7 +18,7 @@ namespace Maze
     {
     private:
         // Start Scene config
-        static const millis_t kStartDuration = 6000; // in ms
+        static const byte kStartLoopSteps = 55;      // cycles to wait for
         static const millis_t kStartLoopDelay = 150; // in ms
         static const char *textPlayer;
         static const char *textStart;

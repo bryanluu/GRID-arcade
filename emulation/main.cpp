@@ -12,7 +12,6 @@
 
 // TODO remove
 #include "MazeScene.h"
-#include "TestScene.h"
 
 // match GRID hardware
 static constexpr double TICK_HZ = 60.0;
@@ -58,7 +57,7 @@ void run_emulation()
     input.init(&inputProvider);
     App app{gfx, timing, input, logger, storage};
 
-    app.setScene<TestScene>();
+    app.setScene<Maze::StartScene>();
 
     while (running)
     {
