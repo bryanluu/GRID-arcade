@@ -16,7 +16,7 @@ private:
     static const Color333 kFoodColor;
     static const Color333 kTimeColor;
     // Start Scene config
-    static const byte kStartLoopSteps = 60;      // cycles to wait for
+    static const int8_t kStartLoopStopY = -60;   // vertical position to stop hints
     static const millis_t kStartLoopDelay = 150; // in ms
     static const char *textPlayer;
     static const char *textStart;

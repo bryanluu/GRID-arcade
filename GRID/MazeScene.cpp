@@ -24,7 +24,7 @@ const Color333 MazeScene::kTimeColor = Colors::Muted::Violet;
 void MazeScene::renderHints(AppContext &ctx)
 {
     ctx.gfx.clear();
-    ctx.gfx.setCursor(0, textY--);
+    ctx.gfx.setCursor(0, textY);
     ctx.gfx.setTextColor(kPlayerColor);
     ctx.gfx.println(textPlayer);
     ctx.gfx.setTextColor(kWallColor);
@@ -48,7 +48,7 @@ void MazeScene::setup(AppContext &ctx)
 
     // show Hint text before game starts
     ctx.gfx.setImmediate(false);
-    while (textY > -kStartLoopSteps)
+    while (--textY > kStartLoopStopY)
     {
         renderHints(ctx);
         ctx.gfx.show();
