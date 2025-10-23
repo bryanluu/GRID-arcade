@@ -242,7 +242,7 @@ void MazeScene::colorMaze()
     {
         for (Maze::matrix_t c = 0; c < MATRIX_WIDTH; c++)
         {
-            grid[r][c] = MazeScene::kWallColor; // color wall
+            grid[r][c] = Wall; // color wall
         }
     }
     Maze::maze_t x, y;
@@ -252,7 +252,7 @@ void MazeScene::colorMaze()
         y = Maze::getY(p);
         Maze::matrix_t r = Maze::toMatrix(y);
         Maze::matrix_t c = Maze::toMatrix(x);
-        grid[r][c] = Colors::Black; // color the vertex node
+        grid[r][c] = None; // color the vertex node
 
         // color the edge nodes
         Maze::maze_t x2, y2;
@@ -267,7 +267,7 @@ void MazeScene::colorMaze()
             y2 = Maze::getY(u->pos);
             r = Maze::interpolate(y, y2);
             c = Maze::interpolate(x, x2);
-            grid[r][c] = Colors::Black;
+            grid[r][c] = None;
         }
     }
 }
@@ -299,7 +299,7 @@ void MazeScene::displayMaze(AppContext &ctx)
     {
         for (Maze::maze_t c = 0; c < Maze::toMatrix(Maze::kMazeWidth); c++)
         {
-            color = grid[r][c];
+            color = palette(grid[r][c]);
             rowOffset = (MATRIX_HEIGHT - Maze::toMatrix(Maze::kMazeHeight)) / 2;
             colOffset = (MATRIX_WIDTH - Maze::toMatrix(Maze::kMazeWidth)) / 2;
             ctx.gfx.drawPixel(c + colOffset, r + rowOffset, color);

@@ -197,8 +197,7 @@ private:
     void renderHints(AppContext &ctx);
 
     // Maze State
-    Color333 grid[MATRIX_HEIGHT][MATRIX_WIDTH]; // color of each pixel in matrix
-    Maze::graph maze_g;                         // graph of maze
+    Maze::graph maze_g; // graph of maze
     Maze::node *startNode = nullptr;
     Maze::node *endNode = nullptr;
 
@@ -209,6 +208,32 @@ private:
     void buildMaze();
 
     // Drawing
+
+    using palette_t = uint8_t;
+    enum PaletteIndex : palette_t
+    {
+        None,
+        Wall,
+        Start,
+        Finish
+    };
+    PaletteIndex grid[MATRIX_HEIGHT][MATRIX_WIDTH]; // color of each pixel in matrix
+    static Color333 palette(PaletteIndex i)
+    {
+        switch (i)
+        {
+        case None:
+            return Colors::Black;
+        case Wall:
+            return kWallColor;
+        case Start:
+            return kStartColor;
+        case Finish:
+            return kFinishColor;
+        default:
+            return Colors::Black;
+        }
+    }
 
     void colorMaze();
     bool isBorder(Maze::matrix_t r, Maze::matrix_t col);
