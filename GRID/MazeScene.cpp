@@ -25,7 +25,7 @@ const Color333 MazeScene::kTimeColor = Colors::Muted::Violet;
 /**
  * @brief Displays the starting graphics
  */
-void MazeScene::renderHints(AppContext &ctx)
+void MazeScene::renderHints(AppContext &ctx, int8_t textY)
 {
     ctx.gfx.clear();
     ctx.gfx.setCursor(0, textY);
@@ -45,40 +45,69 @@ void MazeScene::renderHints(AppContext &ctx)
     ctx.gfx.println(textTime);
 }
 
+void MazeScene::setStage(AppContext &ctx, Stage newStage)
+{
+    switch (newStage)
+    {
+    case Intro:
+        textY = kStartTextY;
+        break;
+    case Game:
+        buildMaze();
+        setMazeEndpoints();
+        break;
+    case End:
+
+        break;
+    }
+    startTime = ctx.time.nowMs();
+    lastUpdateTime = startTime;
+    stage = newStage;
+}
+
 void MazeScene::setup(AppContext &ctx)
 {
-    // TODO uncomment to show Hints
-    // startTime = ctx.time.nowMs();
-    // textY = 5;
-
-    // // show Hint text before game starts
-    // ctx.gfx.setImmediate(false);
-    // while (--textY > kStartLoopStopY)
-    // {
-    //     renderHints(ctx);
-    //     ctx.gfx.show();
-    //     ctx.time.sleep(kStartLoopDelay);
-    // }
-    // ctx.gfx.setImmediate(true);
-
-    buildMaze();
-    setMazeEndpoints();
-    startTime = ctx.time.nowMs();
+    setStage(ctx, Intro);
 }
 
 void MazeScene::loop(AppContext &ctx)
 {
-    sampleStrobedDirection(ctx, inputDir, lastInputTimeMs);
+    millis_t now = ctx.time.nowMs();
+    switch (stage)
+    {
+    case (Intro):
+        if ((textY > kStartTextYStop)) // display hints until they're off-screen
+        {
+            renderHints(ctx, textY);
+            // scroll only at the given rate
+            if ((now - lastUpdateTime) > kStartTextStepRate)
+            {
+                --textY;
+                lastUpdateTime = now;
+            }
+        }
+        else
+        {
+            setStage(ctx, Game);
+        }
+        break;
+    case (Game):
+        sampleStrobedDirection(ctx, inputDir, lastUpdateTime);
 
-    if (inputDir != Maze::Direction::None)
-        movePlayer(ctx);
+        if (inputDir != Maze::Direction::None)
+            movePlayer(ctx);
 
-    colorMaze();
-    colorStart();
-    colorFinish();
-    colorPlayer();
-    displayMaze(ctx);
-    displayTimer(ctx);
+        colorMaze();
+        colorStart();
+        colorFinish();
+        colorPlayer();
+        displayMaze(ctx);
+        displayTimer(ctx);
+        break;
+    case (End):
+        // TODO implement
+        break;
+    }
 }
 
 // ########## MAZE CODE ##########

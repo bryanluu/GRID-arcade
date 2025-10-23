@@ -174,6 +174,16 @@ struct Maze
 class MazeScene : public Scene
 {
 private:
+    enum Stage : uint8_t
+    {
+        Intro,
+        Game,
+        End
+    };
+    Stage stage = Stage::Intro;
+    void setStage(AppContext &ctx, Stage newStage);
+    millis_t startTime = 0;
+
     // Color Config
     static const Color333 kPlayerColor;
     static const Color333 kWallColor;
@@ -183,8 +193,9 @@ private:
     static const Color333 kFoodColor;
     static const Color333 kTimeColor;
     // Start Scene config
-    static const int8_t kStartLoopStopY = -60;   // vertical position to stop hints
-    static const millis_t kStartLoopDelay = 150; // in ms
+    static const int8_t kStartTextYStop = -60; // vertical position to stop hints
+    static const int8_t kStartTextY = 5;
+    static const millis_t kStartTextStepRate = 150; // in ms
     static const char *textPlayer;
     static const char *textStart;
     static const char *textWall;
@@ -192,10 +203,10 @@ private:
     static const char *textHint;
     static const char *textFood;
     static const char *textTime;
-    millis_t startTime = 0;
-    int16_t textY;
+    millis_t lastUpdateTime = 0;
+    int8_t textY;
 
-    void renderHints(AppContext &ctx);
+    void renderHints(AppContext &ctx, int8_t textY);
 
     // Maze State
     Maze::graph maze_g; // graph of maze
@@ -213,7 +224,6 @@ private:
     // Movement
 
     Maze::Direction inputDir = Maze::Direction::None;
-    millis_t lastInputTimeMs = 0;
     static constexpr float kInputBuffer = 0.15f;        // deadband on normalized stick, ~15%
     static constexpr float kFastInputThreshold = 0.90f; // near edge speeds up repeat
     static constexpr millis_t kDefaultInputDelayMs = 150;
