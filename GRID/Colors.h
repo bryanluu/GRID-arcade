@@ -10,6 +10,16 @@ using Intensity8 = uint8_t;
 struct Color333
 {
     Intensity3 r, g, b; // RGB are each 0..7
+
+    inline bool operator==(const Color333 &other) const
+    {
+        return r == other.r && g == other.g && b == other.b;
+    }
+
+    inline bool operator!=(const Color333 &other) const
+    {
+        return !(*this == other);
+    }
 };
 struct Color888
 {

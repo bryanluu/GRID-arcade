@@ -66,6 +66,11 @@ void MazeScene::setup(AppContext &ctx)
 
 void MazeScene::loop(AppContext &ctx)
 {
+    sampleStrobedDirection(ctx, inputDir, lastInputTimeMs);
+
+    if (inputDir != Maze::Direction::None)
+        movePlayer(ctx);
+
     colorMaze();
     colorStart();
     colorFinish();
@@ -305,6 +310,100 @@ void MazeScene::colorMaze()
             c = Maze::interpolate(x, x2);
             grid[r][c] = Colors::Black;
         }
+    }
+}
+
+// MazeScene.cpp
+// Choose a 4-way direction with strobing and variable repeat rate.
+// - strobe=true resets inputDir at the start of a strobe window (like your sketch)
+// - Uses normalized stick {x,y} in [-1, +1] from InputProvider
+Maze::Direction MazeScene::sampleStrobedDirection(AppContext &ctx, Maze::Direction &ioDir, millis_t &ioLastTimeMs)
+{
+    InputState s = ctx.input.state();
+    millis_t nowMs = ctx.time.nowMs();
+    // Reset the instantaneous direction
+    ioDir = Maze::Direction::None;
+
+    const float dx = s.x;
+    const float dy = s.y;
+
+    // If outside deadband, consider a move on the dominant axis
+    if (std::fabs(dx) > kInputBuffer || std::fabs(dy) > kInputBuffer)
+    {
+        // Default repeat delay, faster near extremes
+        millis_t inputDelay = kDefaultInputDelayMs;
+
+        // Decide axis and candidate direction
+        Maze::Direction cand = Maze::Direction::None;
+        if (std::fabs(dx) >= std::fabs(dy))
+        {
+            if (dx > kInputBuffer)
+                cand = Maze::Direction::Right;
+            if (dx < -kInputBuffer)
+                cand = Maze::Direction::Left;
+            if (std::fabs(dx) >= kFastInputThreshold)
+                inputDelay = kFastInputDelayMs;
+        }
+        else
+        {
+            if (dy > kInputBuffer)
+                cand = Maze::Direction::Down;
+            if (dy < -kInputBuffer)
+                cand = Maze::Direction::Up;
+            if (std::fabs(dy) >= kFastInputThreshold)
+                inputDelay = kFastInputDelayMs;
+        }
+
+        // Gate by repeat timer, like (currentTime - lastInputTime > inputDelay)
+        if (cand != Maze::Direction::None &&
+            (nowMs - ioLastTimeMs) > inputDelay)
+        {
+            ioDir = cand;
+        }
+    }
+
+    // Update last time only when a step will be consumed this frame
+    if (ioDir != Maze::Direction::None)
+    {
+        ioLastTimeMs = nowMs;
+    }
+
+    return ioDir;
+}
+
+/**
+ * @brief Move the position of the player in the given direction
+ *
+ */
+void MazeScene::movePlayer(AppContext &ctx)
+{
+    int8_t dx, dy;
+    dx = 0;
+    dy = 0;
+    Maze::maze_t x, y;
+    switch (inputDir)
+    {
+    case Maze::Direction::Up:
+        dy = -1;
+        break;
+    case Maze::Direction::Down:
+        dy = 1;
+        break;
+    case Maze::Direction::Left:
+        dx = -1;
+        break;
+    case Maze::Direction::Right:
+        dx = 1;
+        break;
+    default:
+        return;
+    }
+    x = Helpers::clamp(playerX + dx, 1, MATRIX_WIDTH - 2);
+    y = Helpers::clamp(playerY + dy, 1, MATRIX_HEIGHT - 2);
+    if (grid[y][x] != MazeScene::kWallColor)
+    {
+        playerX = x;
+        playerY = y;
     }
 }
 

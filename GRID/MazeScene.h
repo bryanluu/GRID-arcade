@@ -212,6 +212,17 @@ private:
     void setMazeEndpoints();
     void buildMaze();
 
+    // Movement
+
+    Maze::Direction inputDir = Maze::Direction::None;
+    millis_t lastInputTimeMs = 0;
+    static constexpr float kInputBuffer = 0.15f;        // deadband on normalized stick, ~15%
+    static constexpr float kFastInputThreshold = 0.90f; // near edge speeds up repeat
+    static constexpr millis_t kDefaultInputDelayMs = 150;
+    static constexpr millis_t kFastInputDelayMs = 60;
+    Maze::Direction sampleStrobedDirection(AppContext &ctx, Maze::Direction &ioDir, millis_t &ioLastTimeMs);
+    void movePlayer(AppContext &ctx);
+
     // Drawing
 
     void colorMaze();
