@@ -1,5 +1,6 @@
 #include "MazeScene.h"
 #include "Helpers.h"
+#include "SceneBus.h"
 #include <vector>
 #include <queue>
 
@@ -514,6 +515,7 @@ void MazeScene::displayTimer(AppContext &ctx)
     if (pixelsPassed >= kTimerPixels)
     {
         endGame(ctx);
+        return;
     }
 
     // draw time track
@@ -545,5 +547,5 @@ void MazeScene::displayTimer(AppContext &ctx)
  */
 void MazeScene::endGame(AppContext &ctx)
 {
-    // ctx.bus->toMenu(); // TODO fix/implement
+    ctx.bus->toMenu(); // TODO implement
 }
