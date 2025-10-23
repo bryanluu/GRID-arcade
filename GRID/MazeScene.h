@@ -3,6 +3,7 @@
 
 #include "Scene.h"
 #include "Colors.h"
+#include "ScrollTextHelper.h"
 #include <climits>
 
 struct Maze
@@ -185,6 +186,7 @@ private:
     millis_t startTime = 0;
 
     // Color Config
+
     static const Color333 kPlayerColor;
     static const Color333 kWallColor;
     static const Color333 kStartColor;
@@ -192,7 +194,9 @@ private:
     static const Color333 kSolutionColor;
     static const Color333 kFoodColor;
     static const Color333 kTimeColor;
+
     // Start Scene config
+
     static const int8_t kStartTextYStop = -60; // vertical position to stop hints
     static const int8_t kStartTextY = 5;
     static const millis_t kStartTextStepRate = 150; // in ms
@@ -209,6 +213,7 @@ private:
     void renderHints(AppContext &ctx, int8_t textY);
 
     // Maze State
+
     Maze::graph maze_g; // graph of maze
     Maze::node *startNode = nullptr;
     Maze::node *endNode = nullptr;
@@ -277,7 +282,18 @@ private:
     void colorPlayer();
     bool isBorder(Maze::matrix_t r, Maze::matrix_t col);
     void displayMaze(AppContext &ctx);
+    bool playerHasFinished();
     void endGame(AppContext &ctx);
+
+    // Scoring
+
+    using score_t = uint8_t;
+    score_t score;
+    static constexpr score_t kExitScore = 20;    //  score bonus if player reaches exit
+    static constexpr score_t kMaxTimeScore = 50; // max score bonus from time left
+    // in ms, the time after game start for player to achieve MAX_TIME_SCORE
+    static constexpr millis_t kMaxTimeBuffer = (90 * 1000);
+    void computeFinalScore(score_t &score, millis_t nowMs);
 
 public:
     void setup(AppContext &ctx) override;

@@ -53,11 +53,11 @@ void MazeScene::setStage(AppContext &ctx, Stage newStage)
         textY = kStartTextY;
         break;
     case Game:
+        score = 0;
         buildMaze();
         setMazeEndpoints();
         break;
     case End:
-
         break;
     }
     startTime = ctx.time.nowMs();
@@ -90,8 +90,15 @@ void MazeScene::loop(AppContext &ctx)
         {
             setStage(ctx, Game);
         }
-        break;
+        return;
     case (Game):
+        if (playerHasFinished())
+        {
+            computeFinalScore(score, now);
+            setStage(ctx, End);
+            return;
+        }
+
         sampleStrobedDirection(ctx, inputDir, lastUpdateTime);
 
         if (inputDir != Maze::Direction::None)
@@ -103,10 +110,10 @@ void MazeScene::loop(AppContext &ctx)
         colorPlayer();
         displayMaze(ctx);
         displayTimer(ctx);
-        break;
+        return;
     case (End):
-        // TODO implement
-        break;
+        endGame(ctx);
+        return;
     }
 }
 
@@ -543,7 +550,7 @@ void MazeScene::displayTimer(AppContext &ctx)
 
     if (pixelsPassed >= kTimerPixels)
     {
-        endGame(ctx);
+        setStage(ctx, End);
         return;
     }
 
@@ -568,6 +575,28 @@ void MazeScene::displayTimer(AppContext &ctx)
 
         ctx.gfx.drawPixel(c - 1, r - 1, palette(grid[r - 1][c - 1]));
     }
+}
+
+/**
+ * @brief Checks if player has reached the end of the maze
+ *
+ * @return true if player's position overlaps with the finish
+ * @return false otherwise
+ */
+bool MazeScene::playerHasFinished()
+{
+    return playerX == Maze::toMatrix(Maze::getX(endNode->pos)) && playerY == Maze::toMatrix(Maze::getY(endNode->pos));
+}
+
+/**
+ * @brief Computs the final score of the player if they completed the game
+ */
+void MazeScene::computeFinalScore(score_t &score, millis_t nowMs)
+{
+    score += kExitScore;
+    millis_t leftoverTime = kGameDefaultDuration - (nowMs - startTime);
+    score_t timeBonus = (kMaxTimeScore * (kMaxTimeBuffer + leftoverTime) / kGameDefaultDuration);
+    score += timeBonus;
 }
 
 /**
