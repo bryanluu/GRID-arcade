@@ -29,11 +29,11 @@ struct Maze
     class node
     {
     public:
-        coord pos = None;           // the position in the maze
-        int weights[kMaxNeighbors]; // neighboring weights of edges of this node
-        int value = INT_MAX;        // integer value to keep track of (cheapestEdgeWeight or distance)
-        coord id = None;            // id of edge or node to keep track of
-        bool used = false;          // whether the node has been used in the maze
+        coord pos = None;               // the position in the maze
+        int16_t weights[kMaxNeighbors]; // neighboring weights of edges of this node
+        int16_t value = INT16_MAX;      // integer value to keep track of (cheapestEdgeWeight or distance)
+        coord id = None;                // id of edge or node to keep track of
+        bool used = false;              // whether the node has been used in the maze
 
         node()
         {
