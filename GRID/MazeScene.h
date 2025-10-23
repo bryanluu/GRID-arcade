@@ -198,14 +198,13 @@ private:
 
     // Maze State
     Color333 grid[MATRIX_HEIGHT][MATRIX_WIDTH]; // color of each pixel in matrix
-    Maze::graph adj_g;                          // adjacency graph of maze
     Maze::graph maze_g;                         // graph of maze
     Maze::node *startNode = nullptr;
     Maze::node *endNode = nullptr;
 
     // Generation
 
-    void buildAdjacencyGraph();
+    void buildAdjacencyGraph(Maze::graph &adj_g);
     void setMazeEndpoints();
     void buildMaze();
 

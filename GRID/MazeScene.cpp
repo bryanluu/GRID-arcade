@@ -100,7 +100,7 @@ namespace std
  * @brief Builds the adjacency graph for the maze
  *
  */
-void MazeScene::buildAdjacencyGraph()
+void MazeScene::buildAdjacencyGraph(Maze::graph &adj_g)
 {
     for (byte r = 0; r < Maze::kMazeHeight; r++)
     {
@@ -137,12 +137,19 @@ void MazeScene::setMazeEndpoints()
  */
 void MazeScene::buildMaze()
 {
-    // build the adjacency graph for the edge information
-    buildAdjacencyGraph();
+    // 1) Local adjacency graph (auto-freed on return)
+    Maze::graph adj_g;
+    buildAdjacencyGraph(adj_g);
 
-    // initialize the vertices in the maze
+    // 2) Init final maze graph nodes
     for (Maze::coord p = 0; p < Maze::graph::size; p++)
+    {
         maze_g.vertices[p].pos = p;
+        maze_g.vertices[p].used = false;
+        maze_g.vertices[p].value = INT16_MAX;
+        for (uint8_t i = 0; i < Maze::kMaxNeighbors; ++i)
+            maze_g.vertices[p].weights[i] = -1;
+    }
 
     setMazeEndpoints();
 
