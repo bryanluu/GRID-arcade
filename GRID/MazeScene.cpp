@@ -109,7 +109,7 @@ namespace std
  * @brief Builds the adjacency graph for the maze
  *
  */
-void MazeScene::buildAdjacencyGraph()
+void MazeScene::buildAdjacencyGraph(Maze::graph &adj_g)
 {
     for (byte r = 0; r < Maze::kMazeHeight; r++)
     {
@@ -201,21 +201,68 @@ void MazeScene::setMazeEndpoints()
     playerY = Maze::toMatrix(y);
 }
 
+// Custom fixed-capacity heap to save memory
+struct NodePtrHeap
+{
+    Maze::node *a[Maze::graph::size];
+    uint16_t n = 0;
+    static inline bool less(Maze::node *u, Maze::node *v) { return u->value > v->value; } // min by value
+    void push(Maze::node *x)
+    {
+        a[n] = x;
+        uint16_t i = n++;
+        while (i)
+        {
+            uint16_t p = (i - 1) / 2;
+            if (!less(a[p], a[i]))
+                break;
+            auto t = a[p];
+            a[p] = a[i];
+            a[i] = t;
+            i = p;
+        }
+    }
+    Maze::node *top() const { return a[0]; }
+    void pop()
+    {
+        if (!n)
+            return;
+        a[0] = a[--n];
+        uint16_t i = 0;
+        for (;;)
+        {
+            uint16_t l = 2 * i + 1, r = l + 1, m = i;
+            if (l < n && less(a[m], a[l]))
+                m = l;
+            if (r < n && less(a[m], a[r]))
+                m = r;
+            if (m == i)
+                break;
+            auto t = a[i];
+            a[i] = a[m];
+            a[m] = t;
+            i = m;
+        }
+    }
+    bool empty() const { return n == 0; }
+};
+
 /**
  * @brief Builds the maze graph using Prim's algorithm
  *
  */
 void MazeScene::buildMaze()
 {
-    // build the adjacency graph for the edge information
-    buildAdjacencyGraph();
+    // 1) Local adjacency graph (auto-freed on return)
+    Maze::graph adj_g;
+    buildAdjacencyGraph(adj_g);
 
-    // initialize the vertices in the maze
+    // 2) Init final maze graph nodes
     for (Maze::coord p = 0; p < Maze::graph::size; p++)
         maze_g.vertices[p].pos = p;
 
     // initialize the queue of vertices not in the maze
-    std::priority_queue<Maze::node *, Maze::graph::vertex_list, decltype(&Maze::node::compare)> pq(&Maze::node::compare);
+    NodePtrHeap pq;
     pq.push(&adj_g.vertices[0]); // build from first node
 
     while (!pq.empty()) // until the maze has all vertices
@@ -257,7 +304,7 @@ void MazeScene::colorStart()
     Maze::maze_t x, y;
     x = Maze::getX(startNode->pos);
     y = Maze::getY(startNode->pos);
-    grid[Maze::toMatrix(y)][Maze::toMatrix(x)] = MazeScene::kStartColor;
+    grid[Maze::toMatrix(y)][Maze::toMatrix(x)] = PaletteIndex::Start;
 }
 
 /**
@@ -270,7 +317,7 @@ void MazeScene::colorFinish()
     byte x, y;
     x = Maze::getX(endNode->pos);
     y = Maze::getY(endNode->pos);
-    grid[Maze::toMatrix(y)][Maze::toMatrix(x)] = MazeScene::kFinishColor;
+    grid[Maze::toMatrix(y)][Maze::toMatrix(x)] = PaletteIndex::Finish;
 }
 
 /**
@@ -283,7 +330,7 @@ void MazeScene::colorMaze()
     {
         for (Maze::matrix_t c = 0; c < MATRIX_WIDTH; c++)
         {
-            grid[r][c] = MazeScene::kWallColor; // color wall
+            grid[r][c] = PaletteIndex::Wall; // color wall
         }
     }
     Maze::maze_t x, y;
@@ -293,7 +340,7 @@ void MazeScene::colorMaze()
         y = Maze::getY(p);
         Maze::matrix_t r = Maze::toMatrix(y);
         Maze::matrix_t c = Maze::toMatrix(x);
-        grid[r][c] = Colors::Black; // color the vertex node
+        grid[r][c] = PaletteIndex::None; // color the vertex node
 
         // color the edge nodes
         Maze::maze_t x2, y2;
@@ -308,7 +355,7 @@ void MazeScene::colorMaze()
             y2 = Maze::getY(u->pos);
             r = Maze::interpolate(y, y2);
             c = Maze::interpolate(x, x2);
-            grid[r][c] = Colors::Black;
+            grid[r][c] = PaletteIndex::None;
         }
     }
 }
@@ -400,7 +447,7 @@ void MazeScene::movePlayer(AppContext &ctx)
     }
     x = Helpers::clamp(playerX + dx, 1, MATRIX_WIDTH - 2);
     y = Helpers::clamp(playerY + dy, 1, MATRIX_HEIGHT - 2);
-    if (grid[y][x] != MazeScene::kWallColor)
+    if (grid[y][x] != PaletteIndex::Wall)
     {
         playerX = x;
         playerY = y;
@@ -413,7 +460,7 @@ void MazeScene::movePlayer(AppContext &ctx)
  */
 void MazeScene::colorPlayer()
 {
-    grid[playerY][playerX] = MazeScene::kPlayerColor;
+    grid[playerY][playerX] = PaletteIndex::Player;
     // brightenSurroundings();
 }
 
@@ -444,7 +491,7 @@ void MazeScene::displayMaze(AppContext &ctx)
     {
         for (Maze::maze_t c = 0; c < Maze::toMatrix(Maze::kMazeWidth); c++)
         {
-            color = grid[r][c];
+            color = palette(grid[r][c]);
             rowOffset = (MATRIX_HEIGHT - Maze::toMatrix(Maze::kMazeHeight)) / 2;
             colOffset = (MATRIX_WIDTH - Maze::toMatrix(Maze::kMazeWidth)) / 2;
             ctx.gfx.drawPixel(c + colOffset, r + rowOffset, color);

@@ -30,11 +30,11 @@ struct Maze
     class node
     {
     public:
-        coord pos = None;           // the position in the maze
-        int weights[kMaxNeighbors]; // neighboring weights of edges of this node
-        int value = INT_MAX;        // integer value to keep track of (cheapestEdgeWeight or distance)
-        coord id = None;            // id of edge or node to keep track of
-        bool used = false;          // whether the node has been used in the maze
+        coord pos = None;               // the position in the maze
+        int16_t weights[kMaxNeighbors]; // neighboring weights of edges of this node
+        int16_t value = INT16_MAX;      // integer value to keep track of (cheapestEdgeWeight or distance)
+        coord id = None;                // id of edge or node to keep track of
+        bool used = false;              // whether the node has been used in the maze
 
         node()
         {
@@ -198,16 +198,14 @@ private:
     void renderHints(AppContext &ctx);
 
     // Maze State
-    Color333 grid[MATRIX_HEIGHT][MATRIX_WIDTH]; // color of each pixel in matrix
-    Maze::graph adj_g;                          // adjacency graph of maze
-    Maze::graph maze_g;                         // graph of maze
+    Maze::graph maze_g; // graph of maze
     Maze::node *startNode = nullptr;
     Maze::node *endNode = nullptr;
     Maze::matrix_t playerX, playerY;
 
     // Generation
 
-    void buildAdjacencyGraph();
+    void buildAdjacencyGraph(Maze::graph &adj_g);
     Maze::coord getFurthestIndex(Maze::coord src);
     void setMazeEndpoints();
     void buildMaze();
@@ -224,6 +222,35 @@ private:
     void movePlayer(AppContext &ctx);
 
     // Drawing
+
+    using palette_t = uint8_t;
+    enum PaletteIndex : palette_t
+    {
+        None,
+        Wall,
+        Start,
+        Finish,
+        Player
+    };
+    PaletteIndex grid[MATRIX_HEIGHT][MATRIX_WIDTH]; // color of each pixel in matrix
+    static Color333 palette(PaletteIndex i)
+    {
+        switch (i)
+        {
+        case None:
+            return Colors::Black;
+        case Wall:
+            return kWallColor;
+        case Start:
+            return kStartColor;
+        case Finish:
+            return kFinishColor;
+        case Player:
+            return kPlayerColor;
+        default:
+            return Colors::Black;
+        }
+    }
 
     void colorMaze();
     void colorStart();
