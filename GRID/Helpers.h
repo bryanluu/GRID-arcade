@@ -114,6 +114,13 @@ namespace Helpers
         *p = '\0';
         return out;
     }
+
+    extern "C" char *sbrk(int incr);
+    static inline int freeRam()
+    {
+        char stack_dummy;
+        return &stack_dummy - sbrk(0);
+    }
 }
 
 #endif // GRID_EMULATION
