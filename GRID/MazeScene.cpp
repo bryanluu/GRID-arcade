@@ -62,6 +62,7 @@ void MazeScene::setup(AppContext &ctx)
 
     buildMaze();
     setMazeEndpoints();
+    startTime = ctx.time.nowMs();
 }
 
 void MazeScene::loop(AppContext &ctx)
@@ -76,6 +77,7 @@ void MazeScene::loop(AppContext &ctx)
     colorFinish();
     colorPlayer();
     displayMaze(ctx);
+    displayTimer(ctx);
 }
 
 // ########## MAZE CODE ##########
@@ -461,7 +463,7 @@ void MazeScene::movePlayer(AppContext &ctx)
 void MazeScene::colorPlayer()
 {
     grid[playerY][playerX] = PaletteIndex::Player;
-    // brightenSurroundings();
+    // brightenSurroundings(); // TODO implement
 }
 
 /**
@@ -497,4 +499,51 @@ void MazeScene::displayMaze(AppContext &ctx)
             ctx.gfx.drawPixel(c + colOffset, r + rowOffset, color);
         }
     }
+}
+
+/**
+ * @brief Display the time left in the game
+ *
+ */
+void MazeScene::displayTimer(AppContext &ctx)
+{
+    using TimerCount_t = uint8_t;
+    TimerCount_t pixelsPassed = ((kTimerPixels) * (ctx.time.nowMs() - startTime)) / kGameDefaultDuration;
+    Maze::matrix_t r, c;
+
+    if (pixelsPassed >= kTimerPixels)
+    {
+        endGame(ctx);
+    }
+
+    // draw time track
+    for (TimerCount_t i = 1; i <= kTimerPixels; i++)
+    {
+        if (i < MATRIX_HEIGHT)
+        {
+            r = i;
+            c = MATRIX_WIDTH;
+        }
+        else
+        {
+            r = MATRIX_HEIGHT;
+            c = MATRIX_WIDTH - (i - MATRIX_HEIGHT);
+        }
+
+        if (i <= pixelsPassed)
+            grid[r - 1][c - 1] = PaletteIndex::None;
+        else
+            grid[r - 1][c - 1] = PaletteIndex::Time;
+
+        ctx.gfx.drawPixel(c - 1, r - 1, palette(grid[r - 1][c - 1]));
+    }
+}
+
+/**
+ * @brief End the game
+ *
+ */
+void MazeScene::endGame(AppContext &ctx)
+{
+    // ctx.bus->toMenu(); // TODO fix/implement
 }

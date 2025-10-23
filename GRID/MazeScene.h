@@ -221,6 +221,12 @@ private:
     Maze::Direction sampleStrobedDirection(AppContext &ctx, Maze::Direction &ioDir, millis_t &ioLastTimeMs);
     void movePlayer(AppContext &ctx);
 
+    // Timer
+
+    static constexpr uint8_t kTimerPixels = 63;                    // how many pixels used for timer
+    static constexpr millis_t kGameDefaultDuration = (180 * 1000); // start with 3 mins to finish the game
+    void displayTimer(AppContext &ctx);
+
     // Drawing
 
     using palette_t = uint8_t;
@@ -230,7 +236,8 @@ private:
         Wall,
         Start,
         Finish,
-        Player
+        Player,
+        Time
     };
     PaletteIndex grid[MATRIX_HEIGHT][MATRIX_WIDTH]; // color of each pixel in matrix
     static Color333 palette(PaletteIndex i)
@@ -247,6 +254,8 @@ private:
             return kFinishColor;
         case Player:
             return kPlayerColor;
+        case Time:
+            return kTimeColor;
         default:
             return Colors::Black;
         }
@@ -258,6 +267,7 @@ private:
     void colorPlayer();
     bool isBorder(Maze::matrix_t r, Maze::matrix_t col);
     void displayMaze(AppContext &ctx);
+    void endGame(AppContext &ctx);
 
 public:
     void setup(AppContext &ctx) override;
