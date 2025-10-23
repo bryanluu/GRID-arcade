@@ -69,6 +69,7 @@ void MazeScene::loop(AppContext &ctx)
     colorMaze();
     colorStart();
     colorFinish();
+    colorPlayer();
     displayMaze(ctx);
 }
 
@@ -189,6 +190,10 @@ void MazeScene::setMazeEndpoints()
     endNode = &maze_g.vertices[getFurthestIndex(0)];
     // choose furthest from finish for start
     startNode = &maze_g.vertices[getFurthestIndex(endNode->pos)];
+    Maze::maze_t x = Maze::getX(startNode->pos);
+    Maze::maze_t y = Maze::getY(startNode->pos);
+    playerX = Maze::toMatrix(x);
+    playerY = Maze::toMatrix(y);
 }
 
 /**
@@ -301,6 +306,16 @@ void MazeScene::colorMaze()
             grid[r][c] = Colors::Black;
         }
     }
+}
+
+/**
+ * @brief Color the player position
+ *
+ */
+void MazeScene::colorPlayer()
+{
+    grid[playerY][playerX] = MazeScene::kPlayerColor;
+    // brightenSurroundings();
 }
 
 /**

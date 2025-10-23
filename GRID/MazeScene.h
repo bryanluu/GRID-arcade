@@ -80,7 +80,7 @@ struct Maze
          * @param dir
          * @return coord - the position in the relative direction
          */
-        coord pos_relative(char dir)
+        coord pos_relative(direction_t dir)
         {
             int8_t dx, dy;
             dx = 0;
@@ -203,6 +203,7 @@ private:
     Maze::graph maze_g;                         // graph of maze
     Maze::node *startNode = nullptr;
     Maze::node *endNode = nullptr;
+    Maze::matrix_t playerX, playerY;
 
     // Generation
 
@@ -213,9 +214,10 @@ private:
 
     // Drawing
 
+    void colorMaze();
     void colorStart();
     void colorFinish();
-    void colorMaze();
+    void colorPlayer();
     bool isBorder(Maze::matrix_t r, Maze::matrix_t col);
     void displayMaze(AppContext &ctx);
 
