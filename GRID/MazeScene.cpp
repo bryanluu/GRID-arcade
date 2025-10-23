@@ -61,11 +61,14 @@ void MazeScene::setup(AppContext &ctx)
     // ctx.gfx.setImmediate(true);
 
     buildMaze();
+    setMazeEndpoints();
 }
 
 void MazeScene::loop(AppContext &ctx)
 {
     colorMaze();
+    colorStart();
+    colorFinish();
     displayMaze(ctx);
 }
 
@@ -121,14 +124,71 @@ void MazeScene::buildAdjacencyGraph()
 }
 
 /**
+ * @brief Apply BFS to find furthest node from src
+ */
+Maze::coord MazeScene::getFurthestIndex(Maze::coord src)
+{
+    bool visited[maze_g.size];
+    int8_t distance[maze_g.size];
+    for (Maze::coord i = 0; i < maze_g.size; ++i)
+    {
+        visited[i] = false; // mark all nodes as visited
+        distance[i] = -1;   // mark all distances as -1
+    }
+    std::queue<Maze::coord> queue{};
+    queue.push(src);
+    visited[src] = true; // mark first node as visited
+    distance[src] = 0;   // distance from src-src is 0
+
+    Maze::coord v;
+    while (!queue.empty())
+    {
+        v = queue.front();
+        queue.pop();
+        Maze::node &curr = maze_g.vertices[v];
+
+        for (Maze::direction_t i = 0; i < Maze::kMaxNeighbors; i++)
+        {
+            Maze::coord n = curr.pos_relative(i);
+            if (n == Maze::coord(Maze::Direction::None))
+                continue; // skip, the direction is invalid because neighbor is on border
+
+            if (curr.weights[i] == Maze::Direction::None)
+                continue; // there's no neighbor in this direction so skip
+            if (visited[n])
+                continue; // if we visited this neighbor node already, skip
+
+            visited[n] = true;
+            distance[n] = distance[v] + 1;
+            queue.push(n);
+        }
+    }
+
+    int8_t maxDistance = 0;
+    Maze::coord furthestIdx = src;
+    for (Maze::coord i = 0; i < maze_g.size; ++i)
+    {
+        if (distance[i] > maxDistance)
+        {
+            maxDistance = distance[i];
+            furthestIdx = i;
+        }
+    }
+
+    return furthestIdx;
+}
+
+/**
  * @brief Set the end points of the maze object
  *
+ * Uses BFS to find the longest path in the maze
  */
 void MazeScene::setMazeEndpoints()
 {
-    // set endpoints
-    startNode = &maze_g.vertices[0];
-    endNode = &maze_g.vertices[Maze::graph::size - 1];
+    // choose furthest from top left corner for finish
+    endNode = &maze_g.vertices[getFurthestIndex(0)];
+    // choose furthest from finish for start
+    startNode = &maze_g.vertices[getFurthestIndex(endNode->pos)];
 }
 
 /**
@@ -144,19 +204,17 @@ void MazeScene::buildMaze()
     for (Maze::coord p = 0; p < Maze::graph::size; p++)
         maze_g.vertices[p].pos = p;
 
-    setMazeEndpoints();
-
     // initialize the queue of vertices not in the maze
     std::priority_queue<Maze::node *, Maze::graph::vertex_list, decltype(&Maze::node::compare)> pq(&Maze::node::compare);
-    pq.push(&adj_g.vertices[startNode->pos]); // build from start node
+    pq.push(&adj_g.vertices[0]); // build from first node
 
     while (!pq.empty()) // until the maze has all vertices
     {
         Maze::node *v = pq.top(); // take the vertex with the cheapest edge
         pq.pop();
 
-        v->used = true;                     // mark v as a used vertex in the maze
-        if (v->id != Maze::Direction::None) // if v touches the maze, add cheapest neighboring edge to maze
+        v->used = true;                                  // mark v as a used vertex in the maze
+        if (v->id != Maze::coord(Maze::Direction::None)) // if v touches the maze, add cheapest neighboring edge to maze
             maze_g.insertEdge(v->pos, v->pos_relative(v->id), v->value);
 
         // loop through outgoing edges of vertex
@@ -177,6 +235,32 @@ void MazeScene::buildMaze()
             }
         }
     }
+}
+
+/**
+ * @brief Colors the start of the maze
+ *
+ */
+void MazeScene::colorStart()
+{
+    // Color special nodes
+    Maze::maze_t x, y;
+    x = Maze::getX(startNode->pos);
+    y = Maze::getY(startNode->pos);
+    grid[Maze::toMatrix(y)][Maze::toMatrix(x)] = MazeScene::kStartColor;
+}
+
+/**
+ * @brief Colors the finish of the maze
+ *
+ */
+void MazeScene::colorFinish()
+{
+    // Color special nodes
+    byte x, y;
+    x = Maze::getX(endNode->pos);
+    y = Maze::getY(endNode->pos);
+    grid[Maze::toMatrix(y)][Maze::toMatrix(x)] = MazeScene::kFinishColor;
 }
 
 /**

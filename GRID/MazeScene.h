@@ -13,9 +13,10 @@ struct Maze
     static constexpr uint8_t kMaxNeighbors = 4;
     static constexpr uint8_t kMaxEdges = (kMazeWidth * kMazeHeight) - 1;
 
-    using coord = uint8_t;    // used for compressed position
-    using matrix_t = uint8_t; // positions in Matrix-space
-    using maze_t = uint8_t;   // positiongs in Maze-space
+    using coord = uint8_t;       // used for compressed position
+    using matrix_t = uint8_t;    // positions in Matrix-space
+    using maze_t = uint8_t;      // positions in Maze-space
+    using direction_t = uint8_t; // relative directions of nodes
 
     enum Direction : int8_t
     {
@@ -206,11 +207,14 @@ private:
     // Generation
 
     void buildAdjacencyGraph();
+    Maze::coord getFurthestIndex(Maze::coord src);
     void setMazeEndpoints();
     void buildMaze();
 
     // Drawing
 
+    void colorStart();
+    void colorFinish();
     void colorMaze();
     bool isBorder(Maze::matrix_t r, Maze::matrix_t col);
     void displayMaze(AppContext &ctx);
