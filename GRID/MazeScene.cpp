@@ -131,6 +131,52 @@ void MazeScene::setMazeEndpoints()
     endNode = &maze_g.vertices[Maze::graph::size - 1];
 }
 
+// Custom fixed-capacity heap to save memory
+struct NodePtrHeap
+{
+    Maze::node *a[Maze::graph::size];
+    uint16_t n = 0;
+    static inline bool less(Maze::node *u, Maze::node *v) { return u->value > v->value; } // min by value
+    void push(Maze::node *x)
+    {
+        a[n] = x;
+        uint16_t i = n++;
+        while (i)
+        {
+            uint16_t p = (i - 1) / 2;
+            if (!less(a[p], a[i]))
+                break;
+            auto t = a[p];
+            a[p] = a[i];
+            a[i] = t;
+            i = p;
+        }
+    }
+    Maze::node *top() const { return a[0]; }
+    void pop()
+    {
+        if (!n)
+            return;
+        a[0] = a[--n];
+        uint16_t i = 0;
+        for (;;)
+        {
+            uint16_t l = 2 * i + 1, r = l + 1, m = i;
+            if (l < n && less(a[m], a[l]))
+                m = l;
+            if (r < n && less(a[m], a[r]))
+                m = r;
+            if (m == i)
+                break;
+            auto t = a[i];
+            a[i] = a[m];
+            a[m] = t;
+            i = m;
+        }
+    }
+    bool empty() const { return n == 0; }
+};
+
 /**
  * @brief Builds the maze graph using Prim's algorithm
  *
@@ -154,7 +200,7 @@ void MazeScene::buildMaze()
     setMazeEndpoints();
 
     // initialize the queue of vertices not in the maze
-    std::priority_queue<Maze::node *, Maze::graph::vertex_list, decltype(&Maze::node::compare)> pq(&Maze::node::compare);
+    NodePtrHeap pq;
     pq.push(&adj_g.vertices[startNode->pos]); // build from start node
 
     while (!pq.empty()) // until the maze has all vertices
