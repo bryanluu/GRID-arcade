@@ -17,9 +17,10 @@ struct Scene
   {
     Start,
     Menu,
-    Example,
     Boids,
     Calibration,
+    Maze,
+    Test
   };
 
   virtual ~Scene() = default;
