@@ -13,7 +13,8 @@ const char *MazeScene::textFood = "Food";
 const char *MazeScene::textTime = "Time";
 
 const Color333 MazeScene::kPlayerColor = Colors::Muted::White;
-const Color333 MazeScene::kWallColor = Colors::Muted::Red;
+const Color333 MazeScene::kSeenWallColor = Colors::Muted::Red;
+const Color333 MazeScene::kNearWallColor = Color333{4, 0, 0};
 const Color333 MazeScene::kStartColor = Colors::Muted::Blue;
 const Color333 MazeScene::kFinishColor = Colors::Muted::Green;
 const Color333 MazeScene::kSolutionColor = Colors::Muted::Yellow;
@@ -31,7 +32,7 @@ void MazeScene::renderHints(AppContext &ctx, int8_t textY)
     ctx.gfx.setCursor(0, textY);
     ctx.gfx.setTextColor(kPlayerColor);
     ctx.gfx.println(textPlayer);
-    ctx.gfx.setTextColor(kWallColor);
+    ctx.gfx.setTextColor(kSeenWallColor);
     ctx.gfx.println(textWall);
     ctx.gfx.setTextColor(kStartColor);
     ctx.gfx.println(textStart);
@@ -115,6 +116,7 @@ void MazeScene::loop(AppContext &ctx)
         colorFinish();
         colorSnacks();
         colorPlayer();
+        brightenSurroundings();
         displayMaze(ctx);
         displayTimer(ctx);
         return;
@@ -416,7 +418,7 @@ void MazeScene::colorMaze()
     {
         for (Maze::matrix_t c = 0; c < MATRIX_WIDTH; c++)
         {
-            grid[r][c] = PaletteIndex::Wall; // color wall
+            grid[r][c] = PaletteIndex::SeenWall; // color wall
         }
     }
     Maze::maze_t x, y;
@@ -549,7 +551,7 @@ void MazeScene::movePlayer(AppContext &ctx)
     }
     x = Helpers::clamp(playerX + dx, 1, MATRIX_WIDTH - 2);
     y = Helpers::clamp(playerY + dy, 1, MATRIX_HEIGHT - 2);
-    if (grid[y][x] != PaletteIndex::Wall)
+    if (grid[y][x] != PaletteIndex::NearWall)
     {
         playerX = x;
         playerY = y;
@@ -589,13 +591,54 @@ void MazeScene::updateSnacks(millis_t nowMs)
 }
 
 /**
+ * @brief Check whether given pixel is on maze
+ *
+ * @param x horizontal coord
+ * @param y vertical coord
+ * @return true if on maze
+ * @return false otherwise
+ */
+bool MazeScene::isOnMaze(byte x, byte y)
+{
+    return (x >= 0) && (x < Maze::toMatrix(Maze::kMazeWidth)) && (y >= 0) && (y < Maze::toMatrix(Maze::kMazeHeight));
+}
+
+/**
+ * @brief Brighten pixels around player
+ *
+ */
+void MazeScene::brightenSurroundings()
+{
+    for (short x = playerX - kVisibility; x <= playerX + kVisibility; ++x)
+    {
+        for (short y = playerY - kVisibility; y <= playerY + kVisibility; ++y)
+        {
+            if (isOnMaze(x, y) && isNearPlayer(x, y))
+            {
+                PaletteIndex &color = grid[y][x];
+                if (color == PaletteIndex::SeenWall)
+                    color = PaletteIndex::NearWall;
+                // else if (color == SEEN_START_COLOR)
+                //     color = NEAR_START_COLOR;
+                // else if (color == SEEN_FINISH_COLOR)
+                //     color = NEAR_FINISH_COLOR;
+                // else if (color == SEEN_SOLUTION_COLOR)
+                //     color = SEEN_SOLUTION_COLOR;
+                // grid[y][x] = color; // update color
+                // TODO implement
+                // seen[y][x] = true;  // mark pixel as seen
+            }
+        }
+    }
+}
+
+/**
  * @brief Color the player position
  *
  */
 void MazeScene::colorPlayer()
 {
     grid[playerY][playerX] = PaletteIndex::Player;
-    // brightenSurroundings(); // TODO implement
 }
 
 /**
@@ -603,12 +646,25 @@ void MazeScene::colorPlayer()
  *
  * @param r
  * @param c
- * @return true
- * @return false
+ * @return true if pixel is on the edge of the maze
+ * @return false otherwise
  */
 bool MazeScene::isBorder(Maze::matrix_t r, Maze::matrix_t c)
 {
     return r == 0 || r == Maze::toMatrix(Maze::kMazeHeight) - 1 || c == 0 || c == Maze::toMatrix(Maze::kMazeWidth) - 1;
+}
+
+/**
+ * @brief Check whether given pixel is near player
+ *
+ * @param x horizontal coord
+ * @param y vertical coord
+ * @return true if close to player
+ * @return false otherwise
+ */
+bool MazeScene::isNearPlayer(byte x, byte y)
+{
+    return (abs(x - playerX) <= kVisibility) && (abs(y - playerY) <= kVisibility);
 }
 
 /**
@@ -714,5 +770,5 @@ void MazeScene::showScore(AppContext &ctx, score_t score)
  */
 void MazeScene::endGame(AppContext &ctx)
 {
-    ctx.bus->toMenu(); // TODO implement
+    ctx.bus->toMenu();
 }

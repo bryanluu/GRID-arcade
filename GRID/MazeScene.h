@@ -187,7 +187,8 @@ private:
     // Color Config
 
     static const Color333 kPlayerColor;
-    static const Color333 kWallColor;
+    static const Color333 kSeenWallColor;
+    static const Color333 kNearWallColor;
     static const Color333 kStartColor;
     static const Color333 kFinishColor;
     static const Color333 kSolutionColor;
@@ -238,6 +239,10 @@ private:
     Maze::Direction sampleStrobedDirection(AppContext &ctx, Maze::Direction &ioDir, millis_t &ioLastTimeMs);
     void movePlayer(AppContext &ctx);
 
+    // Visibility
+
+    static constexpr Maze::matrix_t kVisibility = 4; // "Medium" visibility from old game
+
     // Snacks
 
     void eatSnack(Maze::coords::iterator pos, millis_t currentTime);
@@ -254,7 +259,8 @@ private:
     enum PaletteIndex : palette_t
     {
         None,
-        Wall,
+        SeenWall,
+        NearWall,
         Start,
         Finish,
         Player,
@@ -268,8 +274,10 @@ private:
         {
         case None:
             return Colors::Black;
-        case Wall:
-            return kWallColor;
+        case SeenWall:
+            return kSeenWallColor;
+        case NearWall:
+            return kNearWallColor;
         case Start:
             return kStartColor;
         case Finish:
@@ -291,6 +299,9 @@ private:
     void colorPlayer();
     void colorSnacks();
     bool isBorder(Maze::matrix_t r, Maze::matrix_t col);
+    bool isNearPlayer(Maze::matrix_t x, Maze::matrix_t y);
+    bool isOnMaze(Maze::matrix_t x, Maze::matrix_t y);
+    void brightenSurroundings();
     void displayMaze(AppContext &ctx);
     void displayTimer(AppContext &ctx);
     bool playerHasFinished();
