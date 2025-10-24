@@ -108,6 +108,8 @@ void MazeScene::loop(AppContext &ctx)
         if (inputDir != Maze::Direction::None)
             movePlayer(ctx);
 
+        updateSnacks(now);
+
         colorMaze();
         colorStart();
         colorFinish();
@@ -551,6 +553,38 @@ void MazeScene::movePlayer(AppContext &ctx)
     {
         playerX = x;
         playerY = y;
+    }
+}
+
+/**
+ * @brief Eat the snack at the given position
+ *
+ * @param pos the position of the snack in the snacks
+ */
+void MazeScene::eatSnack(Maze::coords::iterator pos, millis_t currentTime)
+{
+    snacks.erase(pos);
+    score += kSnackPoints;
+    startTime = std::min(startTime + kSnackTimeBoost, currentTime);
+}
+
+/**
+ * @brief Check if the player has eaten a snack, updating the score+snacks accordingly
+ *
+ * @param currentTime the current time according to AppContext nowMs
+ */
+void MazeScene::updateSnacks(millis_t nowMs)
+{
+    for (auto it = snacks.begin(); it != snacks.end(); it++)
+    {
+        Maze::coord snack = *it;
+        Maze::matrix_t x = Maze::toMatrix(Maze::getX(snack));
+        Maze::matrix_t y = Maze::toMatrix(Maze::getY(snack));
+        if (playerX == x && playerY == y)
+        {
+            eatSnack(it, nowMs);
+            break;
+        }
     }
 }
 

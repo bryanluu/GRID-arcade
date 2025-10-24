@@ -238,6 +238,11 @@ private:
     Maze::Direction sampleStrobedDirection(AppContext &ctx, Maze::Direction &ioDir, millis_t &ioLastTimeMs);
     void movePlayer(AppContext &ctx);
 
+    // Snacks
+
+    void eatSnack(Maze::coords::iterator pos, millis_t currentTime);
+    void updateSnacks(millis_t currentTime);
+
     // Timer
 
     static constexpr uint8_t kTimerPixels = 63;                    // how many pixels used for timer
