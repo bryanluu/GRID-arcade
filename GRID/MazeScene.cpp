@@ -111,6 +111,7 @@ void MazeScene::loop(AppContext &ctx)
         colorMaze();
         colorStart();
         colorFinish();
+        colorSnacks();
         colorPlayer();
         displayMaze(ctx);
         displayTimer(ctx);
@@ -254,6 +255,26 @@ void MazeScene::setMazeEndpoints()
     playerY = Maze::toMatrix(y);
 }
 
+/**
+ * @brief Place snacks on available nodes
+ *
+ */
+void MazeScene::placeSnacks()
+{
+    Maze::coord idx;
+    Maze::node *v;
+    for (auto i = 0; i < kNumSnacks; i++)
+    {
+        do
+        {
+            idx = Helpers::random(maze_g.size);
+            v = &maze_g.vertices[idx];
+        } while (v == startNode || v == endNode || v->used);
+        v->used = true;
+        snacks.push_back(idx);
+    }
+}
+
 // Custom fixed-capacity heap to save memory
 struct NodePtrHeap
 {
@@ -306,13 +327,23 @@ struct NodePtrHeap
  */
 void MazeScene::buildMaze()
 {
-    // 1) Local adjacency graph (auto-freed on return)
+    // build local adjacency graph for edge information
     Maze::graph adj_g;
     buildAdjacencyGraph(adj_g);
 
-    // 2) Init final maze graph nodes
+    // spawn snacks on random vertices
+    placeSnacks();
+
+    // initialize final maze graph nodes
     for (Maze::coord p = 0; p < Maze::graph::size; p++)
-        maze_g.vertices[p].pos = p;
+    {
+        Maze::node &v = maze_g.vertices[p];
+        v.pos = p;
+        v.used = false;
+        v.value = INT16_MAX;
+        for (uint8_t i = 0; i < Maze::kMaxNeighbors; ++i)
+            maze_g.vertices[p].weights[i] = -1;
+    }
 
     // initialize the queue of vertices not in the maze
     NodePtrHeap pq;
@@ -410,6 +441,22 @@ void MazeScene::colorMaze()
             c = Maze::interpolate(x, x2);
             grid[r][c] = PaletteIndex::None;
         }
+    }
+}
+
+/**
+ * @brief Colors the snacks in the maze
+ *
+ */
+void MazeScene::colorSnacks()
+{
+    Maze::coord x, y, p;
+    for (auto it = snacks.begin(); it != snacks.end(); it++)
+    {
+        p = *it;
+        x = Maze::getX(p);
+        y = Maze::getY(p);
+        grid[Maze::toMatrix(y)][Maze::toMatrix(x)] = PaletteIndex::Food;
     }
 }
 

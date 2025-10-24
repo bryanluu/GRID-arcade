@@ -14,10 +14,11 @@ struct Maze
     static constexpr uint8_t kMaxNeighbors = 4;
     static constexpr uint8_t kMaxEdges = (kMazeWidth * kMazeHeight) - 1;
 
-    using coord = uint8_t;       // used for compressed position
-    using matrix_t = uint8_t;    // positions in Matrix-space
-    using maze_t = uint8_t;      // positions in Maze-space
-    using direction_t = uint8_t; // relative directions of nodes
+    using coord = uint8_t;                   // used for compressed position
+    using coords = std::vector<Maze::coord>; // list of compressed positions
+    using matrix_t = uint8_t;                // positions in Matrix-space
+    using maze_t = uint8_t;                  // positions in Maze-space
+    using direction_t = uint8_t;             // relative directions of nodes
 
     enum Direction : int8_t
     {
@@ -137,8 +138,6 @@ struct Maze
     class graph
     {
     public:
-        using vertex_list = std::vector<node *>;
-
         static constexpr uint8_t size = kMazeWidth * kMazeHeight; // number of vertices
         node vertices[size];                                      // array of graph vertices
 
@@ -219,12 +218,15 @@ private:
     Maze::node *endNode = nullptr;
     Maze::matrix_t playerX, playerY;
 
+    Maze::coords snacks;
+
     // Generation
 
     void buildAdjacencyGraph(Maze::graph &adj_g);
     Maze::coord getFurthestIndex(Maze::coord src);
-    void setMazeEndpoints();
     void buildMaze();
+    void setMazeEndpoints();
+    void placeSnacks();
 
     // Movement
 
@@ -240,7 +242,6 @@ private:
 
     static constexpr uint8_t kTimerPixels = 63;                    // how many pixels used for timer
     static constexpr millis_t kGameDefaultDuration = (180 * 1000); // start with 3 mins to finish the game
-    void displayTimer(AppContext &ctx);
 
     // Drawing
 
@@ -252,7 +253,8 @@ private:
         Start,
         Finish,
         Player,
-        Time
+        Time,
+        Food
     };
     PaletteIndex grid[MATRIX_HEIGHT][MATRIX_WIDTH]; // color of each pixel in matrix
     static Color333 palette(PaletteIndex i)
@@ -271,6 +273,8 @@ private:
             return kPlayerColor;
         case Time:
             return kTimeColor;
+        case Food:
+            return kFoodColor;
         default:
             return Colors::Black;
         }
@@ -280,8 +284,10 @@ private:
     void colorStart();
     void colorFinish();
     void colorPlayer();
+    void colorSnacks();
     bool isBorder(Maze::matrix_t r, Maze::matrix_t col);
     void displayMaze(AppContext &ctx);
+    void displayTimer(AppContext &ctx);
     bool playerHasFinished();
     void endGame(AppContext &ctx);
 
@@ -293,6 +299,9 @@ private:
     static constexpr score_t kMaxTimeScore = 50; // max score bonus from time left
     // in ms, the time after game start for player to achieve MAX_TIME_SCORE
     static constexpr millis_t kMaxTimeBuffer = (90 * 1000);
+    static constexpr uint8_t kNumSnacks = 15;              // how many snacks to spawn
+    static constexpr score_t kSnackPoints = 2;             // how many points does a snack give
+    static constexpr millis_t kSnackTimeBoost = 1000;      // how much time does a snack give
     static constexpr millis_t kShowScoreDuration = (5000); // ms to show final score
     void computeFinalScore(score_t &score, millis_t nowMs);
     ScrollText banner;
