@@ -26,6 +26,15 @@ struct Color888
     Intensity8 r, g, b; // RGB are each 0..255
 };
 
+// Hue helper: degrees → internal hue units
+// Internally we use 6 segments (R→Y→G→C→B→M) of 256 steps each = 1536 total.
+constexpr uint16_t HUE_SEGMENTS = 6;                            // number of primary ramps
+constexpr uint16_t HUE_SEGMENT_SIZE = 256;                      // steps per segment
+constexpr uint16_t HUE_RANGE = HUE_SEGMENTS * HUE_SEGMENT_SIZE; // 1536
+
+// Convert degrees (0..360) to Adafruit-compatible hue units (0..1535)
+#define HUE(deg) static_cast<uint16_t>(HUE_RANGE * ((deg) / 360.0))
+
 // Color constants (3-3-3)
 namespace Colors
 {
@@ -57,16 +66,30 @@ namespace Colors
         constexpr Color333 Purple{4, 0, 7};
         constexpr Color333 Pink{7, 0, 4};
     }
+
+    namespace HSV
+    {
+        using hue_t = uint16_t;
+        using sat_t = uint8_t;
+        using val_t = uint8_t;
+
+        namespace Hues
+        {
+            constexpr hue_t Red = HUE(0);
+            constexpr hue_t Yellow = HUE(60);
+            constexpr hue_t Green = HUE(120);
+            constexpr hue_t Cyan = HUE(180);
+            constexpr hue_t Blue = HUE(240);
+            constexpr hue_t Violet = HUE(300);
+        }
+
+        namespace Saturation
+        {
+            constexpr sat_t Shade = 0;
+            constexpr sat_t Color = UINT8_MAX;
+        }
+    }
 }
-
-// Hue helper: degrees → internal hue units
-// Internally we use 6 segments (R→Y→G→C→B→M) of 256 steps each = 1536 total.
-constexpr uint16_t HUE_SEGMENTS = 6;                            // number of primary ramps
-constexpr uint16_t HUE_SEGMENT_SIZE = 256;                      // steps per segment
-constexpr uint16_t HUE_RANGE = HUE_SEGMENTS * HUE_SEGMENT_SIZE; // 1536
-
-// Convert degrees (0..360) to Adafruit-compatible hue units (0..1535)
-#define HUE(deg) static_cast<uint16_t>(HUE_RANGE * ((deg) / 360.0))
 
 // Channel and HSV ranges
 constexpr uint8_t BYTE_MIN = 0;

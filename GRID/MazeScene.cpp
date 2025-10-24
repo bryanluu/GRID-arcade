@@ -12,14 +12,13 @@ const char *MazeScene::textHint = "Hint";
 const char *MazeScene::textFood = "Food";
 const char *MazeScene::textTime = "Time";
 
-const Color333 MazeScene::kPlayerColor = Colors::Muted::White;
-const Color333 MazeScene::kSeenWallColor = Colors::Muted::Red;
-const Color333 MazeScene::kNearWallColor = Color333{4, 0, 0};
-const Color333 MazeScene::kStartColor = Colors::Muted::Blue;
-const Color333 MazeScene::kFinishColor = Colors::Muted::Green;
-const Color333 MazeScene::kSolutionColor = Colors::Muted::Yellow;
-const Color333 MazeScene::kFoodColor = Colors::Muted::Cyan;
-const Color333 MazeScene::kTimeColor = Colors::Muted::Violet;
+const Color333 MazeScene::kPlayerColor = ColorHSV333(0, Colors::HSV::Saturation::Shade, MazeScene::kNearBrightness);
+const Colors::HSV::hue_t MazeScene::kWallHue = Colors::HSV::Hues::Red;
+const Colors::HSV::hue_t MazeScene::kStartHue = Colors::HSV::Hues::Blue;
+const Colors::HSV::hue_t MazeScene::kFinishHue = Colors::HSV::Hues::Green;
+const Colors::HSV::hue_t MazeScene::kSolutionHue = Colors::HSV::Hues::Yellow;
+const Colors::HSV::hue_t MazeScene::kFoodHue = Colors::HSV::Hues::Cyan;
+const Colors::HSV::hue_t MazeScene::kTimeHue = Colors::HSV::Hues::Violet;
 
 // ########## START CODE ##########
 
@@ -30,19 +29,20 @@ void MazeScene::renderHints(AppContext &ctx, int8_t textY)
 {
     ctx.gfx.clear();
     ctx.gfx.setCursor(0, textY);
-    ctx.gfx.setTextColor(kPlayerColor);
+    ctx.gfx.setTextColor(palette(HuePalette::Player));
     ctx.gfx.println(textPlayer);
-    ctx.gfx.setTextColor(kSeenWallColor);
+    ctx.gfx.setTextColor(palette(HuePalette::Wall));
     ctx.gfx.println(textWall);
-    ctx.gfx.setTextColor(kStartColor);
+    ctx.gfx.setTextColor(palette(HuePalette::Start));
     ctx.gfx.println(textStart);
-    ctx.gfx.setTextColor(kFinishColor);
+    ctx.gfx.setTextColor(palette(HuePalette::Finish));
     ctx.gfx.println(textFinish);
-    ctx.gfx.setTextColor(kSolutionColor);
-    ctx.gfx.println(textHint);
-    ctx.gfx.setTextColor(kFoodColor);
+    // TODO implement
+    // ctx.gfx.setTextColor(palette(HuePalette::Hint));
+    // ctx.gfx.println(textHint);
+    ctx.gfx.setTextColor(palette(HuePalette::Food));
     ctx.gfx.println(textFood);
-    ctx.gfx.setTextColor(kTimeColor);
+    ctx.gfx.setTextColor(palette(HuePalette::Time));
     ctx.gfx.println(textTime);
 }
 
@@ -116,7 +116,6 @@ void MazeScene::loop(AppContext &ctx)
         colorFinish();
         colorSnacks();
         colorPlayer();
-        brightenSurroundings();
         displayMaze(ctx);
         displayTimer(ctx);
         return;
@@ -392,7 +391,7 @@ void MazeScene::colorStart()
     Maze::maze_t x, y;
     x = Maze::getX(startNode->pos);
     y = Maze::getY(startNode->pos);
-    grid[Maze::toMatrix(y)][Maze::toMatrix(x)] = PaletteIndex::Start;
+    grid[Maze::toMatrix(y)][Maze::toMatrix(x)] = HuePalette::Start;
 }
 
 /**
@@ -405,7 +404,7 @@ void MazeScene::colorFinish()
     byte x, y;
     x = Maze::getX(endNode->pos);
     y = Maze::getY(endNode->pos);
-    grid[Maze::toMatrix(y)][Maze::toMatrix(x)] = PaletteIndex::Finish;
+    grid[Maze::toMatrix(y)][Maze::toMatrix(x)] = HuePalette::Finish;
 }
 
 /**
@@ -418,7 +417,7 @@ void MazeScene::colorMaze()
     {
         for (Maze::matrix_t c = 0; c < MATRIX_WIDTH; c++)
         {
-            grid[r][c] = PaletteIndex::SeenWall; // color wall
+            grid[r][c] = HuePalette::Wall; // color wall
         }
     }
     Maze::maze_t x, y;
@@ -428,7 +427,7 @@ void MazeScene::colorMaze()
         y = Maze::getY(p);
         Maze::matrix_t r = Maze::toMatrix(y);
         Maze::matrix_t c = Maze::toMatrix(x);
-        grid[r][c] = PaletteIndex::None; // color the vertex node
+        grid[r][c] = HuePalette::None; // color the vertex node
 
         // color the edge nodes
         Maze::maze_t x2, y2;
@@ -443,7 +442,7 @@ void MazeScene::colorMaze()
             y2 = Maze::getY(u->pos);
             r = Maze::interpolate(y, y2);
             c = Maze::interpolate(x, x2);
-            grid[r][c] = PaletteIndex::None;
+            grid[r][c] = HuePalette::None;
         }
     }
 }
@@ -460,7 +459,7 @@ void MazeScene::colorSnacks()
         p = *it;
         x = Maze::getX(p);
         y = Maze::getY(p);
-        grid[Maze::toMatrix(y)][Maze::toMatrix(x)] = PaletteIndex::Food;
+        grid[Maze::toMatrix(y)][Maze::toMatrix(x)] = HuePalette::Food;
     }
 }
 
@@ -551,7 +550,7 @@ void MazeScene::movePlayer(AppContext &ctx)
     }
     x = Helpers::clamp(playerX + dx, 1, MATRIX_WIDTH - 2);
     y = Helpers::clamp(playerY + dy, 1, MATRIX_HEIGHT - 2);
-    if (grid[y][x] != PaletteIndex::NearWall)
+    if (grid[y][x] != HuePalette::Wall)
     {
         playerX = x;
         playerY = y;
@@ -603,34 +602,34 @@ bool MazeScene::isOnMaze(byte x, byte y)
     return (x >= 0) && (x < Maze::toMatrix(Maze::kMazeWidth)) && (y >= 0) && (y < Maze::toMatrix(Maze::kMazeHeight));
 }
 
-/**
- * @brief Brighten pixels around player
- *
- */
-void MazeScene::brightenSurroundings()
-{
-    for (short x = playerX - kVisibility; x <= playerX + kVisibility; ++x)
-    {
-        for (short y = playerY - kVisibility; y <= playerY + kVisibility; ++y)
-        {
-            if (isOnMaze(x, y) && isNearPlayer(x, y))
-            {
-                PaletteIndex &color = grid[y][x];
-                if (color == PaletteIndex::SeenWall)
-                    color = PaletteIndex::NearWall;
-                // else if (color == SEEN_START_COLOR)
-                //     color = NEAR_START_COLOR;
-                // else if (color == SEEN_FINISH_COLOR)
-                //     color = NEAR_FINISH_COLOR;
-                // else if (color == SEEN_SOLUTION_COLOR)
-                //     color = SEEN_SOLUTION_COLOR;
-                // grid[y][x] = color; // update color
-                // TODO implement
-                // seen[y][x] = true;  // mark pixel as seen
-            }
-        }
-    }
-}
+// /**
+//  * @brief Brighten pixels around player
+//  *
+//  */
+// void MazeScene::brightenSurroundings()
+// {
+//     for (short x = playerX - kVisibility; x <= playerX + kVisibility; ++x)
+//     {
+//         for (short y = playerY - kVisibility; y <= playerY + kVisibility; ++y)
+//         {
+//             if (isOnMaze(x, y) && isNearPlayer(x, y))
+//             {
+//                 HuePalette &color = grid[y][x];
+//                 if (color == HuePalette::Wall)
+//                     color = HuePalette::NearWall;
+//                 // else if (color == SEEN_START_COLOR)
+//                 //     color = NEAR_START_COLOR;
+//                 // else if (color == SEEN_FINISH_COLOR)
+//                 //     color = NEAR_FINISH_COLOR;
+//                 // else if (color == SEEN_SOLUTION_COLOR)
+//                 //     color = SEEN_SOLUTION_COLOR;
+//                 // grid[y][x] = color; // update color
+//                 // TODO implement
+//                 // seen[y][x] = true;  // mark pixel as seen
+//             }
+//         }
+//     }
+// }
 
 /**
  * @brief Color the player position
@@ -638,7 +637,7 @@ void MazeScene::brightenSurroundings()
  */
 void MazeScene::colorPlayer()
 {
-    grid[playerY][playerX] = PaletteIndex::Player;
+    grid[playerY][playerX] = HuePalette::Player;
 }
 
 /**
@@ -674,6 +673,7 @@ bool MazeScene::isNearPlayer(byte x, byte y)
 void MazeScene::displayMaze(AppContext &ctx)
 {
     Color333 color;
+    bool near; // whether the pixel is near player or not
     // used for centering
     Maze::matrix_t rowOffset;
     Maze::matrix_t colOffset;
@@ -681,7 +681,8 @@ void MazeScene::displayMaze(AppContext &ctx)
     {
         for (Maze::maze_t c = 0; c < Maze::toMatrix(Maze::kMazeWidth); c++)
         {
-            color = palette(grid[r][c]);
+            near = (isOnMaze(c, r) && isNearPlayer(c, r));
+            color = palette(grid[r][c], near);
             rowOffset = (MATRIX_HEIGHT - Maze::toMatrix(Maze::kMazeHeight)) / 2;
             colOffset = (MATRIX_WIDTH - Maze::toMatrix(Maze::kMazeWidth)) / 2;
             ctx.gfx.drawPixel(c + colOffset, r + rowOffset, color);
@@ -720,9 +721,9 @@ void MazeScene::displayTimer(AppContext &ctx)
         }
 
         if (i <= pixelsPassed)
-            grid[r - 1][c - 1] = PaletteIndex::None;
+            grid[r - 1][c - 1] = HuePalette::None;
         else
-            grid[r - 1][c - 1] = PaletteIndex::Time;
+            grid[r - 1][c - 1] = HuePalette::Time;
 
         ctx.gfx.drawPixel(c - 1, r - 1, palette(grid[r - 1][c - 1]));
     }

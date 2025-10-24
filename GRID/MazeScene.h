@@ -187,13 +187,12 @@ private:
     // Color Config
 
     static const Color333 kPlayerColor;
-    static const Color333 kSeenWallColor;
-    static const Color333 kNearWallColor;
-    static const Color333 kStartColor;
-    static const Color333 kFinishColor;
-    static const Color333 kSolutionColor;
-    static const Color333 kFoodColor;
-    static const Color333 kTimeColor;
+    static const Colors::HSV::hue_t kWallHue;
+    static const Colors::HSV::hue_t kStartHue;
+    static const Colors::HSV::hue_t kFinishHue;
+    static const Colors::HSV::hue_t kSolutionHue;
+    static const Colors::HSV::hue_t kFoodHue;
+    static const Colors::HSV::hue_t kTimeHue;
 
     // Start Scene config
 
@@ -255,39 +254,41 @@ private:
 
     // Drawing
 
-    using palette_t = uint8_t;
-    enum PaletteIndex : palette_t
+    static constexpr Colors::HSV::val_t kNearBrightness = 100; // 3/7 brightness
+    static constexpr Colors::HSV::val_t kFarBrightness = 37;   // 1/7 on the brightness scale
+    enum HuePalette : Colors::HSV::hue_t
     {
         None,
-        SeenWall,
-        NearWall,
+        Wall,
         Start,
         Finish,
         Player,
         Time,
         Food
     };
-    PaletteIndex grid[MATRIX_HEIGHT][MATRIX_WIDTH]; // color of each pixel in matrix
-    static Color333 palette(PaletteIndex i)
+    HuePalette grid[MATRIX_HEIGHT][MATRIX_WIDTH]; // color of each pixel in matrix
+    /**
+     * @brief returns a color from the given hue and whether it should be the brighter variant
+     */
+    static Color333 palette(HuePalette hue, bool bright = false)
     {
-        switch (i)
+        Colors::HSV::val_t val = (bright ? kNearBrightness : kFarBrightness);
+        switch (hue)
         {
         case None:
             return Colors::Black;
-        case SeenWall:
-            return kSeenWallColor;
-        case NearWall:
-            return kNearWallColor;
+        case Wall:
+            return ColorHSV333(kWallHue, Colors::HSV::Saturation::Color, val);
         case Start:
-            return kStartColor;
+            return ColorHSV333(kStartHue, Colors::HSV::Saturation::Color, val);
         case Finish:
-            return kFinishColor;
+            return ColorHSV333(kFinishHue, Colors::HSV::Saturation::Color, val);
         case Player:
             return kPlayerColor;
         case Time:
-            return kTimeColor;
+            return ColorHSV333(kTimeHue, Colors::HSV::Saturation::Color, val);
         case Food:
-            return kFoodColor;
+            return ColorHSV333(kFoodHue, Colors::HSV::Saturation::Color, val);
         default:
             return Colors::Black;
         }
@@ -301,7 +302,6 @@ private:
     bool isBorder(Maze::matrix_t r, Maze::matrix_t col);
     bool isNearPlayer(Maze::matrix_t x, Maze::matrix_t y);
     bool isOnMaze(Maze::matrix_t x, Maze::matrix_t y);
-    void brightenSurroundings();
     void displayMaze(AppContext &ctx);
     void displayTimer(AppContext &ctx);
     bool playerHasFinished();
