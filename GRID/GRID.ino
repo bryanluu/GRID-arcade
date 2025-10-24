@@ -9,9 +9,6 @@
 #include "IStorage.h"
 #include "StartScene.h"
 
-// TODO remove
-#include "MazeScene.h"
-
 // Adafruit flash + FatFs globals
 #include "SdFat_Adafruit_Fork.h"
 #include <Adafruit_SPIFlash.h>
@@ -93,7 +90,7 @@ void setup()
     calib.load(storage, logger);
     input.setCalibration(calib);
 
-    app.setScene<MazeScene>();
+    app.setScene<StartScene>();
     prev_millis = millis();
     log_last_ms = prev_millis;
 }
