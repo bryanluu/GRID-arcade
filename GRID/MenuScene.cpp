@@ -12,9 +12,9 @@ void MenuScene::loop(AppContext &ctx)
     bool press = s.pressed;
 
     if (left && !prevLeft)
-        next();
-    if (right && !prevRight)
         prev();
+    if (right && !prevRight)
+        next();
 
     // Draw menu each frame
     draw(ctx, left, right, press);
