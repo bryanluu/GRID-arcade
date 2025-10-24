@@ -55,6 +55,7 @@ void MazeScene::setStage(AppContext &ctx, Stage newStage)
         break;
     case Game:
         score = 0;
+        seen = 0; // set all pixels' flag to unseen
         buildMaze();
         setMazeEndpoints();
         break;
@@ -602,35 +603,6 @@ bool MazeScene::isOnMaze(byte x, byte y)
     return (x >= 0) && (x < Maze::toMatrix(Maze::kMazeWidth)) && (y >= 0) && (y < Maze::toMatrix(Maze::kMazeHeight));
 }
 
-// /**
-//  * @brief Brighten pixels around player
-//  *
-//  */
-// void MazeScene::brightenSurroundings()
-// {
-//     for (short x = playerX - kVisibility; x <= playerX + kVisibility; ++x)
-//     {
-//         for (short y = playerY - kVisibility; y <= playerY + kVisibility; ++y)
-//         {
-//             if (isOnMaze(x, y) && isNearPlayer(x, y))
-//             {
-//                 HuePalette &color = grid[y][x];
-//                 if (color == HuePalette::Wall)
-//                     color = HuePalette::NearWall;
-//                 // else if (color == SEEN_START_COLOR)
-//                 //     color = NEAR_START_COLOR;
-//                 // else if (color == SEEN_FINISH_COLOR)
-//                 //     color = NEAR_FINISH_COLOR;
-//                 // else if (color == SEEN_SOLUTION_COLOR)
-//                 //     color = SEEN_SOLUTION_COLOR;
-//                 // grid[y][x] = color; // update color
-//                 // TODO implement
-//                 // seen[y][x] = true;  // mark pixel as seen
-//             }
-//         }
-//     }
-// }
-
 /**
  * @brief Color the player position
  *
@@ -677,12 +649,20 @@ void MazeScene::displayMaze(AppContext &ctx)
     // used for centering
     Maze::matrix_t rowOffset;
     Maze::matrix_t colOffset;
-    for (Maze::maze_t r = 0; r < Maze::toMatrix(Maze::kMazeHeight); r++)
+    Maze::matrix_t rows = Maze::toMatrix(Maze::kMazeHeight);
+    Maze::matrix_t cols = Maze::toMatrix(Maze::kMazeWidth);
+    for (Maze::matrix_t r = 0; r < rows; r++)
     {
-        for (Maze::maze_t c = 0; c < Maze::toMatrix(Maze::kMazeWidth); c++)
+        for (Maze::matrix_t c = 0; c < cols; c++)
         {
+            int i = c + cols * r; // index in flattened array of pixel flags
             near = (isOnMaze(c, r) && isNearPlayer(c, r));
-            color = palette(grid[r][c], near);
+            if (near)
+                seen.set(i);
+            if (seen.test(i))
+                color = palette(grid[r][c], near);
+            else
+                color = Colors::Black;
             rowOffset = (MATRIX_HEIGHT - Maze::toMatrix(Maze::kMazeHeight)) / 2;
             colOffset = (MATRIX_WIDTH - Maze::toMatrix(Maze::kMazeWidth)) / 2;
             ctx.gfx.drawPixel(c + colOffset, r + rowOffset, color);

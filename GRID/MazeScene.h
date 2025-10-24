@@ -5,6 +5,7 @@
 #include "Colors.h"
 #include "ScrollTextHelper.h"
 #include <climits>
+#include <bitset>
 
 struct Maze
 {
@@ -169,6 +170,8 @@ struct Maze
             return true;
         }
     };
+
+    static constexpr int16_t kMazePixels = 961; // 31 * 31
 };
 
 class MazeScene : public Scene
@@ -217,8 +220,8 @@ private:
     Maze::node *startNode = nullptr;
     Maze::node *endNode = nullptr;
     Maze::matrix_t playerX, playerY;
-
     Maze::coords snacks;
+    std::bitset<Maze::kMazePixels> seen; // saves memory: 961 bits ~120 bytes instead of 961 bytes
 
     // Generation
 
