@@ -657,7 +657,7 @@ void MazeScene::displayMaze(AppContext &ctx)
         {
             int i = c + cols * r; // index in flattened array of pixel flags
             near = (isOnMaze(c, r) && isNearPlayer(c, r));
-            if (near)
+            if (near || (grid[r][c] == HuePalette::Food) || (grid[r][c] == HuePalette::Finish))
                 seen.set(i);
             if (seen.test(i))
                 color = palette(grid[r][c], near);

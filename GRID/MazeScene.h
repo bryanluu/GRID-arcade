@@ -243,7 +243,7 @@ private:
 
     // Visibility
 
-    static constexpr Maze::matrix_t kVisibility = 4; // "Medium" visibility from old game
+    static constexpr Maze::matrix_t kVisibility = 1; // "Medium" visibility from old game
 
     // Snacks
 
