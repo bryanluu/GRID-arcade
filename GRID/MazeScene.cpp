@@ -58,6 +58,10 @@ void MazeScene::setStage(AppContext &ctx, Stage newStage)
         setMazeEndpoints();
         break;
     case End:
+        int ts = 1;
+        banner.prepare(ctx.gfx, "Done!!!", ts, Colors::Muted::White);
+        banner.reset(MATRIX_WIDTH, ScrollText::yTopCentered(ts));
+        ctx.gfx.clear();
         break;
     }
     startTime = ctx.time.nowMs();
@@ -112,7 +116,17 @@ void MazeScene::loop(AppContext &ctx)
         displayTimer(ctx);
         return;
     case (End):
-        endGame(ctx);
+        if (banner.rightEdge() > 0)
+        {
+            banner.step(ctx.gfx, -1);
+            lastUpdateTime = now;
+        }
+        else if (now - lastUpdateTime < kShowScoreDuration)
+        {
+            showScore(ctx, score);
+        }
+        else
+            endGame(ctx);
         return;
     }
 }
@@ -597,6 +611,20 @@ void MazeScene::computeFinalScore(score_t &score, millis_t nowMs)
     millis_t leftoverTime = kGameDefaultDuration - (nowMs - startTime);
     score_t timeBonus = (kMaxTimeScore * (kMaxTimeBuffer + leftoverTime) / kGameDefaultDuration);
     score += timeBonus;
+}
+
+void MazeScene::showScore(AppContext &ctx, score_t score)
+{
+    int ts = 1;
+    ctx.gfx.setTextSize(ts);
+    ctx.gfx.setTextColor(Colors::Muted::White);
+    ctx.gfx.setCursor(1, 1);
+    ctx.gfx.println("Score");
+    ctx.gfx.setTextColor(Colors::Muted::Green);
+    ctx.gfx.setCursor(1, 10);
+    char buf[6];
+    snprintf(buf, 6, "%d", score);
+    ctx.gfx.print(buf);
 }
 
 /**

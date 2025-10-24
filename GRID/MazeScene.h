@@ -289,11 +289,14 @@ private:
 
     using score_t = uint8_t;
     score_t score;
-    static constexpr score_t kExitScore = 20;    //  score bonus if player reaches exit
+    static constexpr score_t kExitScore = 20;    // score bonus if player reaches exit
     static constexpr score_t kMaxTimeScore = 50; // max score bonus from time left
     // in ms, the time after game start for player to achieve MAX_TIME_SCORE
     static constexpr millis_t kMaxTimeBuffer = (90 * 1000);
+    static constexpr millis_t kShowScoreDuration = (5000); // ms to show final score
     void computeFinalScore(score_t &score, millis_t nowMs);
+    ScrollText banner;
+    void showScore(AppContext &ctx, score_t score);
 
 public:
     void setup(AppContext &ctx) override;
