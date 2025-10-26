@@ -77,8 +77,8 @@ void MazeScene::setup(AppContext &ctx)
 {
     // TODO implement file loading
     ScoreData loadedScore;
-    Serializer::Score::fromJSON("{\"v\": 1\"n\": \"Bryan\",\"s\": 50}", loadedScore);
-    ctx.logger.logf(LogLevel::Debug, "[MazeScene] loaded:\n{ \"s\": %d, \"n\": \"%s\"}", loadedScore.score, loadedScore.name);
+    Serializer::Score::fromJSON("{\"v\": 1\"n\": \"Hello World\",\"s\": 50}", loadedScore);
+    ctx.logger.logf(LogLevel::Debug, "[MazeScene] loaded:\n{ 's': %d, 'n': '%s'}", loadedScore.score, loadedScore.name);
 
     setStage(ctx, Intro);
 }

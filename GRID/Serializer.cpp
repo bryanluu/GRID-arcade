@@ -141,9 +141,9 @@ static bool findNumF(const char *s, const char *key, float &v)
     return true;
 }
 
-// Internal helper: find str at key "key" in 's' and store into 'buf'.
+// Internal helper: find str at key "key" in 's' and store into 'buf' (up to len).
 // Returns true on success; does not modify 'v' if key is not present.
-static bool findStr(const char *s, const char *key, char *buf)
+static bool findStr(const char *s, const char *key, char *buf, size_t len)
 {
     const char *p = strstr(s, key);
     if (!p)
@@ -154,10 +154,10 @@ static bool findStr(const char *s, const char *key, char *buf)
     p = strchr(p, '"');
     if (!p)
         return false;
-    const char *end = strrchr(p + 1, '"');
-    if (end == p + 1)
-        return false; // missing closing quote
-    memcpy(buf, p + 1, ScoreData::kMaxNameLength);
+    const char *end = strchr(p + 1, '"');
+    if (end == p + 1) // missing closing quote
+        return false;
+    memcpy(buf, p + 1, len);
     return true;
 }
 
@@ -234,7 +234,7 @@ bool Serializer::Score::fromJSON(const char *src, ScoreData &out)
     findNumI(src, "\"v\"", vi);
 
     char buf[ScoreData::kMaxNameLength];
-    if (findStr(src, "\"n\"", buf))
+    if (findStr(src, "\"n\"", buf, ScoreData::kMaxNameLength))
         memcpy(out.name, buf, ScoreData::kMaxNameLength);
 
     // Integers (ADC points)
