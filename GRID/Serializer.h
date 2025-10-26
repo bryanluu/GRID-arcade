@@ -19,7 +19,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-struct InputCalibration; // forward decl
+// forward decl
+struct InputCalibration;
+struct ScoreData;
 
 struct Serializer
 {
@@ -42,6 +44,20 @@ struct Serializer
         // - Extra fields are ignored.
         // - Version ("v") is optional and reserved for future migrations.
         static bool fromJSON(const char *src, InputCalibration &out);
+    };
+
+    // Serialization helpers for ScoreData
+    // JSON shape:
+    //   {"v": 1,"n":"John","s":100}
+    struct Score
+    {
+        // Parse JSON from 'src' (null-terminated) into 'out'.
+        // Returns: true on success, false on invalid input.
+        // Notes:
+        // - Missing fields are left at 'out' defaults.
+        // - Extra fields are ignored.
+        // - Version ("v") is optional and reserved for future migrations.
+        static bool fromJSON(const char *src, ScoreData &out);
     };
 };
 
