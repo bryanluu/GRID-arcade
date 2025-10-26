@@ -75,12 +75,7 @@ void MazeScene::setStage(AppContext &ctx, Stage newStage)
 
 void MazeScene::setup(AppContext &ctx)
 {
-    // TODO implement file loading
-    ScoreData loadedScore;
-    Serializer::Score::fromJSON("{\"v\": 1\"n\": \"Hello World\",\"s\": 50}", loadedScore);
-    ctx.logger.logf(LogLevel::Debug, "[MazeScene] loaded:\n{ 's': %d, 'n': '%s'}", loadedScore.score, loadedScore.name);
-
-    setStage(ctx, Intro);
+    setStage(ctx, Game); // TODO switch back to Intro once finalized
 }
 
 void MazeScene::loop(AppContext &ctx)
@@ -558,7 +553,7 @@ void MazeScene::movePlayer(AppContext &ctx)
     }
     x = Helpers::clamp(playerX + dx, 1, MATRIX_WIDTH - 2);
     y = Helpers::clamp(playerY + dy, 1, MATRIX_HEIGHT - 2);
-    if (grid[y][x] != HuePalette::Wall)
+    // if (grid[y][x] != HuePalette::Wall) // TODO re-enable
     {
         playerX = x;
         playerY = y;
