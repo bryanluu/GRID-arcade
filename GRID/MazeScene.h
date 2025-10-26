@@ -308,7 +308,6 @@ private:
     void displayMaze(AppContext &ctx);
     void displayTimer(AppContext &ctx);
     bool playerHasFinished();
-    void endGame(AppContext &ctx);
 
     // Scoring
 
@@ -318,13 +317,25 @@ private:
     static constexpr score_t kMaxTimeScore = 50; // max score bonus from time left
     // in ms, the time after game start for player to achieve MAX_TIME_SCORE
     static constexpr millis_t kMaxTimeBuffer = (90 * 1000);
-    static constexpr uint8_t kNumSnacks = 15;              // how many snacks to spawn
-    static constexpr score_t kSnackPoints = 2;             // how many points does a snack give
-    static constexpr millis_t kSnackTimeBoost = 1000;      // how much time does a snack give
+    static constexpr uint8_t kNumSnacks = 15;         // how many snacks to spawn
+    static constexpr score_t kSnackPoints = 2;        // how many points does a snack give
+    static constexpr millis_t kSnackTimeBoost = 1000; // how much time does a snack give
+
+    // End State
+
     static constexpr millis_t kShowScoreDuration = (5000); // ms to show final score
-    void computeFinalScore(score_t &score, millis_t nowMs);
+    enum EndState : uint8_t
+    {
+        ShowBanner,
+        ShowFinalScore,
+        ShowHighScore,
+        EndGame
+    };
+    EndState endState_ = ShowBanner;
     ScrollText banner;
-    void showScore(AppContext &ctx, score_t score);
+    void computeFinalScore(score_t &score, millis_t nowMs);
+    void showFinalScore(AppContext &ctx, score_t score);
+    void endGame(AppContext &ctx);
 
 public:
     void setup(AppContext &ctx) override;

@@ -62,6 +62,7 @@ void MazeScene::setStage(AppContext &ctx, Stage newStage)
         setMazeEndpoints();
         break;
     case End:
+        endState_ = ShowBanner;
         int ts = 1;
         banner.prepare(ctx.gfx, "Done!!!", ts, Colors::Muted::White);
         banner.reset(MATRIX_WIDTH, ScrollText::yTopCentered(ts));
@@ -123,17 +124,40 @@ void MazeScene::loop(AppContext &ctx)
         displayTimer(ctx);
         return;
     case (End):
-        if (banner.rightEdge() > 0)
+        switch (endState_)
         {
-            banner.step(ctx.gfx, -1);
-            lastUpdateTime = now;
-        }
-        else if (now - lastUpdateTime < kShowScoreDuration)
-        {
-            showScore(ctx, score);
-        }
-        else
+        case ShowBanner:
+            if (banner.rightEdge() >= 0)
+            {
+                banner.step(ctx.gfx, -1);
+                lastUpdateTime = now;
+            }
+            else
+                endState_ = ShowFinalScore;
+            break;
+        case ShowFinalScore:
+            if (now - lastUpdateTime < kShowScoreDuration)
+            {
+                showFinalScore(ctx, score);
+            }
+            else
+            {
+                endState_ = EndGame; // TODO change to ShowHighScore if score > highScore
+                lastUpdateTime = now;
+            }
+            break;
+        case ShowHighScore:
+            if (now - lastUpdateTime < kShowScoreDuration)
+            {
+                // showHighScore(ctx); // TODO implement
+            }
+            else
+                endState_ = EndGame;
+            break;
+        case EndGame:
             endGame(ctx);
+            break;
+        }
         return;
     }
 }
@@ -733,9 +757,10 @@ void MazeScene::computeFinalScore(score_t &score, millis_t nowMs)
     score += timeBonus;
 }
 
-void MazeScene::showScore(AppContext &ctx, score_t score)
+void MazeScene::showFinalScore(AppContext &ctx, score_t score)
 {
     int ts = 1;
+    ctx.gfx.clear();
     ctx.gfx.setTextSize(ts);
     ctx.gfx.setTextColor(Colors::Muted::White);
     ctx.gfx.setCursor(1, 1);
