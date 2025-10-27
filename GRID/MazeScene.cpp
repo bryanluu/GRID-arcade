@@ -1,7 +1,6 @@
 #include "MazeScene.h"
 #include "Helpers.h"
 #include "SceneBus.h"
-#include "ScoreData.h"
 #include "Serializer.h"
 #include <vector>
 #include <queue>
@@ -142,14 +141,17 @@ void MazeScene::loop(AppContext &ctx)
             }
             else
             {
-                endState_ = EndGame; // TODO change to ShowHighScore if score > highScore
+                if (loadHighScore(ctx, highScore))
+                    endState_ = ShowHighScore;
+                else // TODO start SaveScoreScene if score > highScore.score
+                    endState_ = EndGame;
                 lastUpdateTime = now;
             }
             break;
         case ShowHighScore:
             if (now - lastUpdateTime < kShowScoreDuration)
             {
-                // showHighScore(ctx); // TODO implement
+                showHighScore(ctx, highScore);
             }
             else
                 endState_ = EndGame;
@@ -770,6 +772,35 @@ void MazeScene::showFinalScore(AppContext &ctx, score_t score)
     char buf[6];
     snprintf(buf, 6, "%d", score);
     ctx.gfx.print(buf);
+}
+
+/**
+ * @brief loads the saved high score
+ *
+ * @returns true if the high score was loaded
+ * @returns false if the load was not successful
+ */
+bool MazeScene::loadHighScore(AppContext &ctx, ScoreData &highScore)
+{
+    char filename[10];
+    snprintf(filename, 10, "%s.%s", label(), highScore.kFileExtension);
+    return highScore.load(ctx.storage, ctx.logger, filename);
+}
+
+void MazeScene::showHighScore(AppContext &ctx, const ScoreData &data)
+{
+    int ts = 1;
+    ctx.gfx.clear();
+    ctx.gfx.setTextSize(ts);
+    ctx.gfx.setTextColor(Colors::Muted::White);
+    ctx.gfx.setCursor(1, 1);
+    ctx.gfx.println("Best:");
+    ctx.gfx.setTextColor(Colors::Muted::Green);
+    ctx.gfx.setCursor(1, 10);
+    ctx.gfx.println(data.name);
+    char buf[6];
+    snprintf(buf, 6, "%d", data.score);
+    ctx.gfx.println(buf);
 }
 
 /**

@@ -4,6 +4,7 @@
 #include "Scene.h"
 #include "Colors.h"
 #include "ScrollTextHelper.h"
+#include "ScoreData.h"
 #include <climits>
 #include <bitset>
 
@@ -320,6 +321,7 @@ private:
     static constexpr uint8_t kNumSnacks = 15;         // how many snacks to spawn
     static constexpr score_t kSnackPoints = 2;        // how many points does a snack give
     static constexpr millis_t kSnackTimeBoost = 1000; // how much time does a snack give
+    void computeFinalScore(score_t &score, millis_t nowMs);
 
     // End State
 
@@ -332,9 +334,11 @@ private:
         EndGame
     };
     EndState endState_ = ShowBanner;
+    ScoreData highScore;
     ScrollText banner;
-    void computeFinalScore(score_t &score, millis_t nowMs);
     void showFinalScore(AppContext &ctx, score_t score);
+    bool loadHighScore(AppContext &ctx, ScoreData &highScore);
+    void showHighScore(AppContext &ctx, const ScoreData &data);
     void endGame(AppContext &ctx);
 
 public:
