@@ -19,6 +19,7 @@
 #include "CalibrationScene.h"
 #include "MenuScene.h"
 #include "StartScene.h"
+#include "SaveScoreScene.h"
 
 // App manages the current scene; only holds Matrix32&
 class App
@@ -181,6 +182,11 @@ public:
         { this->setScene<BoidsScene>(); };
         bus.toCalibration = [this]
         { this->setScene<CalibrationScene>(); };
+        bus.toSaveScore = [this](int newScore)
+        {
+            // Create SaveScoreScene with the passed score
+            this->setScene<SaveScoreScene>(current->kind(), current->label(), newScore);
+        };
     }
 
     // Replace the current scene with a newly constructed SceneT.

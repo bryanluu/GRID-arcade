@@ -4,6 +4,7 @@
 #include "Scene.h"
 #include "Colors.h"
 #include "ScrollTextHelper.h"
+#include "ScoreData.h"
 #include <climits>
 #include <bitset>
 
@@ -242,7 +243,6 @@ private:
     void movePlayer(AppContext &ctx);
 
     // Visibility
-
     static constexpr Maze::matrix_t kVisibility = 1; // "Medium" visibility from old game
 
     // Snacks
@@ -308,7 +308,6 @@ private:
     void displayMaze(AppContext &ctx);
     void displayTimer(AppContext &ctx);
     bool playerHasFinished();
-    void endGame(AppContext &ctx);
 
     // Scoring
 
@@ -318,13 +317,28 @@ private:
     static constexpr score_t kMaxTimeScore = 50; // max score bonus from time left
     // in ms, the time after game start for player to achieve MAX_TIME_SCORE
     static constexpr millis_t kMaxTimeBuffer = (90 * 1000);
-    static constexpr uint8_t kNumSnacks = 15;              // how many snacks to spawn
-    static constexpr score_t kSnackPoints = 2;             // how many points does a snack give
-    static constexpr millis_t kSnackTimeBoost = 1000;      // how much time does a snack give
-    static constexpr millis_t kShowScoreDuration = (5000); // ms to show final score
+    static constexpr uint8_t kNumSnacks = 15;         // how many snacks to spawn
+    static constexpr score_t kSnackPoints = 2;        // how many points does a snack give
+    static constexpr millis_t kSnackTimeBoost = 1000; // how much time does a snack give
     void computeFinalScore(score_t &score, millis_t nowMs);
+
+    // End State
+
+    static constexpr millis_t kShowScoreDuration = (5000); // ms to show final score
+    enum EndState : uint8_t
+    {
+        ShowBanner,
+        ShowFinalScore,
+        ShowHighScore,
+        EndGame
+    };
+    EndState endState_ = ShowBanner;
+    ScoreData highScore;
     ScrollText banner;
-    void showScore(AppContext &ctx, score_t score);
+    void showFinalScore(AppContext &ctx, score_t score);
+    bool loadHighScore(AppContext &ctx, ScoreData &highScore);
+    void showHighScore(AppContext &ctx, const ScoreData &data);
+    void endGame(AppContext &ctx);
 
 public:
     void setup(AppContext &ctx) override;

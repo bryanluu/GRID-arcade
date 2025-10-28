@@ -2,6 +2,7 @@
 #define COLORS_H
 
 #include <cstdint>
+#include <limits>
 
 using Intensity3 = uint8_t;
 using Intensity8 = uint8_t;
@@ -11,12 +12,12 @@ struct Color333
 {
     Intensity3 r, g, b; // RGB are each 0..7
 
-    inline bool operator==(const Color333 &other) const
+    constexpr bool operator==(const Color333 &other) const
     {
         return r == other.r && g == other.g && b == other.b;
     }
 
-    inline bool operator!=(const Color333 &other) const
+    constexpr bool operator!=(const Color333 &other) const
     {
         return !(*this == other);
     }
@@ -33,7 +34,11 @@ constexpr uint16_t HUE_SEGMENT_SIZE = 256;                      // steps per seg
 constexpr uint16_t HUE_RANGE = HUE_SEGMENTS * HUE_SEGMENT_SIZE; // 1536
 
 // Convert degrees (0..360) to Adafruit-compatible hue units (0..1535)
-#define HUE(deg) static_cast<uint16_t>(HUE_RANGE * ((deg) / 360.0))
+constexpr uint16_t HUE(double deg)
+{
+    // allow degrees outside 0..360; normalize is done by caller via modulo if needed.
+    return static_cast<uint16_t>(HUE_RANGE * (deg / 360.0));
+}
 
 // Color constants (3-3-3)
 namespace Colors
@@ -103,7 +108,7 @@ constexpr uint16_t HUE_MAX = HUE_RANGE - 1; // 1535
 constexpr bool GAMMA_DEFAULT_ENABLE = false;
 constexpr uint8_t GAMMA_PASSES = 2; // 1 = mild, 2 = stronger
 
-inline uint8_t applyGamma(uint8_t c, bool enable)
+constexpr uint8_t applyGamma(uint8_t c, bool enable)
 {
     if (!enable || c == 0 || c == BYTE_MAX)
         return c;
@@ -117,8 +122,14 @@ inline uint8_t applyGamma(uint8_t c, bool enable)
     return static_cast<uint8_t>(v);
 }
 
+// helper to map 0..255 -> 0..7 with rounding as constexpr function (avoid lambda)
+constexpr uint8_t to3bit(uint8_t x)
+{
+    return static_cast<uint8_t>((static_cast<uint16_t>(x) * 7 + (BYTE_MAX / 2)) / BYTE_MAX);
+}
+
 // HSV( hue: 0..1535, sat: 0..255, val: 0..255 ) → 8-bit RGB
-inline Color888 ColorHSV888(uint16_t hue, uint8_t sat, uint8_t val, bool gamma = GAMMA_DEFAULT_ENABLE)
+constexpr Color888 ColorHSV888(uint16_t hue, uint8_t sat, uint8_t val, bool gamma = GAMMA_DEFAULT_ENABLE)
 {
     // Normalize hue into [0, HUE_MAX]
     hue = static_cast<uint16_t>(hue % HUE_RANGE);
@@ -144,7 +155,11 @@ inline Color888 ColorHSV888(uint16_t hue, uint8_t sat, uint8_t val, bool gamma =
     const uint16_t t = static_cast<uint16_t>(val) *
                        (BYTE_MAX - static_cast<uint16_t>(sat) * (HUE_SEGMENT_SIZE - 1 - pos) / BYTE_MAX) / BYTE_MAX;
 
-    uint8_t r, g, b;
+    // Initialize to safe defaults so constexpr path-checking is happy
+    uint8_t r = 0;
+    uint8_t g = 0;
+    uint8_t b = 0;
+
     switch (region)
     {
     default: // 0: Red → Yellow
@@ -191,18 +206,10 @@ inline Color888 ColorHSV888(uint16_t hue, uint8_t sat, uint8_t val, bool gamma =
 }
 
 // HSV → 3-3-3 RGB (down-quantized for Color333)
-inline Color333 ColorHSV333(uint16_t hue, uint8_t sat, uint8_t val, bool gamma = GAMMA_DEFAULT_ENABLE)
+constexpr Color333 ColorHSV333(uint16_t hue, uint8_t sat, uint8_t val, bool gamma = GAMMA_DEFAULT_ENABLE)
 {
     const Color888 c8 = ColorHSV888(hue, sat, val, gamma);
-
-    // Map 8-bit 0..255 to 3-bit 0..7 with rounding
-    auto to3 = [](uint8_t x) -> uint8_t
-    {
-        // 0..255 → 0..7: (x * 7 + 127) / 255 for nearest rounding
-        return static_cast<uint8_t>((static_cast<uint16_t>(x) * 7 + (BYTE_MAX / 2)) / BYTE_MAX);
-    };
-
-    return Color333{to3(c8.r), to3(c8.g), to3(c8.b)};
+    return Color333{to3bit(c8.r), to3bit(c8.g), to3bit(c8.b)};
 }
 
 #endif // COLORS_H

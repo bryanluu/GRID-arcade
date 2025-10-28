@@ -5,6 +5,7 @@
 // - Suitable for tiny payloads (<< 512 bytes).
 #include "Serializer.h"
 #include "Input.h"
+#include "ScoreData.h"
 #include <stdio.h>  // snprintf
 #include <stdlib.h> // strtol, strtof
 #include <string.h> // strstr, strchr
@@ -140,6 +141,26 @@ static bool findNumF(const char *s, const char *key, float &v)
     return true;
 }
 
+// Internal helper: find str at key "key" in 's' and store into 'buf' (up to len).
+// Returns true on success; does not modify 'v' if key is not present.
+static bool findStr(const char *s, const char *key, char *buf, size_t len)
+{
+    const char *p = strstr(s, key);
+    if (!p)
+        return false;
+    p = strchr(p, ':');
+    if (!p)
+        return false;
+    p = strchr(p, '"');
+    if (!p)
+        return false;
+    const char *end = strchr(p + 1, '"');
+    if (end == p + 1) // missing closing quote
+        return false;
+    memcpy(buf, p + 1, len);
+    return true;
+}
+
 size_t Serializer::Calibration::toJSON(const InputCalibration &c, char *dst, size_t cap)
 {
     // Prepare float fields as strings since many Arduino libc builds lack printf float.
@@ -195,6 +216,42 @@ bool Serializer::Calibration::fromJSON(const char *src, InputCalibration &out)
         out.y_adc_center = (uint16_t)li;
     if (findNumI(src, "\"yh\"", li))
         out.y_adc_high = (uint16_t)li;
+
+    // If the JSON was present but missing some keys, we still succeed and
+    // keep the default values in 'out' for the missing keys.
+    return true;
+}
+
+size_t Serializer::Score::toJSON(const ScoreData &s, char *dst, size_t cap)
+{
+    // Emit compact, order-stable JSON.
+    int n = snprintf(dst, cap,
+                     "{\"v\":%u,\"n\":\"%s\",\"s\":%d}",
+                     1u, s.name, s.score);
+    if (n <= 0 || (size_t)n >= cap)
+        return 0;
+    return (size_t)n;
+}
+
+bool Serializer::Score::fromJSON(const char *src, ScoreData &out)
+{
+    // Basic validation
+    if (!src || !*src)
+        return false;
+
+    // Version is optional and currently unused; read and ignore.
+    long vi = 0;
+    (void)vi;
+    findNumI(src, "\"v\"", vi);
+
+    char buf[ScoreData::kMaxNameLength];
+    if (findStr(src, "\"n\"", buf, ScoreData::kMaxNameLength))
+        memcpy(out.name, buf, ScoreData::kMaxNameLength);
+
+    // Integers (ADC points)
+    long li = 0;
+    if (findNumI(src, "\"s\"", li))
+        out.score = (uint16_t)li;
 
     // If the JSON was present but missing some keys, we still succeed and
     // keep the default values in 'out' for the missing keys.
