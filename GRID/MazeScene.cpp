@@ -148,7 +148,7 @@ void MazeScene::loop(AppContext &ctx)
                 }
                 else // otherwise transition to SaveScoreScene
                 {
-                    ctx.bus->toSaveScore(this->kind(), this->label(), score);
+                    ctx.bus->toSaveScore(score);
                     return;
                 }
                 lastUpdateTime = now;

@@ -9,7 +9,7 @@ struct SceneBus
     std::function<void()> toMaze;
     std::function<void()> toBoids;
     std::function<void()> toCalibration;
-    std::function<void(Scene::SceneKind, const char *, int)> toSaveScore;
+    std::function<void(int)> toSaveScore;
 };
 
 #endif

@@ -182,10 +182,10 @@ public:
         { this->setScene<BoidsScene>(); };
         bus.toCalibration = [this]
         { this->setScene<CalibrationScene>(); };
-        bus.toSaveScore = [this](Scene::SceneKind kind, const char *label, int newScore)
+        bus.toSaveScore = [this](int newScore)
         {
             // Create SaveScoreScene with the passed score
-            this->setScene<SaveScoreScene>(kind, label, newScore);
+            this->setScene<SaveScoreScene>(current->kind(), current->label(), newScore);
         };
     }
 
