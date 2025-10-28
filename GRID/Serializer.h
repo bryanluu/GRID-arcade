@@ -51,6 +51,13 @@ struct Serializer
     //   {"v": 1,"n":"John","s":100}
     struct Score
     {
+        // Serialize 'c' to JSON into 'dst' with capacity 'cap'.
+        // Returns: number of bytes written (excluding terminating '\0'), or 0 on failure.
+        // Notes:
+        // - Uses short keys to save bytes: v,dz,gm,xl,xc,xh,yl,yc,yh.
+        // - Float formatting uses %.4g for compactness and readability.
+        static size_t toJSON(const ScoreData &s, char *dst, size_t cap);
+
         // Parse JSON from 'src' (null-terminated) into 'out'.
         // Returns: true on success, false on invalid input.
         // Notes:

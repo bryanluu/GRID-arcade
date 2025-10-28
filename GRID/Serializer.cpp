@@ -222,6 +222,17 @@ bool Serializer::Calibration::fromJSON(const char *src, InputCalibration &out)
     return true;
 }
 
+size_t Serializer::Score::toJSON(const ScoreData &s, char *dst, size_t cap)
+{
+    // Emit compact, order-stable JSON.
+    int n = snprintf(dst, cap,
+                     "{\"v\":%u,\"n\":\"%s\",\"s\":%d}",
+                     1u, s.name, s.score);
+    if (n <= 0 || (size_t)n >= cap)
+        return 0;
+    return (size_t)n;
+}
+
 bool Serializer::Score::fromJSON(const char *src, ScoreData &out)
 {
     // Basic validation

@@ -19,11 +19,15 @@ struct ScoreData
     int score;                     // the integer score in the Maze game
     char name[kMaxNameLength + 1]; // +1 to leave space for NULL terminator
 
+    // Serialize this object to JSON into dst.
+    // Returns bytes written, or 0 on failure.
+    size_t toJSON(char *dst, size_t cap) const;
+
     // Parse JSON into this object. Returns true on success.
     bool fromJSON(const char *src);
 
     // Save/load using IStorage (atomic write) with default filename.
-    // bool save(IStorage &storage, ILogger &log, const char *filename = "calibration.json") const; // TODO implement
+    bool save(IStorage &storage, ILogger &log, const char *filename) const;
     bool load(IStorage &storage, ILogger &log, const char *filename);
 };
 
