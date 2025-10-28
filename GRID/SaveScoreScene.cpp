@@ -150,12 +150,27 @@ void SaveScoreScene::drawCarets(AppContext &ctx, int tx, int ty)
 {
     InputState s = ctx.input.state();
     Color333 tc;
+    millis_t now = ctx.time.nowMs();
+    // get current character index in alphabet
+    alphabetIndex_ = (strchr(kAlphabet, payload_.name[cursorIndex_]) - kAlphabet);
 
     // Basic nav: X up/down to change char
-    static bool prevUp = false, prevDown = false;
+    static bool prevUp = 0, prevDown = 0;
+    static millis_t prevUpTime = 0, prevDownTime = 0;
 
     bool up = (s.y < -HYSTERESIS_THRESHOLD);
     bool down = (s.y > HYSTERESIS_THRESHOLD);
+
+    if (up && (!prevUp || (now - prevUpTime > kAlphabetStrobeDelay)))
+    {
+        moveUp();
+        prevUpTime = now;
+    }
+    if (down && (!prevDown || (now - prevDownTime > kAlphabetStrobeDelay)))
+    {
+        moveDown();
+        prevDownTime = now;
+    }
 
     // Draw up caret (assuming textSize = 1)
     tc = (up ? kSelectedColor : kTextColor);
@@ -169,4 +184,16 @@ void SaveScoreScene::drawCarets(AppContext &ctx, int tx, int ty)
 
     prevUp = up;
     prevDown = down;
+}
+
+void SaveScoreScene::moveUp()
+{
+    alphabetIndex_ = (alphabetIndex_ + 1) % kAlphabetSize;
+    payload_.name[cursorIndex_] = kAlphabet[alphabetIndex_];
+}
+
+void SaveScoreScene::moveDown()
+{
+    alphabetIndex_ = (alphabetIndex_ - 1 + kAlphabetSize) % kAlphabetSize;
+    payload_.name[cursorIndex_] = kAlphabet[alphabetIndex_];
 }
