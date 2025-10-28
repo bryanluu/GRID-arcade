@@ -243,8 +243,7 @@ private:
     void movePlayer(AppContext &ctx);
 
     // Visibility
-    // TODO revert back to 1
-    static constexpr Maze::matrix_t kVisibility = 15; // "Medium" visibility from old game
+    static constexpr Maze::matrix_t kVisibility = 1; // "Medium" visibility from old game
 
     // Snacks
 

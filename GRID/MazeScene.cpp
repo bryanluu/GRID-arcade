@@ -75,7 +75,7 @@ void MazeScene::setStage(AppContext &ctx, Stage newStage)
 
 void MazeScene::setup(AppContext &ctx)
 {
-    setStage(ctx, Game); // TODO switch back to Intro once finalized
+    setStage(ctx, Intro);
 }
 
 void MazeScene::loop(AppContext &ctx)
@@ -585,7 +585,7 @@ void MazeScene::movePlayer(AppContext &ctx)
     }
     x = Helpers::clamp(playerX + dx, 1, MATRIX_WIDTH - 2);
     y = Helpers::clamp(playerY + dy, 1, MATRIX_HEIGHT - 2);
-    // if (grid[y][x] != HuePalette::Wall) // TODO re-enable
+    if (grid[y][x] != HuePalette::Wall)
     {
         playerX = x;
         playerY = y;
