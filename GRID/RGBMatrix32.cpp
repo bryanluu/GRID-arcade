@@ -176,7 +176,7 @@ void RGBMatrix32::fillCircle(int cx, int cy, int r, Color333 c)
 // Text helpers
 
 // Move cursor by 1 glyph (5px + 1px spacing) at current scale
-void RGBMatrix32::advance() { cx += ts * 6; }
+void RGBMatrix32::advance() { cx += ts * FONT_CHAR_WIDTH; }
 
 // Set text cursor
 void RGBMatrix32::setCursor(int x, int y)
@@ -196,10 +196,10 @@ void RGBMatrix32::setTextSize(int s) { ts = std::max(1, s); }
 void RGBMatrix32::drawChar(int x, int y, char ch, Color333 c)
 {
     const PixelMap *glyph = FONT5x7[ch - ASCII_START];
-    for (int col = 0; col < 5; ++col)
+    for (int col = 0; col < FONT_GLYPH_WIDTH; ++col)
     {
         PixelColumn bits = glyph[col];
-        for (int row = 0; row < 7; ++row)
+        for (int row = 0; row < FONT_GLYPH_HEIGHT; ++row)
             if (bits & (1u << row))
                 drawPixelScaled(x + col, y + row, c);
     }
@@ -213,7 +213,7 @@ void RGBMatrix32::print(char ch)
     if (ch == '\n')
     {
         cx = lineStartX;
-        cy += ts * 8;
+        cy += ts * (FONT_CHAR_HEIGHT + 1);
         return;
     }
     if (ch < ASCII_START)

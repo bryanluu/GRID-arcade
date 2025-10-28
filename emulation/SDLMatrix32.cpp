@@ -226,7 +226,7 @@ void SDLMatrix32::print(char ch)
     if (ch == '\n')
     {
         cx = lineStartX;
-        cy += ts * FONT_CHAR_HEIGHT;
+        cy += ts * (FONT_CHAR_HEIGHT + 1);
         return;
     }
     if (ch < ASCII_START)
