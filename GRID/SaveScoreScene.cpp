@@ -25,11 +25,12 @@ void SaveScoreScene::loop(AppContext &ctx)
         break;
     case Stage::InputName:
     {
-        InputState state = ctx.input.state();
-        if (state.pressed) // submit name once button is pressed
+        if (submit_) // submit name once button is pressed
         {
             if (submitScoreData(ctx, payload_))
+            {
                 setStage(ctx, Stage::ShowSaved);
+            }
             else
                 setStage(ctx, Stage::ShowError);
         }
@@ -62,7 +63,7 @@ void SaveScoreScene::showIntro(AppContext &ctx)
     int ts = 1;
     ctx.gfx.clear();
     ctx.gfx.setTextSize(ts);
-    ctx.gfx.setTextColor(Colors::Muted::White);
+    ctx.gfx.setTextColor(kTextColor);
     ctx.gfx.setCursor(1, 1);
     ctx.gfx.println("Input");
     ctx.gfx.println("Your");
@@ -74,9 +75,10 @@ void SaveScoreScene::showSaved(AppContext &ctx)
     int ts = 1;
     ctx.gfx.clear();
     ctx.gfx.setTextSize(ts);
-    ctx.gfx.setTextColor(Colors::Muted::White);
+    ctx.gfx.setTextColor(kTextColor);
     ctx.gfx.setCursor(1, 1);
     ctx.gfx.println("Score");
+    ctx.gfx.setTextColor(kSubmitColor);
     ctx.gfx.println("Saved");
 }
 
@@ -85,11 +87,11 @@ void SaveScoreScene::showError(AppContext &ctx)
     int ts = 1;
     ctx.gfx.clear();
     ctx.gfx.setTextSize(ts);
-    ctx.gfx.setTextColor(Colors::Muted::White);
+    ctx.gfx.setTextColor(kTextColor);
     ctx.gfx.setCursor(1, 1);
     ctx.gfx.println("Score");
     ctx.gfx.println("Save");
-    ctx.gfx.setTextColor(Colors::Muted::Red);
+    ctx.gfx.setTextColor(kErrorColor);
     ctx.gfx.println("Error");
 }
 
@@ -109,6 +111,12 @@ void SaveScoreScene::handleInputName(AppContext &ctx)
         moveRight();
 
     drawName(ctx);
+
+    if (submit_)
+    {
+        ctx.gfx.show();
+        ctx.time.sleep(SELECT_WAIT);
+    }
 
     prevLeft = left;
     prevRight = right;
@@ -147,6 +155,11 @@ void SaveScoreScene::drawName(AppContext &ctx)
         else
         {
             tc = kTextColor;
+        }
+        if (ctx.input.state().pressed)
+        {
+            tc = kSubmitColor;
+            submit_ = true;
         }
         ctx.gfx.drawChar(tx, ty, payload_.name[i], tc);
     }

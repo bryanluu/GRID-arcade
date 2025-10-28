@@ -14,6 +14,8 @@ class SaveScoreScene : public Scene
     static constexpr millis_t kAlphabetStrobeDelay = 300; // ms to wait between pulses of select input
     static constexpr Color333 kTextColor = Colors::Muted::White;
     static constexpr Color333 kSelectedColor = ColorHSV333(0, 0, 150);
+    static constexpr Color333 kSubmitColor = Colors::Muted::Green;
+    static constexpr Color333 kErrorColor = Colors::Muted::Red;
     static constexpr int kAlphabetSize = 27;
     static constexpr char kAlphabet[kAlphabetSize + 1] = "_ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     const SceneKind origin_;
@@ -22,6 +24,7 @@ class SaveScoreScene : public Scene
     millis_t startTime_ = 0;
     int cursorIndex_ = 0;
     int alphabetIndex_ = 0;
+    bool submit_ = false;
 
     enum Stage
     {
