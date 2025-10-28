@@ -10,7 +10,7 @@ class SaveScoreScene : public Scene
     const SceneKind origin_;
     const char *originLabel_;
     ScoreData payload_;
-    millis_t startTime = 0;
+    millis_t startTime_ = 0;
 
     enum Stage
     {
@@ -19,10 +19,12 @@ class SaveScoreScene : public Scene
         ShowSaved,
         End
     };
-    Stage stage = Stage::ShowIntro;
+    Stage stage_ = Stage::ShowIntro;
 
     void setStage(AppContext &ctx, Stage newStage);
     void showIntro(AppContext &ctx);
+    void handleInputName(AppContext &ctx);
+    void showSaved(AppContext &ctx);
 
 public:
     SaveScoreScene(SceneKind kind, const char *label, int newScore) : origin_(kind), originLabel_(label)
