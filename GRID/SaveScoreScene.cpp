@@ -89,5 +89,50 @@ void SaveScoreScene::showSaved(AppContext &ctx)
 
 void SaveScoreScene::handleInputName(AppContext &ctx)
 {
-    ctx.gfx.clear(); // TODO implement input name
+    InputState s = ctx.input.state();
+
+    // Basic nav: X left/right to change cursor, up/down to change char
+    static bool prevLeft = false, prevRight = false;
+
+    bool left = (s.x < -HYSTERESIS_THRESHOLD);
+    bool right = (s.x > HYSTERESIS_THRESHOLD);
+
+    if (left && !prevLeft)
+        moveLeft();
+    if (right && !prevRight)
+        moveRight();
+
+    drawName(ctx);
+
+    prevLeft = left;
+    prevRight = right;
+}
+
+void SaveScoreScene::moveLeft()
+{
+    if (cursorIndex_ > 0)
+        --cursorIndex_;
+}
+
+void SaveScoreScene::moveRight()
+{
+    if (cursorIndex_ < payload_.kMaxNameLength - 1)
+        ++cursorIndex_;
+}
+
+void SaveScoreScene::drawName(AppContext &ctx)
+{
+    int ts = 1;
+    int tStartX = 1;
+    int tStartY = 12;
+    ctx.gfx.clear();
+    ctx.gfx.setTextSize(ts);
+    ctx.gfx.setTextColor(Colors::Muted::White);
+    for (int i = 0; i < payload_.kMaxNameLength; ++i)
+    {
+        int tx = i * FONT_CHAR_WIDTH + tStartX;
+        int ty = tStartY;
+        Color333 tc = (i == cursorIndex_ ? Colors::Bright::White : Colors::Muted::White);
+        ctx.gfx.drawChar(tx, ty, payload_.name[i], tc);
+    }
 }
