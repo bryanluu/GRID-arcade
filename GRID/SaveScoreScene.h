@@ -6,9 +6,23 @@
 
 class SaveScoreScene : public Scene
 {
+    static constexpr millis_t kShowTextDuration = (3000); // ms to show a text
     const SceneKind origin_;
     const char *originLabel_;
     ScoreData payload_;
+    millis_t startTime = 0;
+
+    enum Stage
+    {
+        ShowIntro,
+        InputName,
+        ShowSaved,
+        End
+    };
+    Stage stage = Stage::ShowIntro;
+
+    void setStage(AppContext &ctx, Stage newStage);
+    void showIntro(AppContext &ctx);
 
 public:
     SaveScoreScene(SceneKind kind, const char *label, int newScore) : origin_(kind), originLabel_(label)

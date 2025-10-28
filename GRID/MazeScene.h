@@ -347,7 +347,6 @@ public:
 
     SceneKind kind() const override { return SceneKind::Maze; }
     const char *label() const override { return "Maze"; }
-    int finalScore() { return score; }
 };
 
 #endif // MAZE_SCENE_H

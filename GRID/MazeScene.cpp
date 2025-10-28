@@ -141,10 +141,16 @@ void MazeScene::loop(AppContext &ctx)
             }
             else
             {
-                if (loadHighScore(ctx, highScore))
+                // if the loaded high score is still the highscore, show it then end the game,
+                if (loadHighScore(ctx, highScore) && highScore.score >= score)
+                {
                     endState_ = ShowHighScore;
-                else // TODO start SaveScoreScene if score > highScore.score
-                    endState_ = EndGame;
+                }
+                else // otherwise transition to SaveScoreScene
+                {
+                    ctx.bus->toSaveScore(this->kind(), this->label(), score);
+                    return;
+                }
                 lastUpdateTime = now;
             }
             break;

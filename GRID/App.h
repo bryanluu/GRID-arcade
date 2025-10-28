@@ -185,7 +185,6 @@ public:
         bus.toSaveScore = [this](Scene::SceneKind kind, const char *label, int newScore)
         {
             // Create SaveScoreScene with the passed score
-            // auto saveScene = std::make_shared<SaveScoreScene>(kind, label, newScore);
             this->setScene<SaveScoreScene>(kind, label, newScore);
         };
     }
