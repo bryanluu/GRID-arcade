@@ -65,7 +65,7 @@ void setup()
 {
     Serial.begin(115200);
 
-    randomSeed(analogRead(0));
+    Helpers::randomSeed(analogRead(A0));
     pinMode(0, INPUT_PULLUP);
     inputProvider.init();
     input.init(&inputProvider);
