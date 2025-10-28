@@ -3,21 +3,6 @@
 
 void SaveScoreScene::setStage(AppContext &ctx, Stage newStage)
 {
-    switch (newStage)
-    {
-    case Stage::ShowIntro:
-
-        break;
-    case Stage::InputName:
-
-        break;
-    case Stage::ShowSaved:
-
-        break;
-    case Stage::End:
-
-        break;
-    }
     startTime_ = ctx.time.nowMs();
     stage_ = newStage;
 }
@@ -43,8 +28,10 @@ void SaveScoreScene::loop(AppContext &ctx)
         InputState state = ctx.input.state();
         if (state.pressed) // submit name once button is pressed
         {
-            // TODO implement submit storage
-            setStage(ctx, Stage::ShowSaved);
+            if (submitScoreData(ctx, payload_))
+                setStage(ctx, Stage::ShowSaved);
+            else
+                setStage(ctx, Stage::ShowError);
         }
         else
         {
@@ -55,6 +42,12 @@ void SaveScoreScene::loop(AppContext &ctx)
     case Stage::ShowSaved:
         if (now - startTime_ < kShowTextDuration)
             showSaved(ctx);
+        else
+            setStage(ctx, Stage::End);
+        break;
+    case Stage::ShowError:
+        if (now - startTime_ < kShowTextDuration)
+            showError(ctx);
         else
             setStage(ctx, Stage::End);
         break;
@@ -85,6 +78,19 @@ void SaveScoreScene::showSaved(AppContext &ctx)
     ctx.gfx.setCursor(1, 1);
     ctx.gfx.println("Score");
     ctx.gfx.println("Saved");
+}
+
+void SaveScoreScene::showError(AppContext &ctx)
+{
+    int ts = 1;
+    ctx.gfx.clear();
+    ctx.gfx.setTextSize(ts);
+    ctx.gfx.setTextColor(Colors::Muted::White);
+    ctx.gfx.setCursor(1, 1);
+    ctx.gfx.println("Score");
+    ctx.gfx.println("Save");
+    ctx.gfx.setTextColor(Colors::Muted::Red);
+    ctx.gfx.println("Error");
 }
 
 void SaveScoreScene::handleInputName(AppContext &ctx)
@@ -196,4 +202,9 @@ void SaveScoreScene::moveDown()
 {
     alphabetIndex_ = (alphabetIndex_ - 1 + kAlphabetSize) % kAlphabetSize;
     payload_.name[cursorIndex_] = kAlphabet[alphabetIndex_];
+}
+
+bool SaveScoreScene::submitScoreData(AppContext &ctx, ScoreData &payload)
+{
+    return false; // TODO implement
 }

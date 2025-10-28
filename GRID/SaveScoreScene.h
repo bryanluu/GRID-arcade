@@ -28,6 +28,7 @@ class SaveScoreScene : public Scene
         ShowIntro,
         InputName,
         ShowSaved,
+        ShowError,
         End
     };
     Stage stage_ = Stage::ShowIntro;
@@ -41,7 +42,9 @@ class SaveScoreScene : public Scene
     void moveDown();
     void drawName(AppContext &ctx);
     void drawCarets(AppContext &ctx, int tx, int ty);
+    bool submitScoreData(AppContext &ctx, ScoreData &payload);
     void showSaved(AppContext &ctx);
+    void showError(AppContext &ctx);
 
 public:
     SaveScoreScene(SceneKind kind, const char *label, int newScore) : origin_(kind), originLabel_(label)
