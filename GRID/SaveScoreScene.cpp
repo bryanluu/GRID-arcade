@@ -1,6 +1,12 @@
 #include "SaveScoreScene.h"
 #include "SceneBus.h"
 
+constexpr Color333 SaveScoreScene::kTextColor;
+constexpr Color333 SaveScoreScene::kSelectedColor;
+constexpr Color333 SaveScoreScene::kSubmitColor;
+constexpr Color333 SaveScoreScene::kErrorColor;
+constexpr char SaveScoreScene::kAlphabet[];
+
 void SaveScoreScene::setStage(AppContext &ctx, Stage newStage)
 {
     startTime_ = ctx.time.nowMs();
