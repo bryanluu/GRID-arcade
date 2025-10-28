@@ -102,8 +102,8 @@ void SaveScoreScene::handleInputName(AppContext &ctx)
     // Basic nav: X left/right to change cursor
     static bool prevLeft = false, prevRight = false;
 
-    bool left = (s.x < -HYSTERESIS_THRESHOLD);
-    bool right = (s.x > HYSTERESIS_THRESHOLD);
+    bool left = (s.x < -kHysteresisThreshold);
+    bool right = (s.x > kHysteresisThreshold);
 
     if (left && !prevLeft)
         moveLeft();
@@ -115,7 +115,7 @@ void SaveScoreScene::handleInputName(AppContext &ctx)
     if (submit_)
     {
         ctx.gfx.show();
-        ctx.time.sleep(SELECT_WAIT);
+        ctx.time.sleep(kSubmitPause);
     }
 
     prevLeft = left;
@@ -177,8 +177,8 @@ void SaveScoreScene::drawCarets(AppContext &ctx, int tx, int ty)
     static bool prevUp = 0, prevDown = 0;
     static millis_t prevUpTime = 0, prevDownTime = 0;
 
-    bool up = (s.y < -HYSTERESIS_THRESHOLD);
-    bool down = (s.y > HYSTERESIS_THRESHOLD);
+    bool up = (s.y < -kHysteresisThreshold);
+    bool down = (s.y > kHysteresisThreshold);
 
     if (up && (!prevUp || (now - prevUpTime > kAlphabetStrobeDelay)))
     {

@@ -8,8 +8,8 @@
 class SaveScoreScene : public Scene
 {
     // Basic nav: X left/right to change selection, button to activate
-    static constexpr float HYSTERESIS_THRESHOLD = 0.45f;  // Simple hysteresis with thresholds
-    static constexpr millis_t SELECT_WAIT = 500;          // wait after select for drama
+    static constexpr float kHysteresisThreshold = 0.45f;  // Simple hysteresis with thresholds
+    static constexpr millis_t kSubmitPause = 100;         // wait after select for drama
     static constexpr millis_t kShowTextDuration = (3000); // ms to show a text
     static constexpr millis_t kAlphabetStrobeDelay = 300; // ms to wait between pulses of select input
     static constexpr Color333 kTextColor = Colors::Muted::White;
