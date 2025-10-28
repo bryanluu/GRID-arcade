@@ -206,5 +206,7 @@ void SaveScoreScene::moveDown()
 
 bool SaveScoreScene::submitScoreData(AppContext &ctx, ScoreData &payload)
 {
-    return false; // TODO implement
+    char filename[10];
+    snprintf(filename, 10, "%s.%s", originLabel_, payload.kFileExtension);
+    return payload.save(ctx.storage, ctx.logger, filename);
 }
