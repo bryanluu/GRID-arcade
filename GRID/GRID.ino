@@ -64,10 +64,6 @@ static uint16_t fps_frames{};
 void setup()
 {
     Serial.begin(115200);
-    while (!Serial) // TODO remove for final build
-    {
-        delay(10);
-    }
 
     randomSeed(analogRead(0));
     pinMode(0, INPUT_PULLUP);
