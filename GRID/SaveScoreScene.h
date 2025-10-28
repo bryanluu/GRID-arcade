@@ -3,6 +3,7 @@
 
 #include "Scene.h"
 #include "ScoreData.h"
+#include "Colors.h"
 
 class SaveScoreScene : public Scene
 {
@@ -10,6 +11,8 @@ class SaveScoreScene : public Scene
     static constexpr float HYSTERESIS_THRESHOLD = 0.45f;  // Simple hysteresis with thresholds
     static const millis_t SELECT_WAIT = 500;              // wait after select for drama
     static constexpr millis_t kShowTextDuration = (3000); // ms to show a text
+    static constexpr Color333 kTextColor = Colors::Muted::White;
+    static constexpr Color333 kSelectedColor = ColorHSV333(0, 0, 150);
     const SceneKind origin_;
     const char *originLabel_;
     ScoreData payload_;
@@ -31,6 +34,7 @@ class SaveScoreScene : public Scene
     void moveLeft();
     void moveRight();
     void drawName(AppContext &ctx);
+    void drawCarets(AppContext &ctx, int tx, int ty);
     void showSaved(AppContext &ctx);
 
 public:

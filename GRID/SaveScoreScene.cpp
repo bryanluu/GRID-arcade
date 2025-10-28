@@ -91,7 +91,7 @@ void SaveScoreScene::handleInputName(AppContext &ctx)
 {
     InputState s = ctx.input.state();
 
-    // Basic nav: X left/right to change cursor, up/down to change char
+    // Basic nav: X left/right to change cursor
     static bool prevLeft = false, prevRight = false;
 
     bool left = (s.x < -HYSTERESIS_THRESHOLD);
@@ -132,7 +132,41 @@ void SaveScoreScene::drawName(AppContext &ctx)
     {
         int tx = i * FONT_CHAR_WIDTH + tStartX;
         int ty = tStartY;
-        Color333 tc = (i == cursorIndex_ ? Colors::Bright::White : Colors::Muted::White);
+        Color333 tc;
+        if (i == cursorIndex_)
+        {
+            tc = kSelectedColor;
+            drawCarets(ctx, tx, ty);
+        }
+        else
+        {
+            tc = kTextColor;
+        }
         ctx.gfx.drawChar(tx, ty, payload_.name[i], tc);
     }
+}
+
+void SaveScoreScene::drawCarets(AppContext &ctx, int tx, int ty)
+{
+    InputState s = ctx.input.state();
+    Color333 tc;
+
+    // Basic nav: X up/down to change char
+    static bool prevUp = false, prevDown = false;
+
+    bool up = (s.y < -HYSTERESIS_THRESHOLD);
+    bool down = (s.y > HYSTERESIS_THRESHOLD);
+
+    // Draw up caret (assuming textSize = 1)
+    tc = (up ? kSelectedColor : kTextColor);
+    ctx.gfx.drawLine(tx, ty - 2, tx + 2, ty - 4, tc);
+    ctx.gfx.drawLine(tx + 3, ty - 3, tx + 4, ty - 2, tc);
+
+    // Draw down caret (assuming textSize = 1)
+    tc = (down ? kSelectedColor : kTextColor);
+    ctx.gfx.drawLine(tx, ty + FONT_CHAR_HEIGHT + 1, tx + 2, ty + FONT_CHAR_HEIGHT + 3, tc);
+    ctx.gfx.drawLine(tx + 3, ty + FONT_CHAR_HEIGHT + 2, tx + 4, ty + FONT_CHAR_HEIGHT + 1, tc);
+
+    prevUp = up;
+    prevDown = down;
 }
