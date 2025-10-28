@@ -213,13 +213,13 @@ void SaveScoreScene::drawCarets(AppContext &ctx, int tx, int ty)
 
 void SaveScoreScene::moveUp()
 {
-    alphabetIndex_ = (alphabetIndex_ + 1) % kAlphabetSize;
+    alphabetIndex_ = (alphabetIndex_ - 1 + kAlphabetSize) % kAlphabetSize;
     payload_.name[cursorIndex_] = kAlphabet[alphabetIndex_];
 }
 
 void SaveScoreScene::moveDown()
 {
-    alphabetIndex_ = (alphabetIndex_ - 1 + kAlphabetSize) % kAlphabetSize;
+    alphabetIndex_ = (alphabetIndex_ + 1) % kAlphabetSize;
     payload_.name[cursorIndex_] = kAlphabet[alphabetIndex_];
 }
 
