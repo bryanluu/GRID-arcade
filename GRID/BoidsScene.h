@@ -43,12 +43,13 @@ class BoidsScene final : public Scene
 
   void placeBoid(Boid *boid);
   void constrainSpeed(Boid *boid);
+  void controlPlayerBoid(AppContext &ctx);
   void avoidEdges(Boid *boid);
   void constrainPosition(Boid *boid);
   void followNeighbors(Boid *boid);
   void avoidOthers(Boid *boid);
   void flyWithFlock(Boid *boid, Boid *flock);
-  void updateBoid(Boid *boid, Boid *flock);
+  void updateBoid(AppContext &ctx, Boid *boid, Boid *flock);
   void drawBoid(Matrix32 &gfx, Boid *boid);
 
 public:

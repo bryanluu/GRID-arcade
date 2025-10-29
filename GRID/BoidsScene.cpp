@@ -114,11 +114,23 @@ void BoidsScene::flyWithFlock(Boid *boid, Boid *flock)
 }
 
 /*
+    Controls the player boid to follow input
+*/
+void BoidsScene::controlPlayerBoid(AppContext &ctx)
+{
+    Boid &player = flock[playerIndex];
+    InputState s = ctx.input.state();
+
+    player.velocity = add(player.velocity, s.vec());
+}
+
+/*
     Update loop for indivual Boid
  */
-void BoidsScene::updateBoid(Boid *boid, Boid *flock)
+void BoidsScene::updateBoid(AppContext &ctx, Boid *boid, Boid *flock)
 {
     flyWithFlock(boid, flock);
+    controlPlayerBoid(ctx);
     avoidEdges(boid);
     constrainSpeed(boid);
     boid->position = add(boid->position, boid->velocity);
@@ -174,7 +186,7 @@ void BoidsScene::loop(AppContext &ctx)
     for (int i = 0; i < N_BOIDS; i++)
     {
         Boid *boid = &flock[i];
-        updateBoid(boid, flock);
+        updateBoid(ctx, boid, flock);
         drawBoid(ctx.gfx, boid);
     }
 
