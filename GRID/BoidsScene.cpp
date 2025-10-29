@@ -120,8 +120,11 @@ void BoidsScene::controlPlayerBoid(AppContext &ctx)
 {
     Boid &player = flock[playerIndex];
     InputState s = ctx.input.state();
-
-    player.velocity = add(player.velocity, s.vec());
+    Vector original = player.velocity;
+    Vector input = multiply(s.vec(), INPUT_FOLLOW_SCALE);
+    player.velocity = add(player.velocity, input);
+    Vector normalized = multiply(player.velocity, 1.0 / length(player.velocity));
+    player.velocity = multiply(normalized, length(original));
 }
 
 /*

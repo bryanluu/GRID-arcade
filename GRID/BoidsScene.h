@@ -17,6 +17,7 @@
 #define MATCHING_FACTOR 0.06   // how quickly boids should follow flock?
 #define CENTERING_FACTOR 0.005 // how closely do boids follow flock?
 #define LONELY_LIMIT 2         // below how many separated boids is considered 'lonely'?
+#define INPUT_FOLLOW_SCALE 0.2 // how much should the input affect the player Boid's movement
 
 // Boid drawing
 #define DEFAULT_COLOR (Color333{4, 4, 7}) // color of a boid by default
