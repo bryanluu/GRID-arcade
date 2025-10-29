@@ -5,11 +5,10 @@
 #include "Matrix32.h"
 #include <cmath>
 
-
 /*
     Place the given Boid somewhere randomly along the screen
  */
-void BoidsScene::placeBoid(Boid* boid)
+void BoidsScene::placeBoid(Boid *boid)
 {
     boid->position.x = Helpers::random(MATRIX_WIDTH);
     boid->position.y = Helpers::random(MATRIX_HEIGHT);
@@ -23,7 +22,7 @@ void BoidsScene::placeBoid(Boid* boid)
 /*
     Make Boid avoid screen edges
  */
-void BoidsScene::avoidEdges(Boid* boid)
+void BoidsScene::avoidEdges(Boid *boid)
 {
     if (boid->position.x < MARGIN)
         boid->velocity.x += TURN_FACTOR;
@@ -38,34 +37,34 @@ void BoidsScene::avoidEdges(Boid* boid)
 /*
     Ensure Boid speed remains within range
  */
-void BoidsScene::constrainSpeed(Boid* boid)
+void BoidsScene::constrainSpeed(Boid *boid)
 {
     double speed = sqrt(boid->velocity.x * boid->velocity.x + boid->velocity.y * boid->velocity.y);
     if (speed > MAX_SPEED)
     {
-        boid->velocity.x = (boid->velocity.x * MAX_SPEED) / speed; 
-        boid->velocity.y = (boid->velocity.y * MAX_SPEED) / speed; 
+        boid->velocity.x = (boid->velocity.x * MAX_SPEED) / speed;
+        boid->velocity.y = (boid->velocity.y * MAX_SPEED) / speed;
     }
     if (speed < MIN_SPEED)
     {
-        boid->velocity.x = (boid->velocity.x * MIN_SPEED) / speed; 
-        boid->velocity.y = (boid->velocity.y * MIN_SPEED) / speed; 
+        boid->velocity.x = (boid->velocity.x * MIN_SPEED) / speed;
+        boid->velocity.y = (boid->velocity.y * MIN_SPEED) / speed;
     }
 }
 
 /*
     Constrain Boid to always stay within screen
  */
-void BoidsScene::constrainPosition(Boid* boid)
+void BoidsScene::constrainPosition(Boid *boid)
 {
-    boid->position.x = Helpers::clamp(boid->position.x, 0.0,  double(MATRIX_WIDTH-1));
-    boid->position.y = Helpers::clamp(boid->position.y, 0.0, double(MATRIX_HEIGHT-1));
+    boid->position.x = Helpers::clamp(boid->position.x, 0.0, double(MATRIX_WIDTH - 1));
+    boid->position.y = Helpers::clamp(boid->position.y, 0.0, double(MATRIX_HEIGHT - 1));
 }
 
 /*
     Follow neighboring boids
  */
-void BoidsScene::followNeighbors(Boid* boid)
+void BoidsScene::followNeighbors(Boid *boid)
 {
     if (boid->neighbors > 0)
     {
@@ -79,7 +78,7 @@ void BoidsScene::followNeighbors(Boid* boid)
 /*
     Avoid other boids
  */
-void BoidsScene::avoidOthers(Boid* boid)
+void BoidsScene::avoidOthers(Boid *boid)
 {
     boid->velocity = add(boid->velocity, multiply(boid->closeness, AVOID_FACTOR));
 }
@@ -87,7 +86,7 @@ void BoidsScene::avoidOthers(Boid* boid)
 /*
     Fly with the flock
  */
-void BoidsScene::flyWithFlock(Boid* boid, Boid* flock)
+void BoidsScene::flyWithFlock(Boid *boid, Boid *flock)
 {
     zero(&boid->closeness);
     zero(&boid->avgPosition);
@@ -95,7 +94,7 @@ void BoidsScene::flyWithFlock(Boid* boid, Boid* flock)
     boid->neighbors = 0;
     for (int i = 0; i < N_BOIDS; i++)
     {
-        Boid* other = (flock + i);
+        Boid *other = (flock + i);
         if (boid == other)
             continue;
 
@@ -115,11 +114,26 @@ void BoidsScene::flyWithFlock(Boid* boid, Boid* flock)
 }
 
 /*
+    Controls the player boid to follow input
+*/
+void BoidsScene::controlPlayerBoid(AppContext &ctx)
+{
+    Boid &player = flock[playerIndex];
+    InputState s = ctx.input.state();
+    Vector original = player.velocity;
+    Vector input = multiply(s.vec(), INPUT_FOLLOW_SCALE);
+    player.velocity = add(player.velocity, input);
+    Vector normalized = multiply(player.velocity, 1.0 / length(player.velocity));
+    player.velocity = multiply(normalized, length(original));
+}
+
+/*
     Update loop for indivual Boid
  */
-void BoidsScene::updateBoid(Boid* boid, Boid* flock)
+void BoidsScene::updateBoid(AppContext &ctx, Boid *boid, Boid *flock)
 {
     flyWithFlock(boid, flock);
+    controlPlayerBoid(ctx);
     avoidEdges(boid);
     constrainSpeed(boid);
     boid->position = add(boid->position, boid->velocity);
@@ -127,29 +141,38 @@ void BoidsScene::updateBoid(Boid* boid, Boid* flock)
 }
 
 /*
+    Returns whether position is too close to a wall
+*/
+bool BoidsScene::isTooCloseToWall(int x, int y)
+{
+    return ((x == 0) || (x == MATRIX_WIDTH - 1) || (y == 0) || (y == MATRIX_HEIGHT - 1));
+}
+
+/*
     Draw an individual Boid
 */
-void BoidsScene::drawBoid(Matrix32 &gfx, Boid* boid)
+void BoidsScene::drawBoid(Matrix32 &gfx, Boid *boid)
 {
     MatrixPosition x = round(boid->position.x);
     MatrixPosition y = round(boid->position.y);
-    Color333 color = DEFAULT_COLOR;
+    bool isPlayer = (boid - flock == playerIndex);
+    Color333 color = (isPlayer ? Color333{1, 4, 1} : DEFAULT_COLOR);
 
-    if ((x == 0) || (x == MATRIX_WIDTH-1) || (y == 0) || (y == MATRIX_HEIGHT-1)) // boid is too close to the wall
+    if (isTooCloseToWall(x, y)) // boid is too close to the wall
     {
-      color = DANGER_COLOR;
+        color = (isPlayer ? Color333{7, 4, 0} : DANGER_COLOR);
     }
     else if (boid->neighbors < LONELY_LIMIT) // boid is not part of a flock
     {
-      color = LONELY_COLOR;
+        color = (isPlayer ? Color333{0, 4, 0} : LONELY_COLOR);
     }
     else
     {
-      double frac_speed_limit = abs(MAX_SPEED - length(boid->velocity))/MAX_SPEED;
-      if (frac_speed_limit > 0.25) // boid is too slow
-        color = SLOW_COLOR;
+        double frac_speed_limit = abs(MAX_SPEED - length(boid->velocity)) / MAX_SPEED;
+        if (frac_speed_limit > 0.25) // boid is too slow
+            color = (isPlayer ? Color333{0, 4, 0} : SLOW_COLOR);
     }
-    
+
     gfx.drawPixel(x, y, color);
 }
 
@@ -170,8 +193,8 @@ void BoidsScene::loop(AppContext &ctx)
     // update flock
     for (int i = 0; i < N_BOIDS; i++)
     {
-        Boid* boid = &flock[i];
-        updateBoid(boid, flock);
+        Boid *boid = &flock[i];
+        updateBoid(ctx, boid, flock);
         drawBoid(ctx.gfx, boid);
     }
 

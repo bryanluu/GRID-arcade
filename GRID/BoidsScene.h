@@ -17,6 +17,7 @@
 #define MATCHING_FACTOR 0.06   // how quickly boids should follow flock?
 #define CENTERING_FACTOR 0.005 // how closely do boids follow flock?
 #define LONELY_LIMIT 2         // below how many separated boids is considered 'lonely'?
+#define INPUT_FOLLOW_SCALE 0.2 // how much should the input affect the player Boid's movement
 
 // Boid drawing
 #define DEFAULT_COLOR (Color333{4, 4, 7}) // color of a boid by default
@@ -38,15 +39,18 @@ class BoidsScene final : public Scene
 {
   // creates flock
   Boid flock[N_BOIDS];
+  int playerIndex = 0; // designate first boid as player Boids
 
   void placeBoid(Boid *boid);
   void constrainSpeed(Boid *boid);
+  void controlPlayerBoid(AppContext &ctx);
   void avoidEdges(Boid *boid);
   void constrainPosition(Boid *boid);
   void followNeighbors(Boid *boid);
   void avoidOthers(Boid *boid);
   void flyWithFlock(Boid *boid, Boid *flock);
-  void updateBoid(Boid *boid, Boid *flock);
+  void updateBoid(AppContext &ctx, Boid *boid, Boid *flock);
+  bool isTooCloseToWall(int x, int y);
   void drawBoid(Matrix32 &gfx, Boid *boid);
 
 public:
