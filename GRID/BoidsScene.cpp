@@ -133,7 +133,8 @@ void BoidsScene::controlPlayerBoid(AppContext &ctx)
 void BoidsScene::updateBoid(AppContext &ctx, Boid *boid, Boid *flock)
 {
     flyWithFlock(boid, flock);
-    controlPlayerBoid(ctx);
+    if (boid - flock == playerIndex)
+        controlPlayerBoid(ctx);
     avoidEdges(boid);
     constrainSpeed(boid);
     boid->position = add(boid->position, boid->velocity);
