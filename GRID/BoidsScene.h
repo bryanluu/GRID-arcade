@@ -24,7 +24,6 @@
 #define DANGER_COLOR (Color333{7, 2, 2})  // color of a boid in danger
 #define LONELY_COLOR (Color333{7, 7, 1})  // color of a boid that is lonely
 #define SLOW_COLOR (Color333{1, 1, 7})    // color of a slow boid
-#define PLAYER_COLOR (Color333{0, 4, 0})  // color of the player boid
 
 struct Boid
 {
@@ -51,6 +50,7 @@ class BoidsScene final : public Scene
   void avoidOthers(Boid *boid);
   void flyWithFlock(Boid *boid, Boid *flock);
   void updateBoid(AppContext &ctx, Boid *boid, Boid *flock);
+  bool isTooCloseToWall(int x, int y);
   void drawBoid(Matrix32 &gfx, Boid *boid);
 
 public:

@@ -141,31 +141,36 @@ void BoidsScene::updateBoid(AppContext &ctx, Boid *boid, Boid *flock)
 }
 
 /*
+    Returns whether position is too close to a wall
+*/
+bool BoidsScene::isTooCloseToWall(int x, int y)
+{
+    return ((x == 0) || (x == MATRIX_WIDTH - 1) || (y == 0) || (y == MATRIX_HEIGHT - 1));
+}
+
+/*
     Draw an individual Boid
 */
 void BoidsScene::drawBoid(Matrix32 &gfx, Boid *boid)
 {
     MatrixPosition x = round(boid->position.x);
     MatrixPosition y = round(boid->position.y);
-    Color333 color = DEFAULT_COLOR;
+    bool isPlayer = (boid - flock == playerIndex);
+    Color333 color = (isPlayer ? Color333{1, 4, 1} : DEFAULT_COLOR);
 
-    if (boid - flock == playerIndex)
+    if (isTooCloseToWall(x, y)) // boid is too close to the wall
     {
-        color = PLAYER_COLOR;
-    }
-    else if ((x == 0) || (x == MATRIX_WIDTH - 1) || (y == 0) || (y == MATRIX_HEIGHT - 1)) // boid is too close to the wall
-    {
-        color = DANGER_COLOR;
+        color = (isPlayer ? Color333{7, 4, 0} : DANGER_COLOR);
     }
     else if (boid->neighbors < LONELY_LIMIT) // boid is not part of a flock
     {
-        color = LONELY_COLOR;
+        color = (isPlayer ? Color333{0, 4, 0} : LONELY_COLOR);
     }
     else
     {
         double frac_speed_limit = abs(MAX_SPEED - length(boid->velocity)) / MAX_SPEED;
         if (frac_speed_limit > 0.25) // boid is too slow
-            color = SLOW_COLOR;
+            color = (isPlayer ? Color333{0, 4, 0} : SLOW_COLOR);
     }
 
     gfx.drawPixel(x, y, color);
