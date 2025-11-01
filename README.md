@@ -2,13 +2,39 @@
 
 This is the **GRID** (**G**aming **R**etro **I**nteractive **D**evice), my fun hobby project to create a custom arcade box.
 
-## Components
+## What can it do?
+
+First it welcomes the player:
+
+![a GIF of the intro of the GRID-arcade, showing a welcome message](images/GRID_intro.gif)
+
+Then you can select a program from the menu:
+
+![the menu of the GRID-arcade, showing Maze, Boids and Calib as options](images/GRID_menu.gif)
+
+You can play a Maze escape game:
+
+![GIF footage of a playthrough of the Maze game](images/GRID_maze.gif)
+
+You can fly around as a [Boid](https://en.wikipedia.org/wiki/Boids) (digital bird):
+
+![GIF footage of the Boids program](images/GRID_boids.gif)
+
+You can adjust the input calibratin, if something feels off:
+
+![GIF footage of the Calib program](images/GRID_calib.gif)
+
+## Hardware
 The display is a [32x32 RGB LED matrix](https://www.adafruit.com/product/1484) connected with an [Adafruit Metro M0 (SAMD21)](https://www.adafruit.com/product/3505) equipped with a [Adafruit RGB Matrix Shield](https://www.adafruit.com/product/2601). The unit is controlled by a PS2 Joystick hooked up to the Metro.
 
 Everything is housed in a custom unit built in collaboration with my friend [Herman Tabunganua](https://www.linkedin.com/in/herman-tubungbanua/).
 
+The Arduino IDE was used to compile and program the GRID software to the Adafruit MCU.
+
+![image of the GRID-arcade enclosure](images/maze_shot.jpg)
+
 ## Software
-The GRID arcade can also be run as a desktop emulation. The software for each target is identical, in the `App` class.
+The GRID arcade can also be run as a desktop emulation. The software for each target is identical, to enable hardware-independent development and debugging. The software emulation uses the SDL library to  
 
 The emulation uses a simple Makefile with debug-friendly targets.
 
