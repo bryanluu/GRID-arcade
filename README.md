@@ -20,7 +20,7 @@ You can fly around as a [Boid](https://en.wikipedia.org/wiki/Boids) (digital bir
 
 ![GIF footage of the Boids program](images/GRID_boids.gif)
 
-You can adjust the input calibratin, if something feels off:
+You can adjust the input calibration, if something feels off:
 
 ![GIF footage of the Calib program](images/GRID_calib.gif)
 
