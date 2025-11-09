@@ -34,7 +34,20 @@ The Arduino IDE was used to compile and program the GRID software to the Adafrui
 ![image of the GRID-arcade enclosure](images/maze_shot.jpg)
 
 ## Software
-The GRID arcade can also be run as a desktop emulation. The software for each target is identical, to enable hardware-independent development and debugging. The software emulation uses the SDL library to  
+The GRID arcade can also be run as a desktop emulation. The software for each target is identical, to enable hardware-independent development and debugging. 
+
+The software emulation uses the SDL library on a fixed-step timing loop to simulate the GRID logic and display. All the programs in GRID on hardware are available on the emulation. The main difference is that SDL displays the pixels as blocks. See screenshots below for how the emulation looks:
+
+![screenshot of the GRID-arcade intro](images/emu_intro.png)
+![screenshot of the GRID maze game](images/emu_maze.png)
+![screenshot of the GRID boids program](images/emu_boids.png)
+
+In addition, an "LED-mode" switch (by pressing the L key) can be activated for a more faithful look. 
+
+![screenshot of the LED mode for GRID maze](images/emu_maze_led.png)
+![screenshot of the LED mode for GRID boids](images/emu_boids_led.png)
+
+## Running the GRID emulation
 
 The emulation uses a simple Makefile with debug-friendly targets.
 
