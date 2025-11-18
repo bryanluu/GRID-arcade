@@ -12,10 +12,10 @@ class SaveScoreScene : public Scene
     static constexpr millis_t kSubmitPause = 100;         // wait after select for drama
     static constexpr millis_t kShowTextDuration = (3000); // ms to show a text
     static constexpr millis_t kAlphabetStrobeDelay = 300; // ms to wait between pulses of select input
-    static constexpr Color333 kTextColor = Colors::Muted::White;
-    static constexpr Color333 kSelectedColor = ColorHSV333(0, 0, 150);
-    static constexpr Color333 kSubmitColor = Colors::Muted::Green;
-    static constexpr Color333 kErrorColor = Colors::Muted::Red;
+    static const Color333 kTextColor;
+    static const Color333 kSelectedColor;
+    static const Color333 kSubmitColor;
+    static const Color333 kErrorColor;
     static constexpr int kAlphabetSize = 27;
     static constexpr char kAlphabet[kAlphabetSize + 1] = "_ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     const SceneKind origin_;

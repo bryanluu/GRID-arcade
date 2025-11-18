@@ -141,7 +141,7 @@ void run_file_storage_smoke(FileStorage &storage, ILogger &logger)
 
 void TestScene::run_storage_smoke(IStorage &storage, ILogger &logger)
 {
-    FileStorage &fs = dynamic_cast<FileStorage &>(storage);
+    FileStorage &fs = static_cast<FileStorage &>(storage);
     run_file_storage_smoke(fs, logger);
 }
 
@@ -189,7 +189,7 @@ void run_flash_storage_smoke(FlashStorage &storage, ILogger &logger)
 
 void TestScene::run_storage_smoke(IStorage &storage, ILogger &logger)
 {
-    FlashStorage &fs = dynamic_cast<FlashStorage &>(storage);
+    FlashStorage &fs = static_cast<FlashStorage &>(storage);
     run_flash_storage_smoke(fs, logger);
 }
 

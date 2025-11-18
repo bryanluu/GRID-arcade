@@ -20,6 +20,13 @@ struct AppContext
 
     // Optional scene router; set by App. May be null in older code.
     SceneBus *bus = nullptr;
+
+    AppContext(Matrix32 &gfx,
+               Timing &time,
+               Input &input,
+               ILogger &logger,
+               IStorage &storage)
+        : gfx(gfx), time(time), input(input), logger(logger), storage(storage) {}
 };
 
 #endif // APP_CONTEXT_H
