@@ -3,6 +3,7 @@
 
 #include "Scene.h"
 #include "Colors.h"
+#include "ScoreData.h"
 #include <bitset>
 
 class Snake
@@ -72,6 +73,11 @@ class SnakeScene : public Scene
         EndGame
     };
     Stage stage = Stage::Game;
+
+    ScoreData highScore_;
+    bool loadHighScore(AppContext &ctx, ScoreData &highScore);
+    void showFinalScore(AppContext &ctx, int score);
+    void showHighScore(AppContext &ctx, const ScoreData &data);
 
 public:
     SnakeScene();

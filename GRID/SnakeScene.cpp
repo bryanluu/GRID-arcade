@@ -184,6 +184,50 @@ void SnakeScene::placeFood()
     foodY_ = i / MATRIX_WIDTH;
 }
 
+void SnakeScene::showFinalScore(AppContext &ctx, int score)
+{
+    int ts = 1;
+    ctx.gfx.clear();
+    ctx.gfx.setTextSize(ts);
+    ctx.gfx.setTextColor(Colors::Muted::White);
+    ctx.gfx.setCursor(1, 1);
+    ctx.gfx.println("Score");
+    ctx.gfx.setTextColor(Colors::Muted::Green);
+    ctx.gfx.setCursor(1, 10);
+    char buf[6];
+    snprintf(buf, 6, "%d", score);
+    ctx.gfx.print(buf);
+}
+
+/**
+ * @brief loads the saved high score
+ *
+ * @returns true if the high score was loaded
+ * @returns false if the load was not successful
+ */
+bool SnakeScene::loadHighScore(AppContext &ctx, ScoreData &highScore)
+{
+    char filename[10];
+    snprintf(filename, 10, "%s.%s", label(), highScore.kFileExtension);
+    return highScore.load(ctx.storage, ctx.logger, filename);
+}
+
+void SnakeScene::showHighScore(AppContext &ctx, const ScoreData &data)
+{
+    int ts = 1;
+    ctx.gfx.clear();
+    ctx.gfx.setTextSize(ts);
+    ctx.gfx.setTextColor(Colors::Muted::White);
+    ctx.gfx.setCursor(1, 1);
+    ctx.gfx.println("Best:");
+    ctx.gfx.setTextColor(Colors::Muted::Green);
+    ctx.gfx.setCursor(1, 10);
+    ctx.gfx.println(data.name);
+    char buf[6];
+    snprintf(buf, 6, "%d", data.score);
+    ctx.gfx.println(buf);
+}
+
 void SnakeScene::loop(AppContext &ctx)
 {
     ctx.gfx.clear();
@@ -192,7 +236,6 @@ void SnakeScene::loop(AppContext &ctx)
     {
     case Stage::Game:
     {
-
         // Control snake direction based on input
         InputState input = ctx.input.state();
         if (input.x < -0.5f)
@@ -231,28 +274,37 @@ void SnakeScene::loop(AppContext &ctx)
 
         // Draw food
         ctx.gfx.setSafe(foodX_, foodY_, Colors::Muted::Red);
+
         break;
     }
     case Stage::ShowFinalScore:
     {
-        ctx.gfx.setTextColor(Colors::Muted::White);
-        ctx.gfx.setTextSize(1);
-        ctx.gfx.setCursor(1, 1);
-        ctx.gfx.print("Score");
-        ctx.gfx.setCursor(1, 10);
-        char buf[6];
-        snprintf(buf, 6, "%d", score_);
-        ctx.gfx.print(buf);
+        showFinalScore(ctx, score_);
+        // after showing final score for duration, transition to high score display
         if (now - gameOverTime_ >= kShowScoreDuration)
         {
-            stage = Stage::EndGame;
+            // if the loaded high score is still the highscore, show it then end the game,
+            if (loadHighScore(ctx, highScore_) && highScore_.score >= score_)
+            {
+                stage = ShowHighScore;
+            }
+            else // otherwise transition to SaveScoreScene
+            {
+                ctx.bus->toSaveScore(score_);
+                return;
+            }
             gameOverTime_ = now;
         }
         break;
     }
     case Stage::ShowHighScore:
     {
-        // Future implementation for high score display
+        if (now - gameOverTime_ < kShowScoreDuration)
+        {
+            showHighScore(ctx, highScore_);
+        }
+        else // otherwise transition to end the game
+            stage = EndGame;
         break;
     }
     case Stage::EndGame:
