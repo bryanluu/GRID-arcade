@@ -157,7 +157,7 @@ SnakeScene::SnakeScene() : snake_(Snake::kInitialLength - 1 + Helpers::random(MA
 
 void SnakeScene::setup(AppContext &ctx)
 {
-    // placeFood();
+    placeFood();
 }
 
 void SnakeScene::placeFood()
@@ -198,6 +198,13 @@ void SnakeScene::loop(AppContext &ctx)
     else if (input.y > 0.5f)
         snake_.setDirection(Snake::Direction::Down);
     snake_.move();
+
+    // Check for food consumption
+    if (snake_.getHeadX() == foodX_ && snake_.getHeadY() == foodY_)
+    {
+        snake_.grow();
+        placeFood();
+    }
 
     // Draw snake
     snake_.draw(ctx.gfx, Colors::Muted::Green, occupied_);
