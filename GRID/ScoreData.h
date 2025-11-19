@@ -16,8 +16,8 @@ struct ScoreData
     static constexpr size_t kReadCap = 100;
     static constexpr const char *kLogTag = "Score";
     static constexpr const char *kFileExtension = "dat";
-    int score;                     // the integer score in the Maze game
-    char name[kMaxNameLength + 1]; // +1 to leave space for NULL terminator
+    int score;                           // the integer score in the Maze game
+    char name[kMaxNameLength + 1] = {0}; // +1 to leave space for NULL terminator
 
     // Serialize this object to JSON into dst.
     // Returns bytes written, or 0 on failure.
