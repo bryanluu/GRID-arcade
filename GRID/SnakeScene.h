@@ -17,20 +17,21 @@ class Snake
     Node *head_;
     Node *tail_;
     int length_;
+
+public:
+    static constexpr int kInitialLength = 3;
+
     enum Direction
     {
         Up,
         Down,
         Left,
         Right
-    } direction_;
-
-public:
-    static constexpr int kInitialLength = 3;
+    };
 
     Snake(int startX, int startY);
     ~Snake();
-    // void move();
+    void move();
     // void grow();
     // bool checkCollision(int gridWidth, int gridHeight) const;
     int getHeadX() const;
@@ -39,6 +40,9 @@ public:
     void setDirection(Direction dir);
     int getLength() const;
     void draw(class Matrix32 &gfx, Color333 color) const;
+
+private:
+    Direction direction_;
 };
 
 class SnakeScene : public Scene
@@ -47,6 +51,11 @@ class SnakeScene : public Scene
 
 public:
     SnakeScene();
+
+    SceneTimingPrefs timingPrefs() const override
+    {
+        return SceneTimingPrefs(10.0f); // slower update rate for snake
+    }
 
     void setup(AppContext &ctx) override;
 

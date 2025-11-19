@@ -41,12 +41,57 @@ Snake::Direction Snake::getDirection() const
 
 void Snake::setDirection(Direction dir)
 {
+    // Prevent reversing direction
+    if ((direction_ == Up && dir == Down) ||
+        (direction_ == Down && dir == Up) ||
+        (direction_ == Left && dir == Right) ||
+        (direction_ == Right && dir == Left))
+    {
+        return;
+    }
+
     direction_ = dir;
 }
 
 int Snake::getLength() const
 {
     return length_;
+}
+
+void Snake::move()
+{
+    int newX = head_->x;
+    int newY = head_->y;
+
+    switch (direction_)
+    {
+    case Up:
+        newY -= 1;
+        break;
+    case Down:
+        newY += 1;
+        break;
+    case Left:
+        newX -= 1;
+        break;
+    case Right:
+        newX += 1;
+        break;
+    }
+
+    // Move all nodes forward
+    Node *newHead = new Node(newX, newY);
+    newHead->next = head_;
+    head_ = newHead;
+    // Remove tail
+    Node *current = head_;
+    while (current->next != tail_)
+    {
+        current = current->next;
+    }
+    tail_ = current;
+    delete tail_->next;
+    tail_->next = nullptr;
 }
 
 void Snake::draw(class Matrix32 &gfx, Color333 color) const
@@ -70,6 +115,20 @@ void SnakeScene::setup(AppContext &ctx)
 
 void SnakeScene::loop(AppContext &ctx)
 {
+    ctx.gfx.clear();
+
+    // Control snake direction based on input
+    InputState input = ctx.input.state();
+    if (input.x < -0.5f)
+        snake_.setDirection(Snake::Direction::Left);
+    else if (input.x > 0.5f)
+        snake_.setDirection(Snake::Direction::Right);
+    else if (input.y < -0.5f)
+        snake_.setDirection(Snake::Direction::Up);
+    else if (input.y > 0.5f)
+        snake_.setDirection(Snake::Direction::Down);
+    snake_.move();
+
     // Draw snake
     snake_.draw(ctx.gfx, Colors::Muted::Green);
 }
