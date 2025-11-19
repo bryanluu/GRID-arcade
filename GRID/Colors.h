@@ -108,7 +108,7 @@ constexpr uint16_t HUE_MAX = HUE_RANGE - 1; // 1535
 constexpr bool GAMMA_DEFAULT_ENABLE = false;
 constexpr uint8_t GAMMA_PASSES = 2; // 1 = mild, 2 = stronger
 
-constexpr uint8_t applyGamma(uint8_t c, bool enable)
+static inline uint8_t applyGamma(uint8_t c, bool enable)
 {
     if (!enable || c == 0 || c == BYTE_MAX)
         return c;
@@ -129,7 +129,7 @@ constexpr uint8_t to3bit(uint8_t x)
 }
 
 // HSV( hue: 0..1535, sat: 0..255, val: 0..255 ) → 8-bit RGB
-constexpr Color888 ColorHSV888(uint16_t hue, uint8_t sat, uint8_t val, bool gamma = GAMMA_DEFAULT_ENABLE)
+static inline Color888 ColorHSV888(uint16_t hue, uint8_t sat, uint8_t val, bool gamma = GAMMA_DEFAULT_ENABLE)
 {
     // Normalize hue into [0, HUE_MAX]
     hue = static_cast<uint16_t>(hue % HUE_RANGE);
@@ -206,7 +206,7 @@ constexpr Color888 ColorHSV888(uint16_t hue, uint8_t sat, uint8_t val, bool gamm
 }
 
 // HSV → 3-3-3 RGB (down-quantized for Color333)
-constexpr Color333 ColorHSV333(uint16_t hue, uint8_t sat, uint8_t val, bool gamma = GAMMA_DEFAULT_ENABLE)
+static inline Color333 ColorHSV333(uint16_t hue, uint8_t sat, uint8_t val, bool gamma = GAMMA_DEFAULT_ENABLE)
 {
     const Color888 c8 = ColorHSV888(hue, sat, val, gamma);
     return Color333{to3bit(c8.r), to3bit(c8.g), to3bit(c8.b)};

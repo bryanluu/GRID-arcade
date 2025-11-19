@@ -17,9 +17,9 @@ static constexpr double TICK_HZ = 60.0;
 // Main emulation loop
 void run_emulation()
 {
-    // unsigned long seed = static_cast<unsigned long>(
-    //     std::chrono::high_resolution_clock::now().time_since_epoch().count());
-    unsigned long seed = 1l; // use consistent seed for emulation testing
+    unsigned long seed = static_cast<unsigned long>(
+        std::chrono::high_resolution_clock::now().time_since_epoch().count());
+    // unsigned long seed = 1l; // use consistent seed for emulation testing
     Helpers::randomSeed(seed);
 
     FileStorage storage;

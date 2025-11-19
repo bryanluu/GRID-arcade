@@ -1,11 +1,11 @@
 #include "SaveScoreScene.h"
 #include "SceneBus.h"
 
-constexpr Color333 SaveScoreScene::kTextColor;
-constexpr Color333 SaveScoreScene::kSelectedColor;
-constexpr Color333 SaveScoreScene::kSubmitColor;
-constexpr Color333 SaveScoreScene::kErrorColor;
-constexpr char SaveScoreScene::kAlphabet[];
+const Color333 SaveScoreScene::kTextColor = Colors::Muted::White;
+const Color333 SaveScoreScene::kSelectedColor = ColorHSV333(0, 0, 150);
+const Color333 SaveScoreScene::kSubmitColor = Colors::Muted::Green;
+const Color333 SaveScoreScene::kErrorColor = Colors::Muted::Red;
+const char SaveScoreScene::kAlphabet[];
 
 void SaveScoreScene::setStage(AppContext &ctx, Stage newStage)
 {

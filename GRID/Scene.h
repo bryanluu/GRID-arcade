@@ -21,7 +21,8 @@ struct Scene
     Calibration,
     Maze,
     Test,
-    SaveScore
+    SaveScore,
+    Snake
   };
 
   virtual ~Scene() = default;
