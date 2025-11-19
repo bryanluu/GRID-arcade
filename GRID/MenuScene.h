@@ -8,13 +8,14 @@ struct MenuScene : public Scene
 {
     enum class Item : int
     {
+        Snake,
         Maze,
         Boids,
         Calibration,
         COUNT
     };
 
-    Item selected = Item::Maze;
+    Item selected = Item::Snake;
 
     SceneTimingPrefs timingPrefs() const override
     {

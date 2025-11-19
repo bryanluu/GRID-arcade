@@ -26,6 +26,9 @@ void MenuScene::loop(AppContext &ctx)
         ctx.time.sleep(SELECT_WAIT);
         switch (selected)
         {
+        case Item::Snake:
+            ctx.bus->toSnake();
+            return;
         case Item::Maze:
             ctx.bus->toMaze();
             return;
@@ -101,6 +104,8 @@ const char *MenuScene::label(const MenuScene::Item scene) const
 {
     switch (scene)
     {
+    case MenuScene::Item::Snake:
+        return "Snake";
     case MenuScene::Item::Maze:
         return "Maze";
     case MenuScene::Item::Boids:

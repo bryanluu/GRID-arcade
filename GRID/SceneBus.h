@@ -5,6 +5,7 @@
 
 struct SceneBus
 {
+    std::function<void()> toSnake;
     std::function<void()> toMenu;
     std::function<void()> toMaze;
     std::function<void()> toBoids;
