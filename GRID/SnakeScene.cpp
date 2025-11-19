@@ -1,6 +1,7 @@
 #include "SnakeScene.h"
 #include "Colors.h"
 #include "Helpers.h"
+#include "SceneBus.h"
 
 Snake::Snake(int startX, int startY)
     : length_(3), direction_(Right)
@@ -186,29 +187,78 @@ void SnakeScene::placeFood()
 void SnakeScene::loop(AppContext &ctx)
 {
     ctx.gfx.clear();
-
-    // Control snake direction based on input
-    InputState input = ctx.input.state();
-    if (input.x < -0.5f)
-        snake_.setDirection(Snake::Direction::Left);
-    else if (input.x > 0.5f)
-        snake_.setDirection(Snake::Direction::Right);
-    else if (input.y < -0.5f)
-        snake_.setDirection(Snake::Direction::Up);
-    else if (input.y > 0.5f)
-        snake_.setDirection(Snake::Direction::Down);
-    snake_.move();
-
-    // Check for food consumption
-    if (snake_.getHeadX() == foodX_ && snake_.getHeadY() == foodY_)
+    millis_t now = ctx.time.nowMs();
+    switch (stage)
     {
-        snake_.grow();
-        placeFood();
+    case Stage::Game:
+    {
+
+        // Control snake direction based on input
+        InputState input = ctx.input.state();
+        if (input.x < -0.5f)
+            snake_.setDirection(Snake::Direction::Left);
+        else if (input.x > 0.5f)
+            snake_.setDirection(Snake::Direction::Right);
+        else if (input.y < -0.5f)
+            snake_.setDirection(Snake::Direction::Up);
+        else if (input.y > 0.5f)
+            snake_.setDirection(Snake::Direction::Down);
+        snake_.move();
+
+        // Handle game over
+        if (snake_.hasCollided() && gameOverTime_ == 0)
+        {
+            gameOverTime_ = now;
+        }
+
+        if (snake_.hasCollided() && (now - gameOverTime_ >= kGameOverDelayMs))
+        {
+            stage = Stage::ShowFinalScore;
+            gameOverTime_ = now;
+            return;
+        }
+
+        // Check for food consumption
+        if (snake_.getHeadX() == foodX_ && snake_.getHeadY() == foodY_)
+        {
+            snake_.grow();
+            score_ += kScorePerFood;
+            placeFood();
+        }
+
+        // Draw snake
+        snake_.draw(ctx.gfx, Colors::Muted::Green, occupied_);
+
+        // Draw food
+        ctx.gfx.setSafe(foodX_, foodY_, Colors::Muted::Red);
+        break;
     }
-
-    // Draw snake
-    snake_.draw(ctx.gfx, Colors::Muted::Green, occupied_);
-
-    // Draw food
-    ctx.gfx.setSafe(foodX_, foodY_, Colors::Muted::Red);
+    case Stage::ShowFinalScore:
+    {
+        ctx.gfx.setTextColor(Colors::Muted::White);
+        ctx.gfx.setTextSize(1);
+        ctx.gfx.setCursor(1, 1);
+        ctx.gfx.print("Score");
+        ctx.gfx.setCursor(1, 10);
+        char buf[6];
+        snprintf(buf, 6, "%d", score_);
+        ctx.gfx.print(buf);
+        if (now - gameOverTime_ >= kShowScoreDuration)
+        {
+            stage = Stage::EndGame;
+            gameOverTime_ = now;
+        }
+        break;
+    }
+    case Stage::ShowHighScore:
+    {
+        // Future implementation for high score display
+        break;
+    }
+    case Stage::EndGame:
+    {
+        ctx.bus->toMenu();
+        break;
+    }
+    }
 }

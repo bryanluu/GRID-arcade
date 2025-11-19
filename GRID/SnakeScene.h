@@ -53,10 +53,25 @@ class SnakeScene : public Scene
     Snake snake_;
     int foodX_;
     int foodY_;
+    int score_ = 0;
+    static constexpr int kScorePerFood = 10;
 
     void placeFood();
     using PixelMap = std::bitset<MATRIX_WIDTH * MATRIX_HEIGHT>;
     PixelMap occupied_;
+
+    static constexpr millis_t kGameOverDelayMs = 2000;
+    static constexpr millis_t kShowScoreDuration = 5000; // ms to show final score
+    millis_t gameOverTime_ = 0;
+
+    enum Stage : uint8_t
+    {
+        Game,
+        ShowFinalScore,
+        ShowHighScore,
+        EndGame
+    };
+    Stage stage = Stage::Game;
 
 public:
     SnakeScene();
