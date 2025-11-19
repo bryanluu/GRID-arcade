@@ -3,6 +3,7 @@
 
 #include "Scene.h"
 #include "Colors.h"
+#include <bitset>
 
 class Snake
 {
@@ -17,6 +18,8 @@ class Snake
     Node *head_;
     Node *tail_;
     int length_;
+    bool collided_ = false;
+    bool checkCollision(Node *newHead) const;
 
 public:
     static constexpr int kInitialLength = 3;
@@ -32,14 +35,14 @@ public:
     Snake(int startX, int startY);
     ~Snake();
     void move();
-    // void grow();
-    // bool checkCollision(int gridWidth, int gridHeight) const;
+    void grow();
     int getHeadX() const;
     int getHeadY() const;
     Direction getDirection() const;
     void setDirection(Direction dir);
     int getLength() const;
-    void draw(class Matrix32 &gfx, Color333 color) const;
+    bool hasCollided() const { return collided_; }
+    void draw(class Matrix32 &gfx, Color333 color, std::bitset<MATRIX_WIDTH * MATRIX_HEIGHT> &occupied) const;
 
 private:
     Direction direction_;
@@ -48,6 +51,12 @@ private:
 class SnakeScene : public Scene
 {
     Snake snake_;
+    int foodX_;
+    int foodY_;
+
+    void placeFood();
+    using PixelMap = std::bitset<MATRIX_WIDTH * MATRIX_HEIGHT>;
+    PixelMap occupied_;
 
 public:
     SnakeScene();

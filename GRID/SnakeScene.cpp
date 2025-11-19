@@ -60,6 +60,9 @@ int Snake::getLength() const
 
 void Snake::move()
 {
+    if (collided_)
+        return; // do not move if collided
+
     int newX = head_->x;
     int newY = head_->y;
 
@@ -80,26 +83,69 @@ void Snake::move()
     }
 
     // Move all nodes forward
+    int segmentsMoved = 0;
     Node *newHead = new Node(newX, newY);
+
+    collided_ = checkCollision(newHead);
+    if (collided_)
+    {
+        delete newHead;
+        return; // collision detected, do not move
+    }
+
     newHead->next = head_;
     head_ = newHead;
+    segmentsMoved++;
     // Remove tail
     Node *current = head_;
     while (current->next != tail_)
     {
         current = current->next;
+        segmentsMoved++;
     }
-    tail_ = current;
-    delete tail_->next;
-    tail_->next = nullptr;
+    if (segmentsMoved >= length_)
+    {
+        tail_ = current;
+        delete tail_->next;
+        tail_->next = nullptr;
+    }
 }
 
-void Snake::draw(class Matrix32 &gfx, Color333 color) const
+void Snake::grow()
+{
+    length_ += 1;
+    // Do not remove tail on next move
+}
+
+bool Snake::checkCollision(Node *newHead) const
+{
+    // Check wall collision
+    if (newHead->x < 0 || newHead->x >= MATRIX_WIDTH || newHead->y < 0 || newHead->y >= MATRIX_HEIGHT)
+        return true;
+
+    // Check self-collision
+    Node *current = newHead->next;
+    while (current)
+    {
+        if (current->x == newHead->x && current->y == newHead->y)
+            return true;
+        current = current->next;
+    }
+    return false;
+}
+
+void Snake::draw(class Matrix32 &gfx, Color333 color, std::bitset<MATRIX_WIDTH * MATRIX_HEIGHT> &occupied) const
 {
     Node *current = head_;
     while (current)
     {
-        gfx.setSafe(current->x, current->y, color);
+        if (collided_)
+            gfx.setSafe(current->x, current->y, Colors::Muted::Yellow); // Indicate collision
+        else
+        {
+            gfx.setSafe(current->x, current->y, color);
+            occupied.set(current->y * MATRIX_WIDTH + current->x);
+        }
         current = current->next;
     }
 }
@@ -111,6 +157,30 @@ SnakeScene::SnakeScene() : snake_(Snake::kInitialLength - 1 + Helpers::random(MA
 
 void SnakeScene::setup(AppContext &ctx)
 {
+    // placeFood();
+}
+
+void SnakeScene::placeFood()
+{
+    // Randomly place food on available spaces
+    int available = (~occupied_).count();
+    if (available == 0)
+        return; // no space available
+
+    int target = Helpers::random(available);
+    int x = 0;      // index in available spaces
+    int i = 0;      // index in bitset
+    PixelMap p = 1; // target in bitset
+    while (x < target || (occupied_ & p).any())
+    {
+        if ((~occupied_ & p).any()) // if this space is free, move to next available
+            x++;
+        i++;
+        p <<= 1;
+    } // p now points to the target free space
+
+    foodX_ = i % MATRIX_WIDTH;
+    foodY_ = i / MATRIX_WIDTH;
 }
 
 void SnakeScene::loop(AppContext &ctx)
@@ -130,5 +200,8 @@ void SnakeScene::loop(AppContext &ctx)
     snake_.move();
 
     // Draw snake
-    snake_.draw(ctx.gfx, Colors::Muted::Green);
+    snake_.draw(ctx.gfx, Colors::Muted::Green, occupied_);
+
+    // Draw food
+    ctx.gfx.setSafe(foodX_, foodY_, Colors::Muted::Red);
 }
