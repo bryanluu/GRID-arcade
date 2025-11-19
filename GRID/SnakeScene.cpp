@@ -85,6 +85,7 @@ void Snake::move()
     // Move all nodes forward
     int segmentsMoved = 0;
     Node *newHead = new Node(newX, newY);
+    newHead->next = head_;
 
     collided_ = checkCollision(newHead);
     if (collided_)
@@ -93,7 +94,6 @@ void Snake::move()
         return; // collision detected, do not move
     }
 
-    newHead->next = head_;
     head_ = newHead;
     segmentsMoved++;
     // Remove tail
@@ -125,7 +125,7 @@ bool Snake::checkCollision(Node *newHead) const
 
     // Check self-collision
     Node *current = newHead->next;
-    while (current)
+    while (current != tail_) // the tail will be deleted in move() so we stop when current is tail
     {
         if (current->x == newHead->x && current->y == newHead->y)
             return true;
