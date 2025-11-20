@@ -22,7 +22,8 @@ struct Scene
     Maze,
     Test,
     SaveScore,
-    Snake
+    Snake,
+    Life
   };
 
   virtual ~Scene() = default;
