@@ -8,6 +8,15 @@ const Color333 LifeScene::CURSOR_IDLE_COLOR = Colors::Muted::Green;
 
 void LifeScene::setup(AppContext &ctx)
 {
+    // Randomly initialize cells
+    for (int y = 0; y < MATRIX_HEIGHT; ++y)
+    {
+        for (int x = 0; x < MATRIX_WIDTH; ++x)
+        {
+            int idx = index(x, y);
+            cells.set(idx, (Helpers::random(2) == 1)); // 50% chance alive
+        }
+    }
 }
 
 void LifeScene::loop(AppContext &ctx)
