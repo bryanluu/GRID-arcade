@@ -26,7 +26,10 @@ class LifeScene final : public Scene
     void drawCells(Matrix32 &gfx);
     void updateCursor(AppContext &ctx);
     void drawCursor(AppContext &ctx);
-    // void updateCells();
+
+    static constexpr millis_t kUpdateDelayMs = 200;
+    millis_t lastUpdateTime = 0;
+    void updateCells();
 
     // --- strobed input members (copied/adapted from MazeScene) ---
     enum Direction : int8_t

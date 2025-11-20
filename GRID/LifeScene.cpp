@@ -19,6 +19,14 @@ void LifeScene::loop(AppContext &ctx)
         updateCursor(ctx);
         drawCursor(ctx);
     }
+    else
+    {
+        if (ctx.time.nowMs() - lastUpdateTime >= kUpdateDelayMs)
+        {
+            updateCells();
+            lastUpdateTime = ctx.time.nowMs();
+        }
+    }
 }
 
 void LifeScene::drawCells(Matrix32 &gfx)
@@ -38,6 +46,54 @@ void LifeScene::drawCells(Matrix32 &gfx)
             }
         }
     }
+}
+
+void LifeScene::updateCells()
+{
+    std::bitset<MATRIX_WIDTH * MATRIX_HEIGHT> newCells;
+    for (int y = 0; y < MATRIX_HEIGHT; ++y)
+    {
+        for (int x = 0; x < MATRIX_WIDTH; ++x)
+        {
+            int idx = index(x, y);
+            int liveNeighbors = 0;
+            // Count live neighbors
+            for (int dy = -1; dy <= 1; ++dy)
+            {
+                for (int dx = -1; dx <= 1; ++dx)
+                {
+                    if (dx == 0 && dy == 0)
+                        continue; // skip self
+                    int nx = x + dx;
+                    int ny = y + dy;
+                    if (nx >= 0 && nx < MATRIX_WIDTH && ny >= 0 && ny < MATRIX_HEIGHT)
+                    {
+                        int nIdx = index(nx, ny);
+                        if (cells.test(nIdx))
+                            liveNeighbors++;
+                    }
+                }
+            }
+            // Apply Game of Life rules
+            if (cells.test(idx))
+            {
+                // Cell is alive
+                if (liveNeighbors == 2 || liveNeighbors == 3)
+                    newCells.set(idx); // stays alive
+                else
+                    newCells.reset(idx); // dies
+            }
+            else
+            {
+                // Cell is dead
+                if (liveNeighbors == 3)
+                    newCells.set(idx); // becomes alive
+                else
+                    newCells.reset(idx); // stays dead
+            }
+        }
+    }
+    cells = newCells;
 }
 
 // --- new helper copied/adapted from MazeScene ---
