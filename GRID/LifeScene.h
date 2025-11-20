@@ -28,6 +28,25 @@ class LifeScene final : public Scene
     void drawCursor(AppContext &ctx);
     // void updateCells();
 
+    // --- strobed input members (copied/adapted from MazeScene) ---
+    enum Direction : int8_t
+    {
+        DNone = -1,
+        DRight,
+        DDown,
+        DLeft,
+        DUp
+    };
+    Direction inputDir = Direction::DNone;
+    static constexpr float kInputBuffer = 0.15f;
+    static constexpr float kFastInputThreshold = 0.90f;
+    static constexpr millis_t kDefaultInputDelayMs = 150;
+    static constexpr millis_t kFastInputDelayMs = 60;
+    millis_t lastMoveTime = 0;
+
+    // helper used by updateCursor to sample strobed direction
+    Direction sampleStrobedDirection(AppContext &ctx, Direction &ioDir, millis_t &ioLastTimeMs);
+
 public:
     SceneKind kind() const override { return SceneKind::Life; }
     const char *label() const override { return "Life"; }

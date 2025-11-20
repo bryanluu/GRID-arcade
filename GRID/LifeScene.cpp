@@ -40,29 +40,87 @@ void LifeScene::drawCells(Matrix32 &gfx)
     }
 }
 
+// --- new helper copied/adapted from MazeScene ---
+LifeScene::Direction LifeScene::sampleStrobedDirection(AppContext &ctx, Direction &ioDir, millis_t &ioLastTimeMs)
+{
+    InputState s = ctx.input.state();
+    millis_t nowMs = ctx.time.nowMs();
+    // Reset instantaneous direction
+    ioDir = Direction::DNone;
+
+    const float dx = s.x;
+    const float dy = s.y;
+
+    // If outside deadband, consider a move on the dominant axis
+    if (std::fabs(dx) > kInputBuffer || std::fabs(dy) > kInputBuffer)
+    {
+        // Default repeat delay, faster near extremes
+        millis_t inputDelay = kDefaultInputDelayMs;
+
+        // Decide axis and candidate direction
+        Direction cand = Direction::DNone;
+        if (std::fabs(dx) >= std::fabs(dy))
+        {
+            if (dx > kInputBuffer)
+                cand = Direction::DRight;
+            if (dx < -kInputBuffer)
+                cand = Direction::DLeft;
+            if (std::fabs(dx) >= kFastInputThreshold)
+                inputDelay = kFastInputDelayMs;
+        }
+        else
+        {
+            if (dy > kInputBuffer)
+                cand = Direction::DDown;
+            if (dy < -kInputBuffer)
+                cand = Direction::DUp;
+            if (std::fabs(dy) >= kFastInputThreshold)
+                inputDelay = kFastInputDelayMs;
+        }
+
+        // Gate by repeat timer (like currentTime - lastInputTime > inputDelay)
+        if (cand != Direction::DNone && (nowMs - ioLastTimeMs) > inputDelay)
+        {
+            ioDir = cand;
+        }
+    }
+
+    // Update last time only when a step will be consumed this frame
+    if (ioDir != Direction::DNone)
+        ioLastTimeMs = nowMs;
+
+    return ioDir;
+}
+
 void LifeScene::updateCursor(AppContext &ctx)
 {
-    InputState input = ctx.input.state();
-    // Move cursor with D-pad / joystick
-    if (input.x < -0.5f)
+    // sample strobed direction (updates inputDir + lastMoveTime)
+    sampleStrobedDirection(ctx, inputDir, lastMoveTime);
+
+    // Move cursor when a strobed direction is produced
+    if (inputDir != Direction::DNone)
     {
-        cursorX = std::max(0, cursorX - 1);
-    }
-    else if (input.x > 0.5f)
-    {
-        cursorX = std::min(MATRIX_WIDTH - 1, cursorX + 1);
-    }
-    if (input.y < -0.5f)
-    {
-        cursorY = std::max(0, cursorY - 1);
-    }
-    else if (input.y > 0.5f)
-    {
-        cursorY = std::min(MATRIX_HEIGHT - 1, cursorY + 1);
+        switch (inputDir)
+        {
+        case Direction::DLeft:
+            cursorX = std::max(0, cursorX - 1);
+            break;
+        case Direction::DRight:
+            cursorX = std::min(MATRIX_WIDTH - 1, cursorX + 1);
+            break;
+        case Direction::DUp:
+            cursorY = std::max(0, cursorY - 1);
+            break;
+        case Direction::DDown:
+            cursorY = std::min(MATRIX_HEIGHT - 1, cursorY + 1);
+            break;
+        default:
+            break;
+        }
     }
 
     // Click spawns a cell, long-press starts the simulation
-    if (input.pressed)
+    if (ctx.input.state().pressed)
     {
         if (lastPressTime == 0) // rising edge -- toggle cell
         {
