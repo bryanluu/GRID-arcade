@@ -14,7 +14,6 @@ class LifeScene final : public Scene
 
     int cursorX = (MATRIX_WIDTH / 2);
     int cursorY = (MATRIX_HEIGHT / 2);
-    bool running = false;
     millis_t lastPressTime = 0;
     std::bitset<MATRIX_WIDTH * MATRIX_HEIGHT> cells;
 
@@ -50,6 +49,21 @@ class LifeScene final : public Scene
 
     // helper used by updateCursor to sample strobed direction
     Direction sampleStrobedDirection(AppContext &ctx, Direction &ioDir, millis_t &ioLastTimeMs);
+
+    // --- Start/Intro scrolling UI (copied/adapted from MazeScene) ---
+    enum Stage : uint8_t
+    {
+        Intro,
+        Edit,
+        Run
+    };
+    Stage stage = Stage::Intro;
+    static constexpr int8_t kStartTextY = 5;
+    static constexpr int8_t kStartTextYOffset = 24;
+    static constexpr int8_t kStartTextYStop = -50;
+    static constexpr millis_t kStartTextStepRate = 150;
+    int8_t textY = kStartTextY;
+    void renderIntroText(AppContext &ctx);
 
 public:
     SceneKind kind() const override { return SceneKind::Life; }

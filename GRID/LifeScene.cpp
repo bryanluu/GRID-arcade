@@ -17,20 +17,74 @@ void LifeScene::setup(AppContext &ctx)
             cells.set(idx, (Helpers::random(2) == 1)); // 50% chance alive
         }
     }
+
+    // initialize start/intro state
+    stage = Stage::Intro;
+    textY = kStartTextY;
+    lastUpdateTime = ctx.time.nowMs();
 }
 
 void LifeScene::loop(AppContext &ctx)
 {
     ctx.gfx.clear();
-    drawCells(ctx.gfx);
-    if (!running)
+
+    // Intro / scrolling help
+    if (stage == Stage::Intro)
     {
+        renderIntroText(ctx);
+        return;
+    }
+
+    // Edit mode: show grid with cursor and allow editing
+    if (stage == Stage::Edit)
+    {
+        drawCells(ctx.gfx);
         updateCursor(ctx);
         drawCursor(ctx);
+        return;
     }
-    else
+
+    // Run mode: simulation running
+    if (stage == Stage::Run)
     {
+        drawCells(ctx.gfx);
         runSimulation(ctx);
+        return;
+    }
+}
+
+void LifeScene::renderIntroText(AppContext &ctx)
+{
+    millis_t now = ctx.time.nowMs();
+
+    // First instructions: Click To Edit
+    ctx.gfx.setCursor(0, textY);
+    ctx.gfx.setTextColor(ALIVE_COLOR);
+    ctx.gfx.println("Click");
+    ctx.gfx.println("To");
+    ctx.gfx.println("Edit");
+
+    // Second instructions: Hold To Run
+    ctx.gfx.setCursor(0, textY + kStartTextYOffset);
+    ctx.gfx.setTextColor(CURSOR_IDLE_COLOR);
+    ctx.gfx.println("Hold");
+    ctx.gfx.println("To");
+    ctx.gfx.println("Run");
+
+    // advance scroll
+    if ((textY > kStartTextYStop) && (now - lastUpdateTime) > kStartTextStepRate)
+    {
+        --textY;
+        lastUpdateTime = now;
+    }
+    else if (textY <= kStartTextYStop)
+    {
+        // finished scrolling
+        stage = Stage::Run;
+        // ensure timers reset for edit/run logic
+        lastUpdateTime = now;
+        lastPressTime = 0;
+        lastMoveTime = 0;
     }
 }
 
@@ -42,8 +96,8 @@ void LifeScene::runSimulation(AppContext &ctx)
     {
         if (lastPressTime == 0)
         {
-            running = false; // stop simulation on new press
             lastPressTime = now;
+            stage = Stage::Edit;
         }
     }
     else
@@ -213,9 +267,9 @@ void LifeScene::updateCursor(AppContext &ctx)
             int cursorIdx = index(cursorX, cursorY);
             cells.flip(cursorIdx);
         }
-        if (!running && (ctx.time.nowMs() - lastPressTime) >= TRIGGER_WAIT)
+        if (stage != Stage::Run && (ctx.time.nowMs() - lastPressTime) >= TRIGGER_WAIT)
         {
-            running = true; // long press starts simulation
+            stage = Stage::Run; // long press starts simulation
         }
     }
     else
