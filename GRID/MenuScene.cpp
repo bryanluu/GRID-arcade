@@ -29,6 +29,9 @@ void MenuScene::loop(AppContext &ctx)
         case Item::Snake:
             ctx.bus->toSnake();
             return;
+        case Item::Life:
+            ctx.bus->toLife();
+            return;
         case Item::Maze:
             ctx.bus->toMaze();
             return;
@@ -106,6 +109,8 @@ const char *MenuScene::label(const MenuScene::Item scene) const
     {
     case MenuScene::Item::Snake:
         return "Snake";
+    case MenuScene::Item::Life:
+        return "Life";
     case MenuScene::Item::Maze:
         return "Maze";
     case MenuScene::Item::Boids:

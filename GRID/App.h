@@ -15,6 +15,7 @@
 
 #include "SceneBus.h"
 #include "SnakeScene.h"
+#include "LifeScene.h"
 #include "MazeScene.h"
 #include "BoidsScene.h"
 #include "CalibrationScene.h"
@@ -177,6 +178,8 @@ public:
         // Bind routes. Lambdas capture this App and call setScene.
         bus.toMenu = [this]
         { this->setScene<MenuScene>(); };
+        bus.toLife = [this]
+        { this->setScene<LifeScene>(); };
         bus.toSnake = [this]
         { this->setScene<SnakeScene>(); };
         bus.toMaze = [this]

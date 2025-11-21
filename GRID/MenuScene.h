@@ -9,6 +9,7 @@ struct MenuScene : public Scene
     enum class Item : int
     {
         Snake,
+        Life,
         Maze,
         Boids,
         Calibration,
