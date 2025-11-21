@@ -26,6 +26,7 @@ class LifeScene final : public Scene
     void drawCells(Matrix32 &gfx);
     void updateCursor(AppContext &ctx);
     void drawCursor(AppContext &ctx);
+    void runSimulation(AppContext &ctx);
 
     static constexpr millis_t kUpdateDelayMs = 200;
     millis_t lastUpdateTime = 0;

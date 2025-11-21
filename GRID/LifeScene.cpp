@@ -30,26 +30,31 @@ void LifeScene::loop(AppContext &ctx)
     }
     else
     {
-        millis_t now = ctx.time.nowMs();
+        runSimulation(ctx);
+    }
+}
 
-        if (ctx.input.state().pressed)
-        {
-            if (lastPressTime == 0)
-            {
-                running = false; // stop simulation on new press
-                lastPressTime = now;
-            }
-        }
-        else
-        {
-            lastPressTime = 0;
-        }
+void LifeScene::runSimulation(AppContext &ctx)
+{
+    millis_t now = ctx.time.nowMs();
 
-        if (now - lastUpdateTime >= kUpdateDelayMs)
+    if (ctx.input.state().pressed)
+    {
+        if (lastPressTime == 0)
         {
-            updateCells();
-            lastUpdateTime = now;
+            running = false; // stop simulation on new press
+            lastPressTime = now;
         }
+    }
+    else
+    {
+        lastPressTime = 0;
+    }
+
+    if (now - lastUpdateTime >= kUpdateDelayMs)
+    {
+        updateCells();
+        lastUpdateTime = now;
     }
 }
 
