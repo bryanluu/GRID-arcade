@@ -14,7 +14,7 @@ class LifeScene final : public Scene
 
     int cursorX = (MATRIX_WIDTH / 2);
     int cursorY = (MATRIX_HEIGHT / 2);
-    bool started = false;
+    bool running = false;
     millis_t lastPressTime = 0;
     std::bitset<MATRIX_WIDTH * MATRIX_HEIGHT> cells;
 

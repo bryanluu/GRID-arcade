@@ -23,17 +23,32 @@ void LifeScene::loop(AppContext &ctx)
 {
     ctx.gfx.clear();
     drawCells(ctx.gfx);
-    if (!started)
+    if (!running)
     {
         updateCursor(ctx);
         drawCursor(ctx);
     }
     else
     {
-        if (ctx.time.nowMs() - lastUpdateTime >= kUpdateDelayMs)
+        millis_t now = ctx.time.nowMs();
+
+        if (ctx.input.state().pressed)
+        {
+            if (lastPressTime == 0)
+            {
+                running = false; // stop simulation on new press
+                lastPressTime = now;
+            }
+        }
+        else
+        {
+            lastPressTime = 0;
+        }
+
+        if (now - lastUpdateTime >= kUpdateDelayMs)
         {
             updateCells();
-            lastUpdateTime = ctx.time.nowMs();
+            lastUpdateTime = now;
         }
     }
 }
@@ -193,9 +208,9 @@ void LifeScene::updateCursor(AppContext &ctx)
             int cursorIdx = index(cursorX, cursorY);
             cells.flip(cursorIdx);
         }
-        if (!started && (ctx.time.nowMs() - lastPressTime) >= TRIGGER_WAIT)
+        if (!running && (ctx.time.nowMs() - lastPressTime) >= TRIGGER_WAIT)
         {
-            started = true; // long press starts simulation
+            running = true; // long press starts simulation
         }
     }
     else
