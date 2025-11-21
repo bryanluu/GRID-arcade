@@ -19,6 +19,7 @@
 #include "MazeScene.h"
 #include "BoidsScene.h"
 #include "CalibrationScene.h"
+#include "QRScene.h"
 #include "MenuScene.h"
 #include "StartScene.h"
 #include "SaveScoreScene.h"
@@ -188,6 +189,8 @@ public:
         { this->setScene<BoidsScene>(); };
         bus.toCalibration = [this]
         { this->setScene<CalibrationScene>(); };
+        bus.toQR = [this]
+        { this->setScene<QRScene>(); };
         bus.toSaveScore = [this](int newScore)
         {
             // Create SaveScoreScene with the passed score

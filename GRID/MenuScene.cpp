@@ -1,5 +1,14 @@
 #include "MenuScene.h"
 
+// Define the static item array (labels + pointer-to-member in SceneBus)
+const std::array<MenuScene::MenuItem, 6> MenuScene::kItems = {
+    MenuScene::MenuItem{"Snake", &SceneBus::toSnake},
+    MenuScene::MenuItem{"Life", &SceneBus::toLife},
+    MenuScene::MenuItem{"Maze", &SceneBus::toMaze},
+    MenuScene::MenuItem{"Boids", &SceneBus::toBoids},
+    MenuScene::MenuItem{"Calib", &SceneBus::toCalibration},
+    MenuScene::MenuItem{"QR", &SceneBus::toQR}};
+
 void MenuScene::loop(AppContext &ctx)
 {
     const InputState s = ctx.input.state();
@@ -24,25 +33,17 @@ void MenuScene::loop(AppContext &ctx)
         // shows center press with a small pause
         ctx.gfx.show();
         ctx.time.sleep(SELECT_WAIT);
-        switch (selected)
+
+        // Call the stored SceneBus action if present
+        auto actionMemberPtr = MenuScene::kItems[selected].action;
+        if (ctx.bus && actionMemberPtr)
         {
-        case Item::Snake:
-            ctx.bus->toSnake();
-            return;
-        case Item::Life:
-            ctx.bus->toLife();
-            return;
-        case Item::Maze:
-            ctx.bus->toMaze();
-            return;
-        case Item::Boids:
-            ctx.bus->toBoids();
-            return;
-        case Item::Calibration:
-            ctx.bus->toCalibration();
-            return;
-        default:
-            break;
+            std::function<void()> &actionCallback = ctx.bus->*actionMemberPtr;
+            if (actionCallback)
+            {
+                actionCallback();
+                return;
+            }
         }
     }
 
@@ -53,16 +54,12 @@ void MenuScene::loop(AppContext &ctx)
 
 void MenuScene::next()
 {
-    int v = static_cast<int>(selected);
-    v = (v + 1) % static_cast<int>(Item::COUNT);
-    selected = static_cast<Item>(v);
+    selected = (selected + 1) % kItems.size();
 }
 
 void MenuScene::prev()
 {
-    int v = static_cast<int>(selected);
-    v = (v - 1 + static_cast<int>(Item::COUNT)) % static_cast<int>(Item::COUNT);
-    selected = static_cast<Item>(v);
+    selected = (selected + kItems.size() - 1) % kItems.size();
 }
 
 void MenuScene::draw(AppContext &ctx, bool left, bool right, bool press)
@@ -78,46 +75,19 @@ void MenuScene::draw(AppContext &ctx, bool left, bool right, bool press)
         ctx.gfx.setTextColor(Colors::Bright::Green);
     else
         ctx.gfx.setTextColor(Colors::Muted::White);
-    ctx.gfx.println(label(selected));
+
+    ctx.gfx.println(kItems[selected].label);
 
     // arrow hint
     ctx.gfx.setCursor(1, MATRIX_HEIGHT - 8);
-    if (left)
-        ctx.gfx.setTextColor(Colors::Bright::White);
-    else
-        ctx.gfx.setTextColor(Colors::Muted::White);
+    ctx.gfx.setTextColor(left ? Colors::Bright::White : Colors::Muted::White);
     ctx.gfx.print("<");
 
     ctx.gfx.setCursor(10, MATRIX_HEIGHT - 8);
-    if (press)
-        ctx.gfx.setTextColor(Colors::Bright::White);
-    else
-        ctx.gfx.setTextColor(Colors::Muted::White);
+    ctx.gfx.setTextColor(press ? Colors::Bright::White : Colors::Muted::White);
     ctx.gfx.print("OK");
 
-    if (right)
-        ctx.gfx.setTextColor(Colors::Bright::White);
-    else
-        ctx.gfx.setTextColor(Colors::Muted::White);
     ctx.gfx.setCursor(MATRIX_WIDTH - 6, MATRIX_HEIGHT - 8);
+    ctx.gfx.setTextColor(right ? Colors::Bright::White : Colors::Muted::White);
     ctx.gfx.print(">");
-}
-
-const char *MenuScene::label(const MenuScene::Item scene) const
-{
-    switch (scene)
-    {
-    case MenuScene::Item::Snake:
-        return "Snake";
-    case MenuScene::Item::Life:
-        return "Life";
-    case MenuScene::Item::Maze:
-        return "Maze";
-    case MenuScene::Item::Boids:
-        return "Boids";
-    case MenuScene::Item::Calibration:
-        return "Calib";
-    default:
-        return "NULL";
-    }
 }

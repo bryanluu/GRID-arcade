@@ -23,7 +23,8 @@ struct Scene
     Test,
     SaveScore,
     Snake,
-    Life
+    Life,
+    QR
   };
 
   virtual ~Scene() = default;

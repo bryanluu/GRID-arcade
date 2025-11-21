@@ -6,17 +6,18 @@
 
 struct MenuScene : public Scene
 {
-    enum class Item : int
+    // Replace enum with a static array of menu items
+    struct MenuItem
     {
-        Snake,
-        Life,
-        Maze,
-        Boids,
-        Calibration,
-        COUNT
+        const char *label;
+        std::function<void()> SceneBus::*action; // pointer to SceneBus member std::function
     };
 
-    Item selected = Item::Snake;
+    // items - defined in cpp
+    static const std::array<MenuItem, 6> kItems; // Change size as needed
+
+    // index into kItems
+    std::size_t selected = 0;
 
     SceneTimingPrefs timingPrefs() const override
     {
@@ -40,7 +41,7 @@ private:
     void next();
     void prev();
     void draw(AppContext &ctx, bool left, bool right, bool press);
-    const char *label(const Item scene) const;
+    // removed label(const Item) - use kItems[selected].label instead
 };
 
 #endif
