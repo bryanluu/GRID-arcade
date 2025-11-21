@@ -13,6 +13,7 @@ struct MenuScene : public Scene
         Maze,
         Boids,
         Calibration,
+        QR,
         COUNT
     };
 

@@ -41,6 +41,9 @@ void MenuScene::loop(AppContext &ctx)
         case Item::Calibration:
             ctx.bus->toCalibration();
             return;
+        case Item::QR:
+            ctx.bus->toQR();
+            return;
         default:
             break;
         }
@@ -117,6 +120,8 @@ const char *MenuScene::label(const MenuScene::Item scene) const
         return "Boids";
     case MenuScene::Item::Calibration:
         return "Calib";
+    case MenuScene::Item::QR:
+        return "QR";
     default:
         return "NULL";
     }
