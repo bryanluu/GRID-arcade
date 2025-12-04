@@ -1,0 +1,113 @@
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="resource://content-accessible/plaintext.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GRID-Arcade</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <style>
+        :root {
+            --bs-primary: #266DA9 !important;
+            --bs-primary-rgb: #266DA9 !important;
+            --bs-primary-bg-subtle: #548FC1 !important;
+            --bs-primary-text-emphasis: #266DA9 !important;
+            --bs-light: rgb(248, 249, 250) !important;
+            --bs-light-text-emphasis: lightblue !important;
+            margin: 2em;
+        }
+
+        .bg-primary {
+            background-color: var(--bs-primary) !important;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            color: var(--bs-primary);
+            margin-top: 1ex;
+        }
+
+        h1::after,
+        h2::after,
+        h3::after,
+        h4::after,
+        h5::after,
+        h6::after {
+            content: "";
+            display: block;
+            width: 100%;
+            height: 1px;
+            background-color: var(--bs-primary);
+            margin-top: 4px;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="markdownRoot">
+        <h1 id="grid-arcade">GRID-Arcade</h1>
+        <p>This is the <strong>GRID</strong> (<strong>G</strong>aming <strong>R</strong>etro
+            <strong>I</strong>nteractive <strong>D</strong>evice), my fun hobby project to create a custom arcade box.
+        </p>
+        <img src="images/maze_shot.jpg" alt="Alt Text" width="200">
+        <h2 id="why-i-did-it">Why I did it</h2>
+        <p>I needed to consolidate my two programs I had built for the Adafruit Metro M0 and RGB matrix (<a
+                href="https://github.com/bryanluu/a-maze-ing-race"><em>A-Maze-ing Race</em></a> and <a
+                href="https://github.com/bryanluu/boids"><em>Boids</em></a>), besides, the old enclosure was falling
+            apart.</p>
+        <img src="images/old_amr.jpeg" alt="Alt Text" width="250">
+        <p>This new project would allow players to select between the two
+            programs, keep the electronics more stable, and be an exercise in skill
+            development.</p>
+        <h2 id="what-i-did">What I did</h2>
+        <p>I started with the build. I collaborated with my friend Herman to
+            collect materials, design the enclosure, and assemble the structure. The
+            whole process took place over a couple of weeks.</p>
+        <p>Once the enclosure was finished, we redid the wiring for the Adafruit Metro M0 to the RGB matrix so that it
+            was more secure.</p>
+        <p>Next I began with re-programming Boids and using Notion AI to help me
+            implement scene-switching logic for other games. I created a menu and
+            cleaned up the code for future re-use. With the help of AI, I made an
+            emulation of the display using SDL2 that I could use to debug logic
+            before testing with hardware.</p>
+        <img src="images/emu_boids.png" alt="Alt Text" width="250">
+        <p>Next I implemented a Calibration scene which allowed me to adjust the
+            input signals and save them. From there I used the MCU's Flash memory
+            and Adafruit's SPI flash library to save/load calibration settings.</p>
+        <p>After, I focused on porting A-Maze-ing Race over the new framework. I
+            reduced any globals and used best-practice patterns to implement the
+            maze game. To ensure the game fit, I used memory efficient data-types
+            such as bitsets for game parameters. I enabled high-scores to be
+            saved/loaded from Flash memory.</p>
+        <p>Finally I added two new games: Conway's <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life">Game
+                of Life</a>, and the classic Snake game.</p>
+        <h2 id="challenges">Challenges</h2>
+        <p>The main challenge I encountered was learning when and how to use AI
+            tools for coding C++. I learned that the tools were not accurate for
+            certain kinds of issues and this trained me to be more skeptical in its
+            results. The best use for it was learning new patterns and ways to
+            implement code that other developers found effective. It was also
+            helpful in implementing tedious code, e.g. the bit pattern for the GRID
+            logo.</p>
+        <p>
+            Another challenge was implementing timing parity between the emulation
+            and hardware. For instance, the Boids program ran slower (~16 FPS) on
+            the hardware, so I had to develop timing classes for the emulation to
+            run identically as hardware.</p>
+        <h2 id="acknowledgements">Acknowledgements</h2>
+        <p>I'd like to thank my friend Herman Tabunganua for his help assembling the GRID enclosure.</p>
+        <h2 id="references">References</h2>
+        <p>You can view the source code of the project <a href="./README.md">here</a>.</p>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js"
+        integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
