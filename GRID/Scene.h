@@ -24,7 +24,8 @@ struct Scene
     SaveScore,
     Snake,
     Life,
-    QR
+    QR,
+    Bonneh
   };
 
   virtual ~Scene() = default;

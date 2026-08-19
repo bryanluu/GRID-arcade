@@ -1,13 +1,14 @@
 #include "MenuScene.h"
 
 // Define the static item array (labels + pointer-to-member in SceneBus)
-const std::array<MenuScene::MenuItem, 6> MenuScene::kItems = {
+const std::array<MenuScene::MenuItem, 7> MenuScene::kItems = {
     MenuScene::MenuItem{"Snake", &SceneBus::toSnake},
     MenuScene::MenuItem{"Life", &SceneBus::toLife},
     MenuScene::MenuItem{"Maze", &SceneBus::toMaze},
     MenuScene::MenuItem{"Boids", &SceneBus::toBoids},
     MenuScene::MenuItem{"Calib", &SceneBus::toCalibration},
-    MenuScene::MenuItem{"QR", &SceneBus::toQR}};
+    MenuScene::MenuItem{"QR", &SceneBus::toQR},
+    MenuScene::MenuItem{"Bonneh", &SceneBus::toBonneh}};
 
 void MenuScene::loop(AppContext &ctx)
 {

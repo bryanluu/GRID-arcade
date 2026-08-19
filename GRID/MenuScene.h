@@ -14,7 +14,7 @@ struct MenuScene : public Scene
     };
 
     // items - defined in cpp
-    static const std::array<MenuItem, 6> kItems; // Change size as needed
+    static const std::array<MenuItem, 7> kItems; // Change size as needed
 
     // index into kItems
     std::size_t selected = 0;

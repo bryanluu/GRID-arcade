@@ -12,6 +12,7 @@ struct SceneBus
     std::function<void()> toBoids;
     std::function<void()> toCalibration;
     std::function<void()> toQR;
+    std::function<void()> toBonneh;
     std::function<void(int)> toSaveScore;
 };
 
