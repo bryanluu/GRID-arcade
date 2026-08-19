@@ -8,7 +8,7 @@ const std::array<MenuScene::MenuItem, 7> MenuScene::kItems = {
     MenuScene::MenuItem{"Boids", &SceneBus::toBoids},
     MenuScene::MenuItem{"Calib", &SceneBus::toCalibration},
     MenuScene::MenuItem{"QR", &SceneBus::toQR},
-    MenuScene::MenuItem{"Bonneh", &SceneBus::toBonneh}};
+    MenuScene::MenuItem{"MIB", &SceneBus::toBonneh}};
 
 void MenuScene::loop(AppContext &ctx)
 {
