@@ -1,6 +1,7 @@
 #ifndef BONNEH_SCENE_H
 #define BONNEH_SCENE_H
 
+#include "Colors.h"
 #include "Scene.h"
 
 class BonnehScene : public Scene
@@ -12,6 +13,18 @@ public:
     const char *label() const override { return "Bonneh"; }
     void setup(AppContext &ctx) override;
     void loop(AppContext &ctx) override;
+
+private:
+    static constexpr int kCenterX = 15; // 32x32 grid -> even margins
+    static constexpr int kCenterY = 15;
+    static constexpr int kDistractorBottomX = 15;
+    static constexpr int kDistractorBottomY = 25; // ~80% down the grid
+    static constexpr int kDistractorTopLeftX = 5;
+    static constexpr int kDistractorTopLeftY = 7;
+    static constexpr int kDistractorTopRightX = 25;
+    static constexpr int kDistractorTopRightY = 7;
+    static constexpr Color333 kCenterDotColor = Colors::Bright::Green;
+    static constexpr Color333 kDistractorColor = Colors::Bright::Yellow;
 };
 
 #endif // BONNEH_SCENE_H
