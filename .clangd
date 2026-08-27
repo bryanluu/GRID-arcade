@@ -1,0 +1,12 @@
+# Flags for clangd (Neovim/LazyVim and any other clangd client).
+# Mirrors the emulation build in the Makefile so the LSP sees the same
+# defines and include paths as `make`.
+CompileFlags:
+  Add:
+    - -std=gnu++17
+    - -DGRID_EMULATION
+    - -Iemulation
+    - -IGRID
+    - -I/usr/include/SDL2
+    - -D_GNU_SOURCE=1
+    - -D_REENTRANT
