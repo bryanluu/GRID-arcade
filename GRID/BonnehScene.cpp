@@ -36,8 +36,10 @@ void BonnehScene::drawRotatedLattice(AppContext &ctx) const {
     }
 }
 
-void BonnehScene::drawMarkers(AppContext &ctx) const {
-    ctx.gfx.setSafe(kCenterX, kCenterY, kCenterDotColor);
+void BonnehScene::drawMarkers(AppContext &ctx, bool focusVisible) const {
+    if (focusVisible)
+        ctx.gfx.setSafe(kCenterX, kCenterY, kCenterDotColor);
+
     ctx.gfx.setSafe(kDistractorBottomX, kDistractorBottomY, kDistractorColor);
     ctx.gfx.setSafe(kDistractorTopLeftX, kDistractorTopLeftY, kDistractorColor);
     ctx.gfx.setSafe(kDistractorTopRightX, kDistractorTopRightY, kDistractorColor);
@@ -45,20 +47,29 @@ void BonnehScene::drawMarkers(AppContext &ctx) const {
 
 void BonnehScene::setup(AppContext &ctx) {
     rotationDeg_ = 0.0;
+    focusFlashElapsedMs_ = 0.0;
     drawRotatedLattice(ctx);
-    drawMarkers(ctx);
+    drawMarkers(ctx, /*focusVisible=*/true);
 }
 
 void BonnehScene::loop(AppContext &ctx) {
+    const double dtMs = ctx.time.dtMs();
+
     // Advance rotation phase based on elapsed frame time (frame-rate independent)
-    rotationDeg_ += 360.0 * kRotationHz * (ctx.time.dtMs() / 1000.0);
+    rotationDeg_ += 360.0 * kRotationHz * (dtMs / 1000.0);
     if (rotationDeg_ >= 360.0)
         rotationDeg_ -= 360.0;
 
+    // Advance focus-point blink phase
+    focusFlashElapsedMs_ += dtMs;
+    if (focusFlashElapsedMs_ >= kFocusFlashPeriodMs)
+        focusFlashElapsedMs_ -= kFocusFlashPeriodMs;
+    const bool focusVisible = focusFlashElapsedMs_ < (kFocusFlashPeriodMs / 2.0);
+
     ctx.gfx.clear();
 
-    drawRotatedLattice(ctx); // background field, drawn first
-    drawMarkers(ctx);        // markers drawn on top, always visible
+    drawRotatedLattice(ctx);        // background field, drawn first
+    drawMarkers(ctx, focusVisible); // markers drawn on top, always visible
 
     ctx.gfx.show();
 }

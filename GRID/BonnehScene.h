@@ -33,11 +33,16 @@ class BonnehScene : public Scene {
     static constexpr int kCrossArmLength = 1;  // px each arm extends
     static constexpr Color333 kCrossColor = Colors::Muted::Blue;
 
-    double rotationDeg_ = 0.0; // current phase of the rotating lattice
+    // Focus-point blink: matches the web version's 500ms steps(2, jump-none)
+    // flash, which is a 50% duty-cycle square wave (250ms on, 250ms off).
+    static constexpr double kFocusFlashPeriodMs = 500.0;
+
+    double rotationDeg_ = 0.0;         // current phase of the rotating lattice
+    double focusFlashElapsedMs_ = 0.0; // current phase within the blink cycle
 
     void drawRotatedLattice(AppContext &ctx) const;
     void drawCross(AppContext &ctx, int cx, int cy, double angleDeg) const;
-    void drawMarkers(AppContext &ctx) const;
+    void drawMarkers(AppContext &ctx, bool focusVisible) const;
 };
 
 #endif // BONNEH_SCENE_H
