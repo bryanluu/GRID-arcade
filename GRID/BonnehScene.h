@@ -4,9 +4,8 @@
 #include "Colors.h"
 #include "Scene.h"
 
-class BonnehScene : public Scene
-{
-public:
+class BonnehScene : public Scene {
+  public:
     BonnehScene() = default;
     ~BonnehScene() override = default;
     SceneKind kind() const override { return SceneKind::Bonneh; }
@@ -14,7 +13,7 @@ public:
     void setup(AppContext &ctx) override;
     void loop(AppContext &ctx) override;
 
-private:
+  private:
     static constexpr int kCenterX = 15; // 32x32 grid -> even margins
     static constexpr int kCenterY = 15;
     static constexpr int kDistractorBottomX = 15;
@@ -25,6 +24,20 @@ private:
     static constexpr int kDistractorTopRightY = 7;
     static constexpr Color333 kCenterDotColor = Colors::Bright::Green;
     static constexpr Color333 kDistractorColor = Colors::Bright::Yellow;
+
+    // Rotating background cross field: the whole lattice spins rigidly
+    // around (kCenterX, kCenterY), like the reference GIF.
+    static constexpr double kRotationHz = 0.1; // matches web version
+    static constexpr int kCrossSpacing = 4;    // px between lattice points
+    static constexpr int kLatticeRadius = 6;   // lattice extends [-6,6] steps in x & y
+    static constexpr int kCrossArmLength = 1;  // px each arm extends
+    static constexpr Color333 kCrossColor = Colors::Muted::Blue;
+
+    double rotationDeg_ = 0.0; // current phase of the rotating lattice
+
+    void drawRotatedLattice(AppContext &ctx) const;
+    void drawCross(AppContext &ctx, int cx, int cy, double angleDeg) const;
+    void drawMarkers(AppContext &ctx) const;
 };
 
 #endif // BONNEH_SCENE_H
