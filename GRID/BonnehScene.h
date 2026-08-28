@@ -10,6 +10,9 @@ class BonnehScene : public Scene {
     ~BonnehScene() override = default;
     SceneKind kind() const override { return SceneKind::Bonneh; }
     const char *label() const override { return "Bonneh"; }
+    // Nested-loop cross field is still comparatively heavy on the
+    // FPU-less SAMD21; cap the target rate below the 60Hz default.
+    SceneTimingPrefs timingPrefs() const override { return SceneTimingPrefs(15.0); }
     void setup(AppContext &ctx) override;
     void loop(AppContext &ctx) override;
 
@@ -27,7 +30,7 @@ class BonnehScene : public Scene {
 
     // Rotating background cross field: the whole lattice spins rigidly
     // around (kCenterX, kCenterY), like the reference GIF.
-    static constexpr double kRotationHz = 0.1; // matches web version
+    static constexpr float kRotationHz = 0.1f; // matches web version
     static constexpr int kCrossSpacing = 4;    // px between lattice points
     static constexpr int kLatticeRadius = 6;   // lattice extends [-6,6] steps in x & y
     static constexpr int kCrossArmLength = 1;  // px each arm extends
@@ -35,13 +38,12 @@ class BonnehScene : public Scene {
 
     // Focus-point blink: matches the web version's 500ms steps(2, jump-none)
     // flash, which is a 50% duty-cycle square wave (250ms on, 250ms off).
-    static constexpr double kFocusFlashPeriodMs = 500.0;
+    static constexpr float kFocusFlashPeriodMs = 500.0f;
 
-    double rotationDeg_ = 0.0;         // current phase of the rotating lattice
-    double focusFlashElapsedMs_ = 0.0; // current phase within the blink cycle
+    float rotationDeg_ = 0.0f;         // current phase of the rotating lattice
+    float focusFlashElapsedMs_ = 0.0f; // current phase within the blink cycle
 
     void drawRotatedLattice(AppContext &ctx) const;
-    void drawCross(AppContext &ctx, int cx, int cy, double angleDeg) const;
     void drawMarkers(AppContext &ctx, bool focusVisible) const;
 };
 
