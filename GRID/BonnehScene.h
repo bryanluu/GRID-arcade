@@ -30,10 +30,10 @@ class BonnehScene : public Scene {
 
     // Rotating background cross field: the whole lattice spins rigidly
     // around (kCenterX, kCenterY), like the reference GIF.
-    static constexpr float kRotationHz = 0.1f; // matches web version
-    static constexpr int kCrossSpacing = 4;    // px between lattice points
-    static constexpr int kLatticeRadius = 6;   // lattice extends [-6,6] steps in x & y
-    static constexpr int kCrossArmLength = 1;  // px each arm extends
+    static constexpr float kRotationHz = 0.15f; // matches web version
+    static constexpr int kCrossSpacing = 4;     // px between lattice points
+    static constexpr int kLatticeRadius = 6;    // lattice extends [-6,6] steps in x & y
+    static constexpr int kCrossArmLength = 1;   // px each arm extends
     static constexpr Color333 kCrossColor = Colors::Muted::Blue;
 
     // Focus-point blink: matches the web version's 500ms steps(2, jump-none)
