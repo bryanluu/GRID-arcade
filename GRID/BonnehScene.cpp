@@ -2,6 +2,14 @@
 #include "Matrix32.h"
 #include <cmath>
 
+// Out-of-class definitions required pre-C++17 for static constexpr
+// members of non-integral type (e.g. Color333) that get odr-used
+// (passed by value into setSafe()). Without these, the linker has
+// no storage to reference.
+constexpr Color333 BonnehScene::kCenterDotColor;
+constexpr Color333 BonnehScene::kDistractorColor;
+constexpr Color333 BonnehScene::kCrossColor;
+
 void BonnehScene::drawCross(AppContext &ctx, int cx, int cy, double angleDeg) const {
     ctx.gfx.setSafe(cx, cy, kCrossColor);
     for (int i = 0; i < 4; ++i) {
