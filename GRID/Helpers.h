@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <cmath>
+#include <cstdlib>
 
 // Type
 using millis_t = uint32_t; // convenience alias for time in milliseconds
